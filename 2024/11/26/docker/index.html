@@ -6,13 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://luna-shi.github.io">
-  <title>Archives | Hexo</title>
+  <title>workshop | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="https://luna-shi.github.io/archives/index.html">
+  <meta name="description" content="Startup1docker container run hello-world  first pull the image from the registrythen run this image to become a container 12docker image pull alpinedocker image ls    #the same as &#x27;docker images&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="workshop">
+<meta property="og:url" content="https://luna-shi.github.io/2024/11/26/docker/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Startup1docker container run hello-world  first pull the image from the registrythen run this image to become a container 12docker image pull alpinedocker image ls    #the same as &#x27;docker images&amp;">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-11-26T05:23:49.000Z">
+<meta property="article:modified_time" content="2024-11-26T06:10:38.277Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -150,70 +154,208 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-docker" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2024" class="archive-year">2024</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2024/11/26/DOPE/" class="archive-article-date">
-  	<time datetime="2024-11-26T06:10:29.302Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-11-26</time>
-</a>
-        </div>
-    	 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2024/11/26/docker/" class="archive-article-date">
-  	<time datetime="2024-11-26T05:23:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-11-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2024/11/26/docker/">workshop</a>
+    <h1 class="article-title" itemprop="name">
+      workshop
     </h1>
   
 
-        <div class="article-info info-on-right">
-          
-          
+        
+        <a href="/2024/11/26/docker/" class="archive-article-date">
+  	<time datetime="2024-11-26T05:23:49.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2024-11-26</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Startup"><a href="#Startup" class="headerlink" title="Startup"></a>Startup</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container run hello-world</span><br></pre></td></tr></table></figure>
 
+<p>first pull the image from the registry<br>then run this image to become a container</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker image pull alpine</span><br><span class="line">docker image ls    #the same as &#x27;docker images&#x27;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container run alpine ls -l</span><br></pre></td></tr></table></figure>
+
+<p>a few things happen:</p>
+<ul>
+<li>find the image</li>
+<li>run image &#x3D;&#x3D;&gt; container</li>
+<li>run cmd</li>
+<li>close container</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container run -it alpine /bin/sh</span><br></pre></td></tr></table></figure>
+
+<p>launch the shell and you can type in the terminal</p>
+<h2 id="swarm"><a href="#swarm" class="headerlink" title="swarm"></a>swarm</h2><p>in one node: (manager)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker swarm init --advertise-addr $(hostname -i)</span><br></pre></td></tr></table></figure>
+
+<p>in other node: (worker) copy &amp; paste</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker swarm join --token &lt;token&gt; &lt;host&gt;</span><br></pre></td></tr></table></figure>
+
+<p>in the manager node</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker node ls</span><br></pre></td></tr></table></figure>
+
+<h3 id="create-a-stack-in-the-manager"><a href="#create-a-stack-in-the-manager" class="headerlink" title="create a stack in the manager"></a>create a stack in the manager</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stack deploy --compose-file=docker-stack.yml voting_stack</span><br></pre></td></tr></table></figure>
+
+<p>a docker-stack.yml is like</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"># this file is meant for Docker Swarm stacks only</span><br><span class="line"># trying it in compose will fail because of multiple replicas trying to bind to the same port</span><br><span class="line"># Swarm currently does not support Compose Spec, so we&#x27;ll pin to the older version 3.9</span><br><span class="line"></span><br><span class="line">version: &quot;3.9&quot;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line"></span><br><span class="line">  redis:</span><br><span class="line">    image: redis:alpine</span><br><span class="line">    networks:</span><br><span class="line">      - frontend</span><br><span class="line"></span><br><span class="line">  db:</span><br><span class="line">    image: postgres:15-alpine</span><br><span class="line">    environment:</span><br><span class="line">      POSTGRES_USER: &quot;postgres&quot;</span><br><span class="line">      POSTGRES_PASSWORD: &quot;postgres&quot;</span><br><span class="line">    volumes:</span><br><span class="line">      - db-data:/var/lib/postgresql/data</span><br><span class="line">    networks:</span><br><span class="line">      - backend</span><br><span class="line"></span><br><span class="line">  vote:</span><br><span class="line">    image: dockersamples/examplevotingapp_vote</span><br><span class="line">    ports:</span><br><span class="line">      - 8080:80</span><br><span class="line">    networks:</span><br><span class="line">      - frontend</span><br><span class="line">    deploy:</span><br><span class="line">      replicas: 2</span><br><span class="line"></span><br><span class="line">  result:</span><br><span class="line">    image: dockersamples/examplevotingapp_result</span><br><span class="line">    ports:</span><br><span class="line">      - 8081:80</span><br><span class="line">    networks:</span><br><span class="line">      - backend</span><br><span class="line"></span><br><span class="line">  worker:</span><br><span class="line">    image: dockersamples/examplevotingapp_worker</span><br><span class="line">    networks:</span><br><span class="line">      - frontend</span><br><span class="line">      - backend</span><br><span class="line">    deploy:</span><br><span class="line">      replicas: 2</span><br><span class="line"></span><br><span class="line">networks:</span><br><span class="line">  frontend:</span><br><span class="line">  backend:</span><br><span class="line"></span><br><span class="line">volumes:</span><br><span class="line">  db-data:</span><br></pre></td></tr></table></figure>
+
+<p>![[{3A3E94E1-7C8E-4C55-9E2F-155FDB1904DD}.png]]</p>
+<h2 id="container"><a href="#container" class="headerlink" title="container"></a>container</h2><p>docker run : 新建并启动</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -t -i ubuntu:18.04 /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>start a exited container</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container start</span><br></pre></td></tr></table></figure>
+
+<p>后台运行：-d</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d ubuntu:18.04 /bin/sh -c &quot;while true; do echo hello world; sleep 1; done&quot;</span><br></pre></td></tr></table></figure>
+
+<p>在后台后可以通过 container logs 查看标准输出</p>
+<p>容器终止：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container stop</span><br></pre></td></tr></table></figure>
+
+<p>或者等所有命令结束自动终止</p>
+<p>删除所有终止状态的容器</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container prune</span><br></pre></td></tr></table></figure>
+
+<h2 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h2>
+      
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=https://luna-shi.github.io/2024/11/26/docker/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+    <a href="/2024/11/26/DOPE/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
   
   
-    </div></section>
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+  
+  
   
 
-    
+  
+
+  
+
+  
 
 
           </div>
@@ -236,8 +378,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
