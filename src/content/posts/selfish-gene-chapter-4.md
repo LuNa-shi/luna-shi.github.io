@@ -1,5 +1,5 @@
 ---
-title: 自私的基因-第4章-基因机器-Notion笔记
+title: 《自私的基因》第4章：基因机器
 date: '2026-05-24'
 overview: >-
   TLDR: Bodies and brains are gene-built action machines: genes set up the machinery, but fast behavior has to be
@@ -17,10 +17,6 @@ relatedPosts: true
 ---
 
 <!-- notion-sync: 36a4e07a-a023-8091-8350-e0ba721799ff parent=自私的基因 url=https://app.notion.com/p/36a4e07aa02380918350e0ba721799ff -->
-
-# 《自私的基因》40周年增订版：第4章 Notion 笔记
-
-# 第4章 基因机器
 
 > 本章核心问题：基因不能实时指挥身体，那动物复杂、快速、像有目的的行为是怎么来的？
 

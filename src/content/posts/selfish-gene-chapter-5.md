@@ -1,5 +1,5 @@
 ---
-title: 自私的基因-第5章-进犯行为-Notion笔记
+title: 《自私的基因》第5章：进犯行为
 date: '2026-05-24'
 overview: >-
   TLDR: Aggression is not simply about being harsher; stable strategies depend on injury cost, resource value, opponent
@@ -17,10 +17,6 @@ relatedPosts: true
 ---
 
 <!-- notion-sync: 36a4e07a-a023-80cf-b9c8-d299a6305a8f parent=自私的基因 url=https://app.notion.com/p/36a4e07aa02380cfb9c8d299a6305a8f -->
-
-# 《自私的基因》40周年增订版：第5章 Notion 笔记
-
-# 第5章 进犯行为：稳定性和自私的机器
 
 > 本章核心问题：如果生物是自私的，为什么它们不总是把竞争者杀死？
 

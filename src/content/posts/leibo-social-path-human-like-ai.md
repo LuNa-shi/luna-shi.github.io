@@ -1,5 +1,5 @@
 ---
-title: 总纲领：A social path to human-like artificial intelligence
+title: A Social Path to Human-Like AI：社会互动如何生成新数据
 date: '2026-05-16'
 overview: >-
   TLDR: Human-like AI may require populations of agents learning through social interaction, where cooperation and

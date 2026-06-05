@@ -1,5 +1,5 @@
 ---
-title: 自私的基因-第6章-基因种族-Notion笔记
+title: 《自私的基因》第6章：基因种族
 date: '2026-05-24'
 overview: >-
   TLDR: Kin selection explains why helping relatives can still serve selfish genes, because the same gene may be
@@ -17,10 +17,6 @@ relatedPosts: true
 ---
 
 <!-- notion-sync: 36a4e07a-a023-80d8-b2ab-f53a4dc24312 parent=自私的基因 url=https://app.notion.com/p/36a4e07aa02380d8b2abf53a4dc24312 -->
-
-# 《自私的基因》40周年增订版：第6章 Notion 笔记
-
-# 第6章 基因种族
 
 > 本章核心问题：如果基因是自私的，为什么动物会帮助亲属？
 

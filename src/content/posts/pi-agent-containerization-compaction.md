@@ -1,5 +1,5 @@
 ---
-title: 'Pi Core Technology: Containerization & Compaction'
+title: Pi Agent：Containerization 与 Compaction
 date: '2026-06-04'
 overview: >-
   TLDR: Coding agents need sandboxed execution, context compaction, and continuation mechanics so long-running work can

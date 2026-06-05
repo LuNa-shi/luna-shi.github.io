@@ -1,5 +1,5 @@
 ---
-title: cc auto mode— AI safety
+title: Claude Code Auto Mode：用 Classifier 替代手动权限审批
 date: '2026-05-13'
 overview: >-
   TLDR: Claude Code auto mode is a permissions problem: useful autonomy needs explicit trust boundaries around repos,
@@ -19,7 +19,7 @@ relatedPosts: true
 
 <!-- notion-sync: 35f4e07a-a023-80d0-b60b-d03f945569f6 parent=Readings url=https://app.notion.com/p/35f4e07aa02380d0b60bd03f945569f6 -->
 
-# Claude Code Auto Mode：用 classifier 替代手动权限审批
+## 0. 主题
 
 标签：AI Safety / Agent Runtime / Claude Code / Permission System
 

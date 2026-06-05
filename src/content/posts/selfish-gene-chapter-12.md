@@ -1,5 +1,5 @@
 ---
-title: 第12章 好人终有好报
+title: 《自私的基因》第12章：好人终有好报
 date: '2026-06-01'
 overview: >-
   TLDR: Repeated interaction changes the logic of selfishness, making cooperation viable when strategies can be nice,

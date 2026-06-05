@@ -1,5 +1,5 @@
 ---
-title: Chapter 6 — Temporal-Difference Learning 笔记
+title: Sutton RL Chapter 6：Temporal-Difference Learning
 date: '2026-05-30'
 overview: >-
   TLDR: TD learning updates from partial experience by bootstrapping current value estimates, combining Monte Carlo
@@ -338,7 +338,7 @@ TD 更像是利用 observed transitions 重建 Markov dynamics，再做 value pr
 
 ---
 
-# 10. 从 TD Prediction 到 TD Control
+## 10. 从 TD Prediction 到 TD Control
 
 Prediction 估计的是：
 
@@ -373,7 +373,7 @@ $$
 
 ---
 
-# 11. Sarsa
+## 11. Sarsa
 
 ## 11.1 Sarsa 是什么？
 
@@ -493,7 +493,7 @@ Sarsa 问的是：
 
 ---
 
-# 12. Q-learning
+## 12. Q-learning
 
 ## 12.1 Q-learning 是什么？
 
@@ -588,7 +588,7 @@ Q-learning 问的是：
 
 ---
 
-# 13. Sarsa vs Q-learning
+## 13. Sarsa vs Q-learning
 
 ## 13.1 核心公式对比
 
@@ -681,7 +681,7 @@ $$
 
 ---
 
-# 14. Cliff Walking 直觉例子
+## 14. Cliff Walking 直觉例子
 
 Cliff Walking 中有一条靠近 cliff 的最短路径，也有一条远离 cliff 的安全路径。
 
@@ -811,7 +811,7 @@ $$
 
 ---
 
-# 16. 参数理解
+## 16. 参数理解
 
 ## Step size α
 
@@ -887,7 +887,7 @@ $$
 
 ---
 
-# 17. 常见误区
+## 17. 常见误区
 
 ## 误区 1：TD target 是真实 return
 
@@ -936,7 +936,7 @@ Sarsa 在某些风险环境下在线表现可能更稳定。
 
 ---
 
-# 18. 最小手算例子
+## 18. 最小手算例子
 
 假设：
 
@@ -1030,7 +1030,7 @@ $$
 
 ---
 
-# 19. 本章极简公式卡片
+## 19. 本章极简公式卡片
 
 ## MC
 
@@ -1064,7 +1064,7 @@ $$
 
 ---
 
-# 20. 最终 Takeaways
+## 20. 最终 Takeaways
 
 1. TD 是本章核心：sample-based learning + bootstrapping。
 

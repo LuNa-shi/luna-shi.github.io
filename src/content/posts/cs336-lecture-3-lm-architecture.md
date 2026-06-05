@@ -1,5 +1,5 @@
 ---
-title: 'CS336 Lecture 3: LM Architecture 与 Hyperparameters'
+title: CS336 Lecture 3：LM Architecture 与 Hyperparameters
 date: '2026-05-22'
 overview: >-
   TLDR: LM architecture is a stack of trade-offs across normalization, activations, attention, positional encoding,

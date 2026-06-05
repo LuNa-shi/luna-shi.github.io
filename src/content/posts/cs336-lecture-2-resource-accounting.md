@@ -1,5 +1,5 @@
 ---
-title: 'CS336 Lecture 2: PyTorch 与 Resource Accounting'
+title: CS336 Lecture 2：PyTorch 与 Resource Accounting
 date: '2026-05-18'
 overview: >-
   TLDR: Before training a model, PyTorch tensors, memory, FLOPs, and profiling have to become concrete enough that

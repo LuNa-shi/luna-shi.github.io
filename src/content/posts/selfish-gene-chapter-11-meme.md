@@ -1,5 +1,5 @@
 ---
-title: 第11章 meme：新的复制因子
+title: 《自私的基因》第11章：Meme，新的复制因子
 date: '2026-06-01'
 overview: >-
   TLDR: Memes extend the book from genes to culture: ideas, habits, and symbols can also copy, compete, mutate, and

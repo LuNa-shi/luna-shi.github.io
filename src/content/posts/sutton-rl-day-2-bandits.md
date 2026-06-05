@@ -1,5 +1,5 @@
 ---
-title: Day 2｜Chapter 2 Multi-arm Bandits
+title: Sutton RL Day 2：Multi-Armed Bandits
 date: '2026-05-28'
 overview: >-
   TLDR: Multi-armed bandits isolate the exploration/exploitation problem by removing state transitions and making

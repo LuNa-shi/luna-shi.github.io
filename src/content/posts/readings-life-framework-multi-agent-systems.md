@@ -66,7 +66,7 @@ LIFE overview
 
 ---
 
-# 2. Introduction：为什么要 Beyond Individual Intelligence？
+## 2. Introduction：为什么要 Beyond Individual Intelligence？
 
 ## 2.1 论文提出的问题
 
@@ -98,7 +98,7 @@ LIFE overview
 
 ---
 
-# 3. Section：Individual Intelligence
+## 3. Section：Individual Intelligence
 
 ![Notion image](/assets/img/notion/readings-life-framework-multi-agent-systems-02.webp)
 
@@ -290,7 +290,7 @@ Tool use 让 LLM agent 从“文本生成器”变成“可行动系统”。论
 
 ---
 
-# 4. Section：Multi-Agent Collaboration
+## 4. Section：Multi-Agent Collaboration
 
 ![Notion image](/assets/img/notion/readings-life-framework-multi-agent-systems-03.webp)
 
@@ -486,7 +486,7 @@ MAS 的协作不是简单地让多个 agent 轮流发言，而是一个组织设
 
 ---
 
-# 5. Section：Failure Attribution
+## 5. Section：Failure Attribution
 
 ![Notion image](/assets/img/notion/readings-life-framework-multi-agent-systems-04.webp)
 
@@ -716,7 +716,7 @@ Attribution cases
 
 ---
 
-# 6. Section：Self-Evolution
+## 6. Section：Self-Evolution
 
 ![Notion image](/assets/img/notion/readings-life-framework-multi-agent-systems-06.webp)
 
@@ -910,7 +910,7 @@ Task execution
 
 ---
 
-# 7. Discussion：论文指出的关键挑战
+## 7. Discussion：论文指出的关键挑战
 
 ## 7.1 Closed-loop benchmark 缺失
 
@@ -990,7 +990,7 @@ Task execution
 
 ---
 
-# 8. 对我们做 Agent Swarm 的启发
+## 8. 对我们做 Agent Swarm 的启发
 
 ## 8.1 先做 trace，而不是先堆 agent
 
@@ -1114,7 +1114,7 @@ Run
 
 ---
 
-# 9. 重要论文与技术索引
+## 9. 重要论文与技术索引
 
 ## 9.1 Individual Intelligence
 
@@ -1170,7 +1170,7 @@ Run
 
 ---
 
-# 10. 最后的判断
+## 10. 最后的判断
 
 这篇论文对 agent swarm 最重要的提醒是：
 

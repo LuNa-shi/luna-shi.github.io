@@ -508,7 +508,7 @@ closure 的核心是：
 | 一等函数     | 函数可以存变量、传参、返回                        | `var f = add;`                          | 闭包和函数式写法基础       |
 | 闭包         | 函数能记住外层变量                                | inner function 使用 outer variable      | 后面实现作用域的难点       |
 
-# 12. Classes：本章重点
+## 12. Classes：本章重点
 
 Lox 既有函数式语言特征，也有面向对象特征。
 
