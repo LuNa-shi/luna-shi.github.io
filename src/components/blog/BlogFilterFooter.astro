@@ -1,0 +1,42 @@
+---
+import { site } from '@config/site';
+import { Icon } from 'astro-icon/components';
+
+const displayTags = site.blog.displayTags;
+const displayCategories = site.blog.displayCategories;
+const base = site.base;
+---
+
+<section class="blog-filter-footer" aria-label="Blog filters">
+  <p class="blog-filter-note">{site.blog.description}</p>
+  <div class="tag-category-list tag-category-list--footer">
+    <ul class="m-0 p-0">
+      {
+        displayTags.map((tag, i) => (
+          <>
+            <li>
+              <Icon name="fa-solid:hashtag" /> <a href={`${base}/blog/tag/${tag}/`}>{tag}</a>
+            </li>
+            {i < displayTags.length - 1 && <p>&bull;</p>}
+          </>
+        ))
+      }
+      {displayTags.length > 0 && displayCategories.length > 0 && <p>&bull;</p>}
+      {
+        displayCategories.map((cat, i) => (
+          <>
+            <li>
+              <Icon name="fa-solid:tag" /> <a href={`${base}/blog/category/${cat}/`}>{cat}</a>
+            </li>
+            {i < displayCategories.length - 1 && <p>&bull;</p>}
+          </>
+        ))
+      }
+      {(displayTags.length > 0 || displayCategories.length > 0) && <p>&bull;</p>}
+      <li>
+        <Icon name="fa-solid:tags" />
+        <a href={`${base}/blog/tags/`}>all tags</a>
+      </li>
+    </ul>
+  </div>
+</section>

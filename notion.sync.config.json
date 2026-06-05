@@ -1,0 +1,259 @@
+{
+  "outputDir": "src/content/posts",
+  "assetDir": "public/assets/img/notion",
+  "parents": [
+    {
+      "key": "pi-agent",
+      "title": "Pi agents doc",
+      "id": "3754e07a-a023-804e-b77e-e6c3c3bae3be",
+      "categories": ["agents", "research"],
+      "tags": ["pi-agent"],
+      "children": [
+        {
+          "id": "3754e07a-a023-8012-aca8-e0ea5c13afb5",
+          "title": "Pi Core Technology: Containerization & Compaction",
+          "slug": "pi-agent-containerization-compaction"
+        }
+      ]
+    },
+    {
+      "key": "sutton-rl",
+      "title": "Sutton-RL",
+      "id": "36d4e07a-a023-8065-994c-ee449ce1f3d6",
+      "categories": ["learning", "rl"],
+      "tags": ["sutton-rl"],
+      "children": [
+        {
+          "id": "36d4e07a-a023-806d-a6b6-e65280e51648",
+          "title": "Day 1｜RL Problem & MDP 基础",
+          "slug": "sutton-rl-day-1-mdp"
+        },
+        {
+          "id": "36e4e07a-a023-8083-8bea-d2d6d803a1d6",
+          "title": "Day 2｜Chapter 2 Multi-arm Bandits",
+          "slug": "sutton-rl-day-2-bandits"
+        },
+        {
+          "id": "36e4e07a-a023-8055-ae32-e78d60c3c5cb",
+          "title": "Day3 | Dynamic Programming（DP",
+          "slug": "sutton-rl-day-3-dp"
+        },
+        {
+          "id": "36f4e07a-a023-8082-803b-dd60e0a687ce",
+          "title": "Chapter 5 — Monte Carlo Methods 简洁笔记",
+          "slug": "sutton-rl-chapter-5-monte-carlo"
+        },
+        {
+          "id": "3704e07a-a023-800d-89ea-e01649e15c67",
+          "title": "Chapter 6 — Temporal-Difference Learning 笔记",
+          "slug": "sutton-rl-chapter-6-td-learning"
+        }
+      ]
+    },
+    {
+      "key": "crafting-interpreters",
+      "title": "Crafting interpreters",
+      "id": "36b4e07a-a023-800a-9802-ec8613224d94",
+      "categories": ["learning", "systems"],
+      "tags": ["crafting-interpreters"],
+      "children": [
+        {
+          "id": "36b4e07a-a023-80ea-b60e-ccaf11efbb5a",
+          "title": "Crafting Interpreters 第 2 章笔记：A Map of the Territory",
+          "slug": "crafting-interpreters-chapter-2"
+        },
+        {
+          "id": "36b4e07a-a023-80ed-bbe1-ed954cdf9b57",
+          "title": "Crafting Interpreters 第 3 章笔记：The Lox Language",
+          "slug": "crafting-interpreters-chapter-3-lox"
+        },
+        {
+          "id": "36b4e07a-a023-807a-8d48-ee3feeb2275d",
+          "title": "Crafting Interpreters 第 4 章笔记：Scanning",
+          "slug": "crafting-interpreters-chapter-4-scanning"
+        }
+      ]
+    },
+    {
+      "key": "selfish-gene",
+      "title": "自私的基因",
+      "id": "3654e07a-a023-805f-bf62-e28c964b963a",
+      "categories": ["reading"],
+      "tags": ["selfish-gene"],
+      "children": [
+        {
+          "id": "3654e07a-a023-8034-9fd4-f70751c4a930",
+          "title": "《自私的基因》第3章：不朽的双螺旋",
+          "slug": "selfish-gene-chapter-3"
+        },
+        {
+          "id": "36a4e07a-a023-8091-8350-e0ba721799ff",
+          "title": "自私的基因-第4章-基因机器-Notion笔记",
+          "slug": "selfish-gene-chapter-4"
+        },
+        {
+          "id": "36a4e07a-a023-80cf-b9c8-d299a6305a8f",
+          "title": "自私的基因-第5章-进犯行为-Notion笔记",
+          "slug": "selfish-gene-chapter-5"
+        },
+        {
+          "id": "36a4e07a-a023-80d8-b2ab-f53a4dc24312",
+          "title": "自私的基因-第6章-基因种族-Notion笔记",
+          "slug": "selfish-gene-chapter-6"
+        },
+        {
+          "id": "36b4e07a-a023-80dc-ab09-ffae71c95b87",
+          "title": "第7章 计划生育",
+          "slug": "selfish-gene-chapter-7"
+        },
+        {
+          "id": "36b4e07a-a023-808e-822e-edeacdc347b8",
+          "title": "《自私的基因》第8章：代际之战",
+          "slug": "selfish-gene-chapter-8"
+        },
+        {
+          "id": "36c4e07a-a023-80ad-b7c8-e8d02f8ff878",
+          "title": "《自私的基因》第9章：两性战争",
+          "slug": "selfish-gene-chapter-9"
+        },
+        {
+          "id": "36c4e07a-a023-8084-8328-c323eadc2f12",
+          "title": "《自私的基因》第10章：你为我搔痒，我就骑在你的头上",
+          "slug": "selfish-gene-chapter-10"
+        },
+        {
+          "id": "3724e07a-a023-802d-a6b9-ec82d241bb15",
+          "title": "第11章 meme：新的复制因子",
+          "slug": "selfish-gene-chapter-11-meme"
+        },
+        {
+          "id": "3724e07a-a023-805d-8c3d-ec93c5e7ff73",
+          "title": "第12章 好人终有好报",
+          "slug": "selfish-gene-chapter-12"
+        }
+      ]
+    },
+    {
+      "key": "cs336",
+      "title": "CS336",
+      "id": "3644e07a-a023-8082-9da5-d723fd628640",
+      "categories": ["learning", "systems"],
+      "tags": ["cs336"],
+      "children": [
+        {
+          "id": "3644e07a-a023-80eb-8d38-ec6298187d83",
+          "title": "Lec1",
+          "slug": "cs336-lecture-1"
+        },
+        {
+          "id": "3644e07a-a023-8037-81e3-fbd69dc4a41f",
+          "title": "CS336 Lecture 2: PyTorch 与 Resource Accounting",
+          "slug": "cs336-lecture-2-resource-accounting"
+        },
+        {
+          "id": "3644e07a-a023-80ef-b7a9-c6ee7bad8040",
+          "title": "CS336 Lecture 3: LM Architecture 与 Hyperparameters",
+          "slug": "cs336-lecture-3-lm-architecture"
+        },
+        {
+          "id": "3684e07a-a023-80de-bacd-e1ae8e6bd89d",
+          "title": "CS336 Lecture 4: Mixture of Experts",
+          "slug": "cs336-lecture-4-moe"
+        }
+      ]
+    },
+    {
+      "key": "leibo",
+      "title": "Leibo’s paper",
+      "id": "3624e07a-a023-80a7-bbbc-e18852c3867d",
+      "categories": ["agents", "research"],
+      "tags": ["leibo"],
+      "children": [
+        {
+          "id": "3604e07a-a023-80fa-a831-efb72f57930b",
+          "title": "总纲领：A social path to human-like artificial intelligence",
+          "slug": "leibo-social-path-human-like-ai"
+        },
+        {
+          "id": "3624e07a-a023-80f3-8a3b-d2f4fe8c0e35",
+          "title": "A Manifesto for Multi-Agent Intelligence Research",
+          "slug": "leibo-manifesto-multi-agent-intelligence"
+        },
+        {
+          "id": "3624e07a-a023-8062-ace3-ff7091dfc64e",
+          "title": "Social delimma",
+          "slug": "leibo-social-dilemma"
+        },
+        {
+          "id": "3674e07a-a023-8048-9620-f5ec9ea6dfc0",
+          "title": "Concordia",
+          "slug": "leibo-concordia"
+        }
+      ]
+    },
+    {
+      "key": "readings",
+      "title": "Readings",
+      "id": "35f4e07a-a023-80e3-8cbc-ebf58d8d2738",
+      "categories": ["reading"],
+      "tags": ["readings"],
+      "children": [
+        {
+          "id": "3674e07a-a023-80d7-86aa-ec175675ff65",
+          "title": "Yuandong tian",
+          "slug": "readings-yuandong-tian"
+        },
+        {
+          "id": "35f4e07a-a023-80d0-b60b-d03f945569f6",
+          "title": "cc auto mode— AI safety",
+          "slug": "readings-cc-auto-mode-ai-safety"
+        },
+        {
+          "id": "3414e07a-a023-809f-8b9d-e5c4c2151d32",
+          "title": "claude code source",
+          "slug": "readings-claude-code-source"
+        },
+        {
+          "id": "3424e07a-a023-8070-b2e1-f2c5c55f26ea",
+          "title": "Anthropic blogs",
+          "slug": "readings-anthropic-blogs"
+        },
+        {
+          "id": "3524e07a-a023-801e-b99b-cabbe0723411",
+          "title": "Building C compiler with agent teams",
+          "slug": "readings-building-c-compiler-agent-teams"
+        },
+        {
+          "id": "3604e07a-a023-80f2-b561-c32ec5d703d7",
+          "title": "Talk with shunyu Yao",
+          "slug": "readings-talk-with-shunyu-yao"
+        },
+        {
+          "id": "3644e07a-a023-80b8-99a5-d9363dba6a0a",
+          "title": "AMP 技术文档：Automatic Mixed Precision",
+          "slug": "readings-amp-automatic-mixed-precision"
+        },
+        {
+          "id": "3674e07a-a023-80e7-bb86-f340766fef05",
+          "title": "Compression is all you need: Modeling Mathematics",
+          "slug": "readings-compression-is-all-you-need"
+        },
+        {
+          "id": "3674e07a-a023-8075-8242-f7df546ecb44",
+          "title": "Heuristic Learning",
+          "slug": "readings-heuristic-learning"
+        },
+        {
+          "id": "3724e07a-a023-809e-9252-e039fa3668d2",
+          "title": "Beyond Individual Intelligence：LLM-based Multi-Agent Systems 的 LIFE 框架",
+          "slug": "readings-life-framework-multi-agent-systems"
+        },
+        {
+          "id": "3724e07a-a023-8003-b635-dc2a685c0733",
+          "title": "MAS conference paper",
+          "slug": "readings-mas-conference-paper"
+        }
+      ]
+    }
+  ]
+}

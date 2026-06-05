@@ -1,0 +1,93 @@
+---
+import { site } from '@config/site';
+import Page from '@layouts/Page.astro';
+---
+
+<Page title="Research" description={`Research interests by ${site.author.name}`}>
+  <div class="post">
+    <header class="post-header">
+      <h1 class="post-title">research interests</h1>
+      <p class="post-description">
+        A compact map of the questions I want this site to signal first.
+      </p>
+    </header>
+
+    <article class="research-page">
+      <section>
+        <h2>Multi-agent systems and agent swarms</h2>
+        <p>
+          My main interest is how multiple agents can divide work, preserve useful context, produce
+          inspectable artifacts, and make progress without turning coordination into noise. I care
+          especially about formats for roles, traces, handoffs, evaluations, and shared state.
+        </p>
+      </section>
+
+      <section>
+        <h2>Agent-system format and verification</h2>
+        <p>
+          A strong model is only one component of an agent system. I am drawn to the runtime layer:
+          assignment manifests, execution boundaries, context pieces, judges, metrics, and failure
+          attribution. The goal is to make long agent workflows easier to reproduce and debug.
+        </p>
+      </section>
+
+      <section>
+        <h2>Scientific swarms</h2>
+        <p>
+          In Prof. Dequan Wang's lab, I am thinking about agentic harnesses for research work:
+          systems that can run experiments, compare evidence, and leave enough trace for a human to
+          audit what happened. More lab context is available at
+          <a href="https://dequan.wang/" target="_blank" rel="noopener noreferrer">
+            dequan.wang
+          </a>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Embodied agents as prior work</h2>
+        <p>
+          My earlier work around visual language navigation and embodied AI still shapes how I think
+          about agents: they need local memory, task decomposition, changing observations, and
+          evaluation that matches the actual environment. I now treat that experience as one source
+          of design pressure for broader multi-agent systems.
+        </p>
+      </section>
+    </article>
+  </div>
+</Page>
+
+<style>
+  .post {
+    padding-top: 0;
+  }
+
+  .post-description {
+    color: var(--global-text-color-light);
+    font-size: 1rem;
+    max-width: 44rem;
+  }
+
+  .research-page {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .research-page section {
+    border-left: 3px solid var(--global-theme-color);
+    padding-left: 1rem;
+  }
+
+  .research-page h2 {
+    color: var(--global-text-color);
+    font-family: var(--font-sans);
+    font-size: 1.2rem;
+    font-weight: 650;
+    margin: 0 0 0.4rem;
+  }
+
+  .research-page p {
+    color: var(--global-text-color);
+    line-height: 1.75;
+    margin: 0;
+  }
+</style>
