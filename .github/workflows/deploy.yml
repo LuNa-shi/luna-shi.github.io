@@ -33,7 +33,6 @@ jobs:
         run: npm run build
         env:
           ASTRO_SITE: https://luna-shi.github.io
-          ASTRO_BASE: /personal-homepage
           SITE: https://luna-shi.github.io
 
       - uses: actions/upload-pages-artifact@v3

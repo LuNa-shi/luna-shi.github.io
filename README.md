@@ -48,9 +48,9 @@ Put durable images under `public/assets/img/posts/`. Avoid publishing Notion's t
 
 ## Deployment
 
-The GitHub Pages workflow defaults to:
+The GitHub Pages workflow publishes the user site at:
 
 - `ASTRO_SITE=https://luna-shi.github.io`
-- `ASTRO_BASE=/personal-homepage`
+- root path, with no `ASTRO_BASE`
 
-Override repository variables if the site later moves to a user page or custom domain.
+Set `ASTRO_BASE` only if this site is moved back to a project-page subpath.

@@ -3,13 +3,13 @@
   "description": "WenXiang Shi's Astro personal homepage for blogs, projects, and multi-agent systems notes.",
   "version": "0.1.0",
   "author": "WenXiang Shi",
-  "homepage": "https://github.com/LuNa-shi/personal-homepage",
+  "homepage": "https://luna-shi.github.io",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LuNa-shi/personal-homepage"
+    "url": "https://github.com/LuNa-shi/luna-shi.github.io"
   },
   "bugs": {
-    "url": "https://github.com/LuNa-shi/personal-homepage/issues"
+    "url": "https://github.com/LuNa-shi/luna-shi.github.io/issues"
   },
   "keywords": [
     "astro",
