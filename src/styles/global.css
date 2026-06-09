@@ -140,6 +140,15 @@ html[data-theme='dark'] body::before {
   filter: saturate(0.5) contrast(0.82);
 }
 
+html[data-theme='dark'] .page-container:has(.blog-index-page),
+html[data-theme='dark'] .page-container:has(.post-list),
+html[data-theme='dark'] .page-container:has(.tag-cloud),
+html[data-theme='dark'] .post-container {
+  border-color: rgba(160, 170, 180, 0.16);
+  background: rgba(28, 28, 29, 0.74);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+}
+
 /* ─── Breadcrumb navigation (shared by blog posts, projects, publications) ── */
 
 .breadcrumb-nav {
@@ -178,6 +187,16 @@ html[data-theme='dark'] body::before {
 
   .post-container {
     max-width: 760px;
+  }
+
+  .page-container:has(.blog-index-page),
+  .page-container:has(.post-list),
+  .page-container:has(.tag-cloud),
+  .post-container {
+    border: 1px solid rgba(176, 143, 186, 0.18);
+    border-radius: 8px;
+    background: rgba(253, 250, 255, 0.76);
+    box-shadow: 0 18px 44px rgba(78, 54, 92, 0.07);
   }
 
   /* Scrollable list (news, latest posts) */
