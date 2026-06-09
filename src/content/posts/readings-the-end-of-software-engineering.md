@@ -1,8 +1,12 @@
 ---
 title: 'The End of Software Engineering'
 date: '2026-06-08'
-overview: '这篇文章不是在提出一个新的 coding agent，而是在给 agent 时代的软件工程换底层叙事。它的核心判断是：传统软件把 code 当成系统本体和决策逻辑的载体，而 agentic system 把 LLM 当成 runtime reasoning core，code 只是为完成当前任务临时生成、调用、丢弃的工具。换句话说，软件工程的中心从“写...'
-description: '这篇文章不是在提出一个新的 coding agent，而是在给 agent 时代的软件工程换底层叙事。它的核心判断是：传统软件把 code 当成系统本体和决策逻辑的载体，而 agentic system 把 LLM 当成 runtime reasoning core，code 只是为完成当前任务临时生成、调用、丢弃的工具。换句话说，软件工程的中心从“写...'
+overview: >-
+  TLDR: The End of Software Engineering 把 agent 时代的软件工程描述成从维护静态代码转向表达意图、编排 agents 和验证
+  outcome。标题很激进，但真正有用的是提醒我们 durable assets 可能是 memory、tools、skills、evals 和 governance。
+description: >-
+  TLDR: The End of Software Engineering 把 agent 时代的软件工程描述成从维护静态代码转向表达意图、编排 agents 和验证
+  outcome。标题很激进，但真正有用的是提醒我们 durable assets 可能是 memory、tools、skills、evals 和 governance。
 tags:
   - 'readings'
 categories:

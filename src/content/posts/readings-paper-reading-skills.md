@@ -1,8 +1,12 @@
 ---
 title: 'Paper Reading Skills'
 date: '2026-06-08'
-overview: '请你用论文精读的方式分析这篇论文，但不要逐段总结，也不要罗列太多细节。 请围绕以下 5 个最关键问题回答： Motivation： 这篇论文真正想解决的痛点是什么？这个痛点是真问题，还是作者包装出来的问题？ Contribution： 这篇论文最核心的贡献到底是什么？如果只能保留一个贡献，应该是哪一个，为什么？ Method： 方法的关键 insigh...'
-description: '请你用论文精读的方式分析这篇论文，但不要逐段总结，也不要罗列太多细节。 请围绕以下 5 个最关键问题回答： Motivation： 这篇论文真正想解决的痛点是什么？这个痛点是真问题，还是作者包装出来的问题？ Contribution： 这篇论文最核心的贡献到底是什么？如果只能保留一个贡献，应该是哪一个，为什么？ Method： 方法的关键 insigh...'
+overview: >-
+  TLDR: Paper Reading Skills 是一套论文精读提示模板，要求围绕 motivation、contribution、method、evidence 和 limitation
+  做批判性阅读。它把阅读目标从逐段复述改成抓住 problem -> insight -> method -> evidence -> weakness 的主线。
+description: >-
+  TLDR: Paper Reading Skills 是一套论文精读提示模板，要求围绕 motivation、contribution、method、evidence 和 limitation
+  做批判性阅读。它把阅读目标从逐段复述改成抓住 problem -> insight -> method -> evidence -> weakness 的主线。
 tags:
   - 'readings'
 categories:

@@ -1,8 +1,12 @@
 ---
 title: 'Graph of Agents'
 date: '2026-06-08'
-overview: 'GoA 把多 LLM 协作从“把所有 agent 的答案拼起来再聚合”，改写成一次测试时动态建图。每个模型是一个节点，模型之间的回答相关性变成有向边，信息沿着边来回传递，最后再用 graph pooling 得到统一答案。它瞄准的是 LLM zoo 时代的一个很现实的问题：模型越来越多，真正困难的不是再接入一个模型，而是每道题该叫谁、谁该听谁、最后该信...'
-description: 'GoA 把多 LLM 协作从“把所有 agent 的答案拼起来再聚合”，改写成一次测试时动态建图。每个模型是一个节点，模型之间的回答相关性变成有向边，信息沿着边来回传递，最后再用 graph pooling 得到统一答案。它瞄准的是 LLM zoo 时代的一个很现实的问题：模型越来越多，真正困难的不是再接入一个模型，而是每道题该叫谁、谁该听谁、最后该信...'
+overview: >-
+  TLDR: Graph of Agents 把多模型协作变成按题动态建图：先选择相关 agent，再用互评形成有向通信结构，最后通过 graph pooling 合成答案。它说明多 agent
+  的杠杆不在堆模型数量，而在自适应拓扑和信息流方向。
+description: >-
+  TLDR: Graph of Agents 把多模型协作变成按题动态建图：先选择相关 agent，再用互评形成有向通信结构，最后通过 graph pooling 合成答案。它说明多 agent
+  的杠杆不在堆模型数量，而在自适应拓扑和信息流方向。
 tags:
   - 'readings'
 categories:

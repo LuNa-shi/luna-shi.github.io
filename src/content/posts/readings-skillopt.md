@@ -1,8 +1,12 @@
 ---
 title: 'SkillOpt'
 date: '2026-06-08'
-overview: 'SkillOpt 把 agent skill 从“人写的提示词/经验总结”，改写成一个可以被训练的外部状态。目标模型保持冻结，只负责带着当前 skill 执行任务；另一个 optimizer model 读取带分数的 rollouts，把成功和失败轨迹压缩成受控的 add/delete/replace 编辑，并且只有当候选 skill 在 held-o...'
-description: 'SkillOpt 把 agent skill 从“人写的提示词/经验总结”，改写成一个可以被训练的外部状态。目标模型保持冻结，只负责带着当前 skill 执行任务；另一个 optimizer model 读取带分数的 rollouts，把成功和失败轨迹压缩成受控的 add/delete/replace 编辑，并且只有当候选 skill 在 held-o...'
+overview: >-
+  TLDR: SkillOpt 把 agent skill 当成可训练的文本参数：冻结目标模型，用 optimizer 从 rollout 证据中提出受控编辑，并通过 validation
+  gate 只接受真实变好的 skill。它说明可复用流程和失败纪律可以在权重之外被稳定优化。
+description: >-
+  TLDR: SkillOpt 把 agent skill 当成可训练的文本参数：冻结目标模型，用 optimizer 从 rollout 证据中提出受控编辑，并通过 validation
+  gate 只接受真实变好的 skill。它说明可复用流程和失败纪律可以在权重之外被稳定优化。
 tags:
   - 'readings'
 categories:

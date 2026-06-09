@@ -1,8 +1,12 @@
 ---
 title: 'LeanMarathon: 把长程 Lean 形式化变成可恢复的多智能体工程'
 date: '2026-06-07'
-overview: 'Paper: LeanMarathon: Toward Reliable AI Co-Mathematicians through Long-Horizon Lean Autoformalization arXiv: 2606.05400 Code: YuanheZ/LeanMarathon 阅读定位：这篇文章不是在提出一个更强的单点 theorem...'
-description: 'Paper: LeanMarathon: Toward Reliable AI Co-Mathematicians through Long-Horizon Lean Autoformalization arXiv: 2606.05400 Code: YuanheZ/LeanMarathon 阅读定位：这篇文章不是在提出一个更强的单点 theorem...'
+overview: >-
+  TLDR: LeanMarathon 把整篇论文的 Lean 形式化做成可恢复的多智能体工程：blueprint、proof DAG、contract-scoped agents 和 CI
+  gates 共同维持长期目标一致性。它的重点不是更强 prover，而是 durable harness。
+description: >-
+  TLDR: LeanMarathon 把整篇论文的 Lean 形式化做成可恢复的多智能体工程：blueprint、proof DAG、contract-scoped agents 和 CI
+  gates 共同维持长期目标一致性。它的重点不是更强 prover，而是 durable harness。
 tags:
   - 'readings'
 categories:
