@@ -1145,7 +1145,61 @@
 @layer base {
   .prose {
     color: var(--global-text-color);
-    line-height: 1.7;
+    line-height: 1.85;
+  }
+
+  .prose p {
+    margin-block: 1rem;
+  }
+
+  .prose h2 {
+    margin-top: 2.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .prose h3 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.65rem;
+  }
+
+  .prose ul,
+  .prose ol {
+    margin-block: 1rem;
+    padding-left: 1.75rem;
+  }
+
+  .prose ul {
+    list-style: disc;
+  }
+
+  .prose ol {
+    list-style: decimal;
+  }
+
+  .prose ul ul,
+  .prose ol ul {
+    list-style: circle;
+  }
+
+  .prose ol ol,
+  .prose ul ol {
+    list-style: lower-alpha;
+  }
+
+  .prose li {
+    margin-block: 0.45rem;
+    padding-left: 0.2rem;
+  }
+
+  .prose li > p {
+    margin-block: 0.4rem;
   }
 
   .prose a {
