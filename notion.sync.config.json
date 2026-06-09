@@ -252,6 +252,51 @@
           "id": "3724e07a-a023-8003-b635-dc2a685c0733",
           "title": "MAS conference paper",
           "slug": "readings-mas-conference-paper"
+        },
+        {
+          "id": "3774e07a-a023-8017-897a-cec0c6080c93",
+          "title": "Dynamic Workflows：Agent 系统从 Prompt 到 Runtime",
+          "slug": "readings-dynamic-workflows-agent-runtime"
+        },
+        {
+          "id": "3784e07a-a023-807c-a90f-def705e178e6",
+          "title": "LeanMarathon：把长程 Lean 形式化变成可恢复的多智能体工程",
+          "slug": "readings-leanmarathon"
+        },
+        {
+          "id": "3794e07a-a023-80ec-a232-d6059c614420",
+          "title": "Graph-of-Agents",
+          "slug": "readings-graph-of-agents"
+        },
+        {
+          "id": "3794e07a-a023-8042-92aa-f0e4bb5288c1",
+          "title": "SkillOpt",
+          "slug": "readings-skillopt"
+        },
+        {
+          "id": "3794e07a-a023-8028-84b9-e1898636a741",
+          "title": "Paper reading skills",
+          "slug": "readings-paper-reading-skills"
+        },
+        {
+          "id": "3794e07a-a023-80a0-bd41-cdbf8413c599",
+          "title": "The End of Software Engineering",
+          "slug": "readings-the-end-of-software-engineering"
+        },
+        {
+          "id": "37a4e07a-a023-8004-b162-e9ed1d26735a",
+          "title": "lego 工作法",
+          "slug": "readings-lego-work-method"
+        },
+        {
+          "id": "37a4e07a-a023-800c-8af1-ee64e89eafa1",
+          "title": "人月神话：ch1-6",
+          "slug": "readings-mythical-man-month-ch1-6"
+        },
+        {
+          "id": "37a4e07a-a023-80a7-b4f5-c931cff627f8",
+          "title": "人月神话：ch7-12",
+          "slug": "readings-mythical-man-month-ch7-12"
         }
       ]
     }
