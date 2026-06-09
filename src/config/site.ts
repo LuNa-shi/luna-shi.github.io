@@ -49,10 +49,10 @@ export const site = {
     fixed: true,
     socialIcons: false,
     items: [
-      { label: 'about', href: '/' },
-      { label: 'blog', href: '/blog/' },
-      { label: 'projects', href: '/projects/' },
-      { label: 'research', href: '/research/' },
+      { label: 'About', href: '/' },
+      { label: 'Blog', href: '/blog/' },
+      { label: 'Projects', href: '/projects/' },
+      { label: 'Research', href: '/research/' },
     ] as NavItem[],
   },
 

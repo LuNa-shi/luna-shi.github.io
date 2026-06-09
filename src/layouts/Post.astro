@@ -135,16 +135,7 @@ const jsonLd = {
   {site.features.progressBar && <ReadingProgress />}
 
   <div class="page-container py-8">
-    <div class="flex gap-8">
-      <!-- TOC sidebar (desktop only) -->
-      {
-        headings.length > 0 && (
-          <aside class="hidden lg:block w-52 flex-shrink-0">
-            <TOC headings={headings} />
-          </aside>
-        )
-      }
-
+    <div class="post-layout">
       <!-- Post content -->
       <article class="flex-1 min-w-0">
         <!-- Breadcrumb -->
@@ -189,6 +180,8 @@ const jsonLd = {
       </article>
     </div>
   </div>
+
+  {headings.length > 0 && <TOC headings={headings} />}
 </Base>
 
 <!-- Code copy button (text-label approach, no innerHTML) -->

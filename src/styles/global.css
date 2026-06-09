@@ -82,6 +82,64 @@
 /* Configure dark: variant to use data-theme attribute (matches Base.astro) */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
+/* ─── Site art backdrop ─────────────────────────────────────────────────── */
+
+:root {
+  --site-art-bg: url('/assets/img/monet-waterloo-bridge-sunlight-effect.jpg');
+  --site-navbar-bg: rgba(255, 255, 255, 0.9);
+  --site-navbar-menu-bg: #ffffff;
+}
+
+html {
+  background-color: #f8f7fb;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      110deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(254, 251, 255, 0.95) 38%,
+      rgba(255, 255, 255, 0.985) 100%
+    ),
+    var(--site-art-bg);
+  background-position: center top;
+  background-size: cover;
+  filter: saturate(0.58) contrast(0.9);
+}
+
+html[data-theme='dark'] {
+  background-color: #17171a;
+}
+
+html[data-theme='dark'] {
+  --site-navbar-bg: rgba(28, 28, 29, 0.9);
+  --site-navbar-menu-bg: #1c1c1d;
+}
+
+html[data-theme='dark'] body::before {
+  background-image:
+    linear-gradient(
+      110deg,
+      rgba(28, 28, 29, 0.92) 0%,
+      rgba(28, 24, 33, 0.94) 46%,
+      rgba(28, 28, 29, 0.98) 100%
+    ),
+    var(--site-art-bg);
+  filter: saturate(0.5) contrast(0.82);
+}
+
 /* ─── Breadcrumb navigation (shared by blog posts, projects, publications) ── */
 
 .breadcrumb-nav {
