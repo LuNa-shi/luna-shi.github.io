@@ -12,11 +12,7 @@ const tocHeadings = headings.filter((h) => h.depth === 2 || h.depth === 3);
 if (tocHeadings.length === 0) return;
 ---
 
-<nav
-  aria-label="Table of contents"
-  class="toc toc-floating"
-  tabindex="0"
->
+<nav aria-label="Table of contents" class="toc toc-floating" tabindex="0">
   <div class="toc-rail" aria-hidden="true">
     <span>Contents</span>
   </div>
@@ -26,10 +22,7 @@ if (tocHeadings.length === 0) return;
       {
         tocHeadings.map((h) => (
           <li class={h.depth === 3 ? 'is-child' : ''}>
-            <a
-              href={`#${h.slug}`}
-              class="toc-link"
-            >
+            <a href={`#${h.slug}`} class="toc-link">
               {h.text}
             </a>
           </li>
