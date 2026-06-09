@@ -1,5 +1,5 @@
 ---
-title: Social Dilemmas：三个经典社会困境
+title: 'Social Dilemmas: 三个经典社会困境'
 date: '2026-05-16'
 overview: >-
   TLDR: Social dilemmas show why individually rational actions can damage group outcomes, and why cooperation depends on

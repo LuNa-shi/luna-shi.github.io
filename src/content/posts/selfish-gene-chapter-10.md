@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第10章：你为我搔痒，我就骑在你的头上
+title: '自私的基因：第 10 章 你为我搔痒，我就骑在你的头上'
 date: '2026-05-26'
 overview: >-
   TLDR: Group living and apparent altruism can often be read through self-protection, kinship, exploitation, reciprocal

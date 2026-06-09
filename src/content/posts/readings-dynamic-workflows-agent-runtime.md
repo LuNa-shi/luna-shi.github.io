@@ -1,5 +1,5 @@
 ---
-title: 'Dynamic Workflows：Agent 系统从 Prompt 到 Runtime'
+title: 'Dynamic Workflows: Agent 系统从 Prompt 到 Runtime'
 date: '2026-06-06'
 overview: 'Anthropic 最近在 Claude Code 中提出的 Dynamic Workflows，表面上是一个产品功能：模型可以临时写出一个 workflow，用来协调多个 subagents 完成任务。但如果把具体工具抽掉，它更像是一个值得单独讨论的 agent-system design pattern： Dynamic Workflow 是一种...'
 description: 'Anthropic 最近在 Claude Code 中提出的 Dynamic Workflows，表面上是一个产品功能：模型可以临时写出一个 workflow，用来协调多个 subagents 完成任务。但如果把具体工具抽掉，它更像是一个值得单独讨论的 agent-system design pattern： Dynamic Workflow 是一种...'

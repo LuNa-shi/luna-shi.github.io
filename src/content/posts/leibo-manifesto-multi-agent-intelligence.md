@@ -1,5 +1,5 @@
 ---
-title: Autocurricula and Multi-Agent Innovation：社会互动如何生成新问题
+title: 'Autocurricula and Multi-Agent Innovation: 社会互动如何生成新问题'
 date: '2026-05-16'
 overview: >-
   TLDR: Multi-agent intelligence should study how cooperation, competition, specialization, and shared discoveries

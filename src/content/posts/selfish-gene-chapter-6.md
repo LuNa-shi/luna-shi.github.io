@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第6章：基因种族
+title: '自私的基因：第 6 章 基因种族'
 date: '2026-05-24'
 overview: >-
   TLDR: Kin selection explains why helping relatives can still serve selfish genes, because the same gene may be

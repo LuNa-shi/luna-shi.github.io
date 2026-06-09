@@ -1,5 +1,5 @@
 ---
-title: Compression Is All You Need：把数学进展看成可测压缩
+title: 'Compression Is All You Need: 把数学进展看成可测压缩'
 date: '2026-05-21'
 overview: >-
   TLDR: Mathematical progress can be viewed as compression when a new abstraction makes many downstream proofs shorter,

@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第3章：不朽的双螺旋
+title: '自私的基因：第 3 章 不朽的双螺旋'
 date: '2026-05-19'
 overview: >-
   TLDR: The durable unit is not the body but the replicating gene: bodies disappear, while genetic information keeps

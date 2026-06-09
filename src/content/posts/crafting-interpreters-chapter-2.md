@@ -1,5 +1,5 @@
 ---
-title: Crafting Interpreters 第 2 章笔记：A Map of the Territory
+title: 'Crafting Interpreters: Chapter 2 - A Map of the Territory'
 date: '2026-05-25'
 overview: >-
   TLDR: This note maps the interpreter pipeline from source text through tokens, parsing, semantic analysis, code

@@ -1,5 +1,5 @@
 ---
-title: Talk with Shunyu Yao：AI 研究的反馈、系统与长期方向
+title: 'Talk with Shunyu Yao: AI 研究的反馈、系统与长期方向'
 date: '2026-05-14'
 overview: >-
   TLDR: The conversation frames agent research as moving from raw model scaling toward long-horizon tool use, memory,

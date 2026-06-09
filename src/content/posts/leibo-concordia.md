@@ -1,5 +1,5 @@
 ---
-title: Concordia：用 LLM Agent 搭建可干预的社会模拟
+title: 'Concordia: 用 LLM Agent 搭建可干预的社会模拟'
 date: '2026-05-21'
 overview: >-
   TLDR: Concordia treats LLM agents as situated social actors with memory, roles, and norms, making simulations easier

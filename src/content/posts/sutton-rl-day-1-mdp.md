@@ -1,5 +1,5 @@
 ---
-title: Sutton RL Day 1：RL Problem 与 MDP 基础
+title: 'Sutton RL: Day 1 - RL Problem and MDP Basics'
 date: '2026-05-27'
 overview: >-
   TLDR: RL is interaction for long-term reward: policy chooses actions, reward gives feedback, value estimates future

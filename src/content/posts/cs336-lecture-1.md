@@ -1,5 +1,5 @@
 ---
-title: CS336 Lecture 1：Language Modeling as Engineering
+title: 'CS336: Lecture 1 - Language Modeling as Engineering'
 date: '2026-05-18'
 overview: >-
   TLDR: Modern LM work is easiest to understand by building the stack yourself, because tokenization, data, compute, and

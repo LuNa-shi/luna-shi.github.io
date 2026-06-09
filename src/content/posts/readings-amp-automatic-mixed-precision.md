@@ -1,5 +1,5 @@
 ---
-title: AMP：Automatic Mixed Precision 技术笔记
+title: 'AMP: Automatic Mixed Precision 技术笔记'
 date: '2026-05-18'
 overview: >-
   TLDR: AMP speeds training and reduces memory by choosing lower precision for safe ops while keeping higher precision

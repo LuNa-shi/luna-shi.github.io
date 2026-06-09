@@ -1,5 +1,5 @@
 ---
-title: Beyond Individual Intelligence：LLM-based Multi-Agent Systems 的 LIFE 框架
+title: 'Beyond Individual Intelligence: LLM-Based Multi-Agent Systems 的 LIFE 框架'
 date: '2026-06-01'
 overview: >-
   TLDR: The LIFE survey reframes LLM multi-agent systems as a lifecycle: build individual capability, integrate

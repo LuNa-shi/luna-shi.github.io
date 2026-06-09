@@ -1,5 +1,5 @@
 ---
-title: Sutton RL Chapter 5：Monte Carlo Methods
+title: 'Sutton RL: Chapter 5 - Monte Carlo Methods'
 date: '2026-05-29'
 overview: >-
   TLDR: Monte Carlo methods learn value from complete sampled episodes, trading model-free simplicity for delayed

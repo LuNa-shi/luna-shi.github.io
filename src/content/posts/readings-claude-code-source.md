@@ -1,5 +1,5 @@
 ---
-title: Claude Code Source：把 Agent 看成一个操作系统进程
+title: 'Claude Code Source: 把 Agent 看成一个操作系统进程'
 date: '2026-05-13'
 overview: >-
   TLDR: Looking at Claude Code as an OS process exposes the practical substrate of agents: files, permissions, plugins,

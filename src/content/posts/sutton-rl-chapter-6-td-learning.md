@@ -1,5 +1,5 @@
 ---
-title: Sutton RL Chapter 6：Temporal-Difference Learning
+title: 'Sutton RL: Chapter 6 - Temporal-Difference Learning'
 date: '2026-05-30'
 overview: >-
   TLDR: TD learning updates from partial experience by bootstrapping current value estimates, combining Monte Carlo

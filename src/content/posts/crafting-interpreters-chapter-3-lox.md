@@ -1,5 +1,5 @@
 ---
-title: Crafting Interpreters 第 3 章笔记：The Lox Language
+title: 'Crafting Interpreters: Chapter 3 - The Lox Language'
 date: '2026-05-25'
 overview: >-
   TLDR: Lox is the small language that carries the book: expressive enough for classes, closures, and control flow, but

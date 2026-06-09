@@ -1,5 +1,5 @@
 ---
-title: Crafting Interpreters 第 4 章笔记：Scanning
+title: 'Crafting Interpreters: Chapter 4 - Scanning'
 date: '2026-05-25'
 overview: >-
   TLDR: Scanning is the first hard boundary in an interpreter: raw characters become tokens, and the rest of the

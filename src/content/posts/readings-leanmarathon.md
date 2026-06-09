@@ -1,5 +1,5 @@
 ---
-title: 'LeanMarathon：把长程 Lean 形式化变成可恢复的多智能体工程'
+title: 'LeanMarathon: 把长程 Lean 形式化变成可恢复的多智能体工程'
 date: '2026-06-07'
 overview: 'Paper: LeanMarathon: Toward Reliable AI Co-Mathematicians through Long-Horizon Lean Autoformalization arXiv: 2606.05400 Code: YuanheZ/LeanMarathon 阅读定位：这篇文章不是在提出一个更强的单点 theorem...'
 description: 'Paper: LeanMarathon: Toward Reliable AI Co-Mathematicians through Long-Horizon Lean Autoformalization arXiv: 2606.05400 Code: YuanheZ/LeanMarathon 阅读定位：这篇文章不是在提出一个更强的单点 theorem...'

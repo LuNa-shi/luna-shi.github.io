@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第8章：代际之战
+title: '自私的基因：第 8 章 代际之战'
 date: '2026-05-25'
 overview: >-
   TLDR: Parents and children cooperate through shared genes, but their interests are not identical, which makes family

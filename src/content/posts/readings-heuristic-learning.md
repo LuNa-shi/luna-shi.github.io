@@ -1,5 +1,5 @@
 ---
-title: Heuristic Learning：用代码维护可验证的启发式系统
+title: 'Heuristic Learning: 用代码维护可验证的启发式系统'
 date: '2026-05-21'
 overview: >-
   TLDR: Heuristic Learning frames iterative agent work as maintaining a living heuristic system, where patches, rules,

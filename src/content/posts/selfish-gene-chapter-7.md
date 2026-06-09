@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第7章：计划生育
+title: '自私的基因：第 7 章 计划生育'
 date: '2026-05-25'
 overview: >-
   TLDR: Reproduction is a trade-off between more offspring and better-supported offspring, so restraint can be

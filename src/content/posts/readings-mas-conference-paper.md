@@ -1,5 +1,5 @@
 ---
-title: MAS Conference Papers：近期多智能体系统论文阅读清单
+title: 'MAS Conference Papers: 近期多智能体系统论文阅读清单'
 date: '2026-06-04'
 overview: >-
   TLDR: This page is a ranked reading shortlist for recent MAS papers, prioritizing collaboration structure, topology

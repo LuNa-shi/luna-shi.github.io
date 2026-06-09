@@ -1,5 +1,5 @@
 ---
-title: Yuandong Tian Talks：搜索空间、RSI 与 Metaproductivity
+title: 'Yuandong Tian Talks: 搜索空间、RSI 与 Metaproductivity'
 date: '2026-05-22'
 overview: >-
   TLDR: Search quality depends on shaping the action space, not only increasing rollouts; good representations make

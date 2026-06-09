@@ -1,5 +1,5 @@
 ---
-title: Claude Code Auto Mode：用 Classifier 替代手动权限审批
+title: 'Claude Code Auto Mode: 用 Classifier 替代手动权限审批'
 date: '2026-05-13'
 overview: >-
   TLDR: Claude Code auto mode is a permissions problem: useful autonomy needs explicit trust boundaries around repos,

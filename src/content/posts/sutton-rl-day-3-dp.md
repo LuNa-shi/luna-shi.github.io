@@ -1,5 +1,5 @@
 ---
-title: Sutton RL Day 3：Dynamic Programming
+title: 'Sutton RL: Day 3 - Dynamic Programming'
 date: '2026-05-28'
 overview: >-
   TLDR: Dynamic programming turns known MDP dynamics into iterative policy evaluation and improvement through Bellman

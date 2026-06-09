@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第9章：两性战争
+title: '自私的基因：第 9 章 两性战争'
 date: '2026-05-26'
 overview: >-
   TLDR: Sexual conflict begins with unequal parental investment, pushing males and females toward different strategies

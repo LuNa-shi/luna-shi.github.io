@@ -1,5 +1,5 @@
 ---
-title: CS336 Lecture 4：Mixture of Experts
+title: 'CS336: Lecture 4 - Mixture of Experts'
 date: '2026-05-22'
 overview: >-
   TLDR: MoE scales parameter count through sparse expert routing, but the real work is balancing tokens, capacity,

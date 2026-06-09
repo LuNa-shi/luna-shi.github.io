@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第4章：基因机器
+title: '自私的基因：第 4 章 基因机器'
 date: '2026-05-24'
 overview: >-
   TLDR: Bodies and brains are gene-built action machines: genes set up the machinery, but fast behavior has to be

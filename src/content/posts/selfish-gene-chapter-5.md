@@ -1,5 +1,5 @@
 ---
-title: 《自私的基因》第5章：进犯行为
+title: '自私的基因：第 5 章 进犯行为'
 date: '2026-05-24'
 overview: >-
   TLDR: Aggression is not simply about being harsher; stable strategies depend on injury cost, resource value, opponent
