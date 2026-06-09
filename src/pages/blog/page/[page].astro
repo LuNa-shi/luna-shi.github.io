@@ -60,7 +60,6 @@ const postYears = [...postsByYear.keys()].sort((a, b) => b - a);
     {
       pinnedPosts.length > 0 && (
         <>
-          <br />
           <div class="featured-posts container">
             <div class={`row row-cols-${featuredCols}`}>
               {pinnedPosts.map((post) => {

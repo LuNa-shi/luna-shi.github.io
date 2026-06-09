@@ -82,71 +82,56 @@
 /* Configure dark: variant to use data-theme attribute (matches Base.astro) */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/* ─── Site art backdrop ─────────────────────────────────────────────────── */
+/* ─── Site backdrop ─────────────────────────────────────────────────────── */
 
 :root {
-  --site-art-bg: url('/assets/img/monet-waterloo-bridge-sunlight-effect.jpg');
-  --site-navbar-bg: rgba(255, 255, 255, 0.9);
-  --site-navbar-menu-bg: #ffffff;
+  --site-page-bg: #f7f2ea;
+  --site-surface-bg: rgba(255, 252, 247, 0.78);
+  --site-surface-border: rgba(94, 70, 45, 0.1);
+  --site-surface-shadow: 0 18px 48px rgba(79, 56, 35, 0.045);
+  --site-display-font: ui-serif, Georgia, Cambria, 'Times New Roman', serif;
+  --site-heading-ink: #251c15;
+  --site-navbar-bg: rgba(247, 242, 234, 0.9);
+  --site-navbar-menu-bg: #f7f2ea;
 }
 
 html {
-  background-color: #f8f7fb;
+  background-color: var(--site-page-bg);
 }
 
 body {
   position: relative;
   isolation: isolate;
-  background: transparent;
+  background: var(--site-page-bg);
 }
 
 body::before {
   content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(
-      110deg,
-      rgba(255, 255, 255, 0.82) 0%,
-      rgba(252, 246, 255, 0.8) 42%,
-      rgba(255, 255, 255, 0.9) 100%
-    ),
-    var(--site-art-bg);
-  background-position: center top;
-  background-size: cover;
-  filter: saturate(0.9) contrast(0.98);
+  display: none;
 }
 
 html[data-theme='dark'] {
-  background-color: #17171a;
-}
-
-html[data-theme='dark'] {
+  --site-page-bg: #171717;
+  --site-surface-bg: rgba(28, 28, 29, 0.82);
+  --site-surface-border: rgba(160, 170, 180, 0.16);
+  --site-surface-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+  --site-heading-ink: #f2eee6;
   --site-navbar-bg: rgba(28, 28, 29, 0.9);
   --site-navbar-menu-bg: #1c1c1d;
+  background-color: var(--site-page-bg);
 }
 
 html[data-theme='dark'] body::before {
-  background-image:
-    linear-gradient(
-      110deg,
-      rgba(28, 28, 29, 0.92) 0%,
-      rgba(28, 24, 33, 0.94) 46%,
-      rgba(28, 28, 29, 0.98) 100%
-    ),
-    var(--site-art-bg);
-  filter: saturate(0.5) contrast(0.82);
+  display: none;
 }
 
 html[data-theme='dark'] .page-container:has(.blog-index-page),
 html[data-theme='dark'] .page-container:has(.post-list),
 html[data-theme='dark'] .page-container:has(.tag-cloud),
 html[data-theme='dark'] .post-container {
-  border-color: rgba(160, 170, 180, 0.16);
-  background: rgba(28, 28, 29, 0.74);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+  border-color: var(--site-surface-border);
+  background: var(--site-surface-bg);
+  box-shadow: var(--site-surface-shadow);
 }
 
 /* ─── Breadcrumb navigation (shared by blog posts, projects, publications) ── */
@@ -189,14 +174,19 @@ html[data-theme='dark'] .post-container {
     max-width: 760px;
   }
 
+  .page-container:has(.blog-index-page).py-8,
+  .post-container.py-8 {
+    padding-top: 1.35rem;
+  }
+
   .page-container:has(.blog-index-page),
   .page-container:has(.post-list),
   .page-container:has(.tag-cloud),
   .post-container {
-    border: 1px solid rgba(176, 143, 186, 0.18);
+    border: 1px solid var(--site-surface-border);
     border-radius: 8px;
-    background: rgba(253, 250, 255, 0.76);
-    box-shadow: 0 18px 44px rgba(78, 54, 92, 0.07);
+    background: var(--site-surface-bg);
+    box-shadow: var(--site-surface-shadow);
   }
 
   /* Scrollable list (news, latest posts) */
@@ -382,12 +372,12 @@ html[data-theme='dark'] .post-container {
   .header-bar {
     border-bottom: 1px solid var(--global-divider-color);
     text-align: center;
-    padding-top: 2rem;
-    padding-bottom: 3rem;
+    padding-top: 1.5rem;
+    padding-bottom: 2.25rem;
   }
   .header-bar.header-bar--compact {
     border-bottom: 0;
-    padding-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
   }
   .header-bar h1 {
     color: var(--global-theme-color);
@@ -428,6 +418,9 @@ html[data-theme='dark'] .post-container {
   .blog-index-page {
     position: relative;
     padding-bottom: 1rem;
+  }
+  .blog-index-page .featured-posts.container {
+    margin-top: 0.65rem;
   }
   .blog-filter-footer {
     margin-top: 3rem;
@@ -1515,6 +1508,55 @@ body[data-tooltips] [data-tooltip]:focus-within::after {
 body[data-tooltips] [data-tooltip]:hover::before,
 body[data-tooltips] [data-tooltip]:focus-within::before {
   opacity: 1;
+}
+
+/* Blog reading polish — unlayered so it overrides base heading styles. */
+
+.blog-index-page .header-bar {
+  padding-top: clamp(0.75rem, 2.4vw, 1.5rem);
+  padding-bottom: clamp(0.9rem, 2.6vw, 1.5rem);
+}
+
+.blog-index-page .header-bar h1 {
+  color: var(--site-heading-ink);
+  font-family: var(--site-display-font);
+  font-size: 4.8rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 0.95;
+  margin: 0;
+}
+
+.blog-index-page h2.year {
+  color: rgba(96, 82, 68, 0.24);
+  font-family: var(--site-display-font);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.post-container .post-header {
+  margin-bottom: 1.15rem;
+}
+
+.post-container h1.post-title {
+  color: var(--site-heading-ink);
+  font-family: var(--site-display-font);
+  font-size: 3rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+@media (max-width: 640px) {
+  .blog-index-page .header-bar h1 {
+    font-size: 3.25rem;
+  }
+
+  .post-container h1.post-title {
+    font-size: 2.2rem;
+  }
 }
 
 /* ─── Print styles ───────────────────────────────────────────────────────── */
