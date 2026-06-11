@@ -21,47 +21,54 @@ relatedPosts: false
 
 <!-- notion-sync: 37c4e07a-a023-8103-b020-e7336f1c7a59 parent=codex blogs url=https://app.notion.com/p/37c4e07aa0238103b020e7336f1c7a59 -->
 
-The first trap in the Codex source is vocabulary. You quickly meet `turn/start`, `RegularTask`, `run_turn`, pending input, pending work, steering items, mailbox events, and interrupts.
+Subtitle: **A turn is not one model call. It is a runtime boundary.**
 
-Explaining those names one by one produces a glossary, but not understanding. The names live at different layers. Some are protocol actions. Some are task state. Some become model-visible history. Some wake an idle thread later.
+The first trap in the Codex codebase is vocabulary. You open the source and immediately meet `turn/start`, `RegularTask`, `run_turn`, `pending input`, `pending work`, steering items, mailbox events, and interrupts. If you explain those names one by one, the post becomes a glossary. It will also be misleading, because the names live at different layers: some are protocol actions, some are task state, some are model-visible history, and some are conditions that may wake an idle thread.
 
-The through-line I want to keep is simpler:
+This post follows one thread instead:
 
 > A Codex turn is not a single request to the model. It is a managed execution window that can accept more input, call tools, write evidence back into history, be cancelled, and eventually settle.
 
-Start with a normal task:
+Start with a simple story.
 
 ```text
 Fix this failing test.
 ```
 
-Codex does not send that sentence to the model and wait for one final answer. The app server receives `turn/start`, creates an in-progress turn, starts a regular task, and enters the core loop. The model may inspect files, run tests, read output, patch code, run tests again, and summarize only after the runtime has enough evidence.
+Codex does not send that sentence to the model and wait for one final answer. The app server receives `turn/start`, creates an in-progress turn, starts a regular task, and enters the core loop. The model may inspect files, run the failing test, read stdout and stderr, patch code, run the test again, and summarize only after the runtime has enough evidence. Every tool result becomes part of history; the next model request is grounded in what actually happened, not in what the model guessed would happen.
 
-Every tool result becomes part of history. The next model request is grounded in what happened, not in what the model guessed would happen.
-
-```mermaid
-flowchart TD
-  A["turn/start"] --> B["RegularTask owns lifecycle"]
-  B --> C["run_turn"]
-  C --> D["sample model"]
-  D --> E{"tool call?"}
-  E -- yes --> F["execute through tool runtime"]
-  F --> G["record tool output in history"]
-  G --> C
-  E -- no --> H{"runtime reason to continue?"}
-  H -- yes --> C
-  H -- no --> I["turn completed"]
-```
-
-## `turn/start` opens an execution window
-
-`turn/start` is a protocol entry point. The client sends user input and may attach turn-level configuration such as model, working directory, sandbox behavior, approval policy, or permission profile. The app server returns a turn object and streams events as the work runs.
-
-The important distinction is:
+Now imagine that, while the task is running, you add:
 
 ```text
-Protocol layer: "start a turn"
-Core layer:     "run a managed task that may sample the model many times"
+Actually, prioritize the API layer. Do not touch the UI.
+```
+
+That should not create a brand-new turn. It should also not kill the command that is already running. It is a mid-flight constraint, so it goes through `turn/steer`: the runtime appends the new user input to the active turn and drains it at a safe boundary.
+
+If you press stop, that is a different operation. `turn/interrupt` is not another steering message. It cancels the active turn and lets the task wind down as interrupted.
+
+Those three moments give the whole post its shape:
+
+```text
+turn/start     -> open an active turn
+RegularTask    -> own lifecycle and cancellation
+run_turn       -> loop through model, tools, and history
+turn/steer     -> add input to the same active turn
+turn/interrupt -> cancel the active turn
+pending work   -> maybe wake an idle thread later
+```
+
+![Codex turn runtime](/assets/img/notion/codex-source-dive-agentic-loop-01.png)
+
+## 1. `turn/start` opens an execution window
+
+`turn/start` is a protocol entry point. The client sends user input and may also attach turn-level overrides such as model, working directory, sandbox or approval behavior, and permission profile. The app server returns a turn object, usually in an in-progress state, and streams events as the turn runs: turn started, item started, item completed, assistant-message deltas, tool output, and finally turn completed.
+
+The important distinction is this:
+
+```text
+Protocol layer: “start a turn”
+Core layer:     “run a managed task that may call the model many times”
 ```
 
 A useful source-shaped call path is:
@@ -74,13 +81,37 @@ turn/start
   -> run_sampling_request
 ```
 
-`RegularTask::run` owns the outer lifecycle. It emits the start event, holds the cancellation token, and calls `run_turn` until the active turn has no more input waiting to be consumed.
+`RegularTask::run` owns the outer lifecycle. It emits the start event, holds the cancellation token, and then repeatedly calls `run_turn` until the active turn has no more input waiting to be consumed.
 
-That outer loop explains why `turn/steer` does not need to create a new turn. Steering input enters a pending-input queue owned by the active turn. When `run_turn` reaches a safe point, the regular task can continue the same execution with that newly recorded input.
+In rough form:
 
-## `run_turn` is the agentic loop
+```text
+next_input = initial input from turn/start
+loop:
+    last_agent_message = run_turn(next_input)
+    if the active turn has no pending input:
+        return last_agent_message
+    next_input = []
+    continue the same task
+```
 
-The toy version of an agent loop looks like this:
+That outer loop explains why `turn/steer` does not need a new turn. The steering input enters a pending-input queue owned by the active turn. When `run_turn` reaches a safe point, the regular task can continue the same execution with that newly recorded input.
+
+The better mental model is:
+
+```text
+turn/start = begin a controllable execution window
+run_turn   = run the model/tool/history loop inside that window
+turn/steer = add one more user constraint to that same window
+```
+
+If you treat `turn/start` as “call the model once,” every later concept will feel contradictory. The design only becomes clear when you see the turn as a runtime boundary.
+
+## 2. `run_turn` is the actual agentic loop
+
+`run_turn` is where the familiar loop lives: model, tool, model, final answer. But Codex’s loop is not the toy version.
+
+A toy agent can be written as:
 
 ```python
 while True:
@@ -91,33 +122,58 @@ while True:
         break
 ```
 
-That explains tool calling, but it does not explain Codex. A production coding agent also needs mid-flight user input, cancellation, sandbox and approval policy, context compaction, stop hooks, event streaming, rollout recovery, and cross-agent messages.
+That explains tool calling, but it does not explain Codex. Codex also needs to handle mid-flight user input, cancellation, sandbox and approval policy, context compaction, stop hooks, event streaming, rollout recovery, and cross-agent mailbox messages. A production coding agent needs a runtime around the loop.
 
 A better question for `run_turn` is:
 
 > After this sample, is there any reason the runtime must take another step?
 
-The reason may come from the model: it asked for a tool call. It may also come from the runtime: a compacted history needs continuation, a stop hook requires another pass, a pending input is now safe to drain, or an interrupt requires the loop to stop even if the model wants to continue.
+The reason might come from the model. It asked for a function call. It might also come from the runtime. A hook may require continuation. A compacted history may need a new sampling pass. A pending input may now be safe to drain. An interrupt may require the loop to stop even if the model wants to continue.
 
-One pass through the loop roughly does this:
+![run_turn loop](/assets/img/notion/codex-source-dive-agentic-loop-02.png)
 
-1. Record input from `turn/start` or from a safe pending-input drain.
-2. Build a sampling request from model-visible history, instructions, tool schemas, output schema, and turn configuration.
-3. Sample the model.
-4. Execute tool calls through routing, policy, sandboxing, approval, and side-effect handling.
-5. Write the result back into history as evidence for the next sample.
+One pass through `run_turn` roughly looks like this:
 
-The last step is the heart of the design. Tool output is not only a UI log. It is a fact that the next model call must see.
+1. It records input. The first input comes from `turn/start`; later input may come from `turn/steer` once a safe point is reached.
+2. It builds the sampling request. The runtime clones the model-visible history, adds instructions, visible tool schemas, output schema, and other turn configuration.
+3. It samples the model. The model can produce assistant text, function calls, or both.
+4. It executes tool calls through the runtime. The model sees a schema; the runtime handles routing, policy, sandboxing, approval, and the actual side effect.
+5. It writes the result back into history. stdout, stderr, patch results, command status, and tool errors become the evidence for the next sample.
 
-## Steering is not interruption
+That last step is the heart of the design. A tool result is not a UI log. It is a fact that the next model request must see. Without that feedback, the agent is guessing. With it, the agent can correct itself against the actual repo, actual tests, and actual command output.
 
-Imagine the user adds a constraint while Codex is already working:
+So the loop stops only when several layers agree that it can stop:
 
 ```text
-Actually, prioritize the API layer. Do not touch the UI.
+The model has no tool follow-up.
+No pending input is waiting to be consumed.
+No compaction continuation is required.
+Stop hooks allow the turn to settle.
+No interrupt, replacement, or error branch has taken over.
 ```
 
-That should not create a brand-new task. It also should not kill the command that is already running. It is mid-flight input, so it goes through `turn/steer`: accepted now, drained later at a safe boundary.
+That is the line between a demo agent and a coding agent. The model proposes the next move. The runtime decides whether it is allowed, when it runs, how the result is recorded, and when the execution window should close.
+
+## 3. `turn/steer` is mid-flight input, not a new turn
+
+`turn/steer` is easy to misread because the word “steer” also appears in runtime-generated steering. Keep them separate.
+
+At the protocol layer, `turn/steer` does one main thing: it appends user input to an already in-flight regular turn. It is for a situation like this:
+
+```text
+User: Fix this bug.
+Codex: reads files, runs tests, starts a patch.
+User: One more constraint: do not change the public API.
+```
+
+The second user message belongs to the same execution window. It does not mean “start over.” It does not mean “cancel.” It means “when you reach a safe boundary, incorporate this into the current task.”
+
+That input goes into pending input. Pending input is not automatically the prompt. It is a queue the runtime has accepted and will later write into history. Two details matter:
+
+- Fresh input from `turn/start` should be handled first at the beginning of a turn.
+- If context compaction or a tool continuation is already in progress, the runtime may need to finish that continuation before draining steering input.
+
+The lifecycle is:
 
 ```text
 turn/steer
@@ -127,65 +183,102 @@ turn/steer
   -> same active turn continues
 ```
 
-`turn/interrupt` is different. It requests cancellation for the active turn. A later user message may start a new turn, but the interrupt itself is not a new instruction. It is the runtime boundary that says the current execution ends here.
+The phrase “safe point” is doing real work. Codex should not splice a new user instruction into the middle of an arbitrary tool side effect. The runtime waits until it can preserve ordering, history, and cancellation semantics.
 
-```mermaid
-flowchart LR
-  S["turn/steer"] --> P["pending input"]
-  P --> H["history at safe point"]
-  H --> C["same active turn continues"]
+## 4. `turn/interrupt` cancels; it does not continue
 
-  I["turn/interrupt"] --> X["cancel active turn"]
-  X --> T["turn settles as interrupted"]
+`turn/interrupt` is a different operation. It requests cancellation for a specific in-flight turn. If it succeeds, that turn eventually settles as interrupted. The cancellation token travels through the task and tool execution path so the runtime can wind down ongoing work.
+
+Do not describe it this way:
+
+```text
+turn/interrupt = start a new turn with a stop instruction
 ```
 
-## Pending input, pending work, and runtime steering
+That is wrong. The better version is:
 
-These names sound related, but they answer different questions.
+```text
+turn/interrupt = the current active turn ends here
+new turn        = may happen later, but it is not the interrupt itself
+```
 
-| Name | Belongs to | Question |
-| --- | --- | --- |
-| Pending input | Active turn | Should this user message become part of the turn already running? |
-| Pending work | Idle thread | After the current turn settles, is there more work that should wake the thread? |
-| Runtime steering | Model-visible history | Does the runtime need to inject a control constraint such as budget, stop-hook, or compaction continuation? |
+A later turn may come from a new `turn/start` sent by the user. It may also come from runtime-discovered pending work after the thread becomes idle. But the interrupt itself is about ending the current execution, not continuing it.
 
-All three can make execution continue. They do not come from the same layer.
+![start steer interrupt pending work](/assets/img/notion/codex-source-dive-agentic-loop-03.png)
 
-## Why the boundaries are this fine-grained
+## 5. Pending input, pending work, and runtime steering are three different ideas
 
-For a toy agent, `while model -> tool -> model` is enough. For a coding agent, it is not.
+The original notes were weakest where they put these names on the same level. They sound similar, but they answer different questions.
 
-A user may add constraints while tests are running. A shell command may need cancellation. A patch may require approval. A sandbox may block a file write. The context window may fill and require compaction. A model may summarize too early, and a stop hook may need to pull it back. A subagent may send a mailbox result.
+### Pending input belongs to the active turn
 
-Those are runtime-boundary problems, not only model-quality problems.
+Pending input is user input that has been accepted for the current active turn but has not yet been written into history. `turn/steer` is the canonical source. The question is:
 
-The source becomes easier to read when split into layers:
+> Should this user message become part of the semantic boundary of the turn that is already running?
 
-| Layer | Question it answers | Typical names |
-| --- | --- | --- |
-| Protocol | How does the outside world start, add to, cancel, and observe a turn? | `turn/start`, `turn/steer`, `turn/interrupt`, event stream |
-| Task | Who owns lifecycle and cancellation? | `RegularTask`, `SessionTask`, cancellation token |
-| History | What does the model actually see next? | response items, tool output, steering item |
-| Tool runtime | How are actions routed, authorized, executed, and recorded? | tool router, sandbox, approval |
-| Control | What forces continuation or stop? | pending input, compaction, stop hooks, mailbox, pending work |
+If yes, it is pending input.
 
-## Source-reading checklist
+### Pending work belongs to an idle thread
 
-When reading this part of Codex, do not start by asking "where is the loop?" Start with:
+Pending work is about waking a thread after the active turn has already settled. A mailbox item or trigger may mean, “This thread is idle, but there is more work it should process.” The question is:
+
+> After the current turn has ended, is there work that should start a later turn?
+
+That is why pending work can create a new turn, while pending input usually keeps the same turn alive.
+
+### Runtime steering is system-generated model-visible control
+
+Runtime steering is not protocol `turn/steer`. It is an item the runtime writes into history so the model sees a control constraint. Examples include a stop hook that says the model should not finish yet, a continuation after context compaction, or a budget message from a long-running Goal.
+
+The clean distinction is:
+
+```text
+turn/steer        -> user input enters pending input
+runtime steering  -> system-generated control item enters history
+pending work      -> idle-thread condition may start later work
+```
+
+All three can make execution continue. They do not come from the same layer and should not be explained as one mechanism.
+
+## 6. Why the boundaries are this fine-grained
+
+For a toy agent, a `while model -> tool -> model` loop is enough. For a coding agent, it is not.
+
+A user may add constraints while tests are running. A shell command may take too long and need cancellation. A patch may require approval. A sandbox may block a file write or network access. The context window may fill and require compaction. A model may summarize too early, and a stop hook may need to pull it back. A subagent may send a mailbox result. The UI still needs item-level progress rather than one huge final blob.
+
+Those are runtime-boundary problems, not just model-quality problems.
+
+I would split Codex into five layers:
+
+| Layer        | Question it answers                                                   | Typical names                                                |
+| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Protocol     | How does the outside world start, add to, cancel, and observe a turn? | `turn/start`, `turn/steer`, `turn/interrupt`, event stream   |
+| Task         | Who owns lifecycle and cancellation?                                  | `RegularTask`, `SessionTask`, cancellation token             |
+| History      | What does the model actually see next?                                | history, response items, tool output, steering item          |
+| Tool runtime | How are actions routed, authorized, executed, and recorded?           | `ToolRouter`, `ToolCallRuntime`, sandbox, approval           |
+| Control      | What forces continuation or stop?                                     | pending input, compaction, stop hooks, mailbox, pending work |
+
+Once those layers are separated, the code stops looking like a pile of terms. It becomes a story about an execution window.
+
+## 7. The source-reading checklist
+
+When reading this part of Codex, do not start by asking “where is the loop?” Start with these questions:
 
 ```text
 Who created the active turn?
 Who owns its cancellation token?
 What input is already in history, and what input is only pending?
-Which model-visible items are user-authored versus runtime-authored?
+What model-visible items are user-authored versus runtime-authored?
 What tool results were written back as evidence?
 Why did the loop decide to continue?
 Why was it allowed to stop?
 ```
 
-That checklist is more useful than memorizing function names. Codex's agentic loop is not only `while tool`. It is a managed boundary between user intent, model sampling, tool side effects, history, and cancellation.
+That checklist is more useful than memorizing function names. Codex’s agentic loop is not just `while(tool)`. It is a carefully managed boundary between user intent, model sampling, tool side effects, history, and cancellation.
 
 ## Source map
+
+Useful files and areas to read after this post:
 
 - `codex-rs/app-server/README.md` for turn protocol shape and event semantics.
 - `codex-rs/core/src/tasks/regular.rs` for the regular task lifecycle.

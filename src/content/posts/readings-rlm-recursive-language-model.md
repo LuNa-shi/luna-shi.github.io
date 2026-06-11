@@ -1,12 +1,12 @@
 ---
-title: 'Recursive Language Models: long context as external memory'
+title: 'RLM: Recursive Language Model'
 date: '2026-06-10'
 overview: >-
   TLDR: RLM's real insight is not recursion as a slogan. It moves long context out of the Transformer window and into an
   external environment that the model can inspect, slice, search, and delegate over.
 description: >-
-  A reading note on Recursive Language Models, prompt-as-environment, out-of-core reasoning, recursive subcalls, OOLONG,
-  BrowseComp+, context rot, and the limits of scaffold-dependent long-context systems.
+  A faithful English reading note on Recursive Language Models, prompt-as-environment, out-of-core reasoning, recursive
+  subcalls, OOLONG, BrowseComp+, context rot, and scaffold-dependent long-context systems.
 tags:
   - readings
 categories:
@@ -18,147 +18,70 @@ relatedPosts: false
 
 <!-- notion-sync: 37b4e07a-a023-80b4-8a9f-c0160ed76e98 parent=Readings url=https://app.notion.com/p/37b4e07aa02380b48a9fc0160ed76e98 -->
 
-My read on Recursive Language Models is split.
+## Core Judgment
 
-It has a real systems insight: long context does not have to live inside the Transformer's token sequence. It can become an external object that code can retrieve, split, inspect, call into, and verify.
+This is a systems paper with real insight, but with claims that are a little too loud. Its real value is not the word "recursive." Its value is that it takes long context out of the Transformer's token sequence and turns it into an external object that can be retrieved, sliced, called, and verified by code. The most dangerous issue is this: it proves that a strong model inside a good scaffold can win many benchmarks, but it has not yet proven that this mechanism is already a stable, general, controllable "new paradigm."
 
-It also has a claim that feels bigger than the evidence. The paper shows that a strong model inside a good scaffold can beat many long-context benchmarks. It does not yet prove that the mechanism is a stable, general, controllable inference paradigm.
+---
 
-The sentence I want to keep is:
+![](/assets/img/notion/readings-rlm-recursive-language-model-01.png)
 
-> RLM is most valuable when read as external-memory language-model reasoning, not as "recursion" by itself.
+## 1. Motivation: the pain point is real, but the authors overstate the scope
 
-## The problem is context rot
+The problem this paper wants to solve is not the ordinary problem of "the context window is not long enough." It is a sharper problem: even if the model's physical window is large enough, its effective attention, information fidelity, and compositional reasoning on long inputs still decay. The authors explicitly define the problem as context rot: when context gets longer, frontier models such as GPT-5 also degrade. At the same time, many real long-context tasks need to process millions or tens of millions of tokens, not just retrieve one needle from a few passages. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-The paper is not only complaining that context windows are too small. It is pointing at a sharper problem: even when the physical window is large enough, effective attention, information fidelity, and compositional reasoning can decay as the input grows.
+This pain point is real, especially on tasks such as OOLONG, where almost every line has to be used. The authors also make a clear distinction between simple NIAH and information-dense tasks: in NIAH, the answer size does not grow with the input, while in OOLONG / OOLONG-Pairs, the amount of processing grows linearly or quadratically with the input. This distinction matters because it hits the weak spot of many long-context papers: proving that a model can find the needle does not mean proving that it can understand a long document. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-That distinction matters. A needle-in-a-haystack benchmark asks whether a model can find one answer whose size does not grow with the input. Many real tasks are denser. The output may depend on many scattered lines, pairwise comparisons, or transformations over the whole document.
+But there is also packaging. The phrase "arbitrarily long prompts" is more marketing than mechanism. RLM does not give the neural network a truly infinite context. It moves the bottleneck from the model context window into the external environment, code execution, subcall cost, search strategy, and RAM. What it solves is long input that can be accessed programmatically, not every arbitrary long input.
 
-So the question becomes:
+---
 
-```text
-Can the system reason over long, information-dense input
-without forcing all raw tokens into one model context?
-```
+## 2. Contribution: the core contribution is not recursion, but "prompt-as-environment"
 
-RLM's answer is to move the prompt into the environment.
+If I could keep only one contribution, I would keep this one: the prompt is treated as an external environment variable, not as something directly fed into the model context. This is the cleanest and most transferable idea in the paper. RLM puts the long prompt into the `context` variable inside a Python REPL, lets the model use code to inspect, split, filter, and call sub-LMs, and then stitches the local results back into the final answer. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-## Prompt as environment
+"Recursively calling an LM" is important, of course, but it is not the first-principles contribution. The evidence is that the no-sub-calls ablation still crosses the model context limit, and on Qwen3-Coder's CodeQA and BrowseComp+ it even beats full RLM. Full RLM only opens a significant gap on information-dense tasks such as OOLONG / OOLONG-Pairs, where the system needs a lot of semantic transformation and aggregation. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-The cleanest idea is simple:
+So the contribution of this paper should be renamed: external-memory language-model reasoning, not recursive language models. Recursion is only one operation inside the external environment.
 
-```text
-long prompt
-  -> stored in a Python REPL as context
-  -> model writes code to inspect and slice it
-  -> model calls sub-LMs on selected pieces
-  -> local results are combined into a final answer
-```
+---
 
-This is the part that feels portable. The prompt becomes a data structure. The model does not need to "read" every token in one forward pass. It can write an access strategy.
+## 3. Method: the key insight is turning the "long-context problem" into an "external-memory algorithm" problem
 
-The analogy is out-of-core algorithms. If a dataset is too large for fast memory, good systems do not pretend memory is infinite. They schedule reads, process chunks, keep summaries or indexes, and avoid unnecessary passes.
+The key insight of the method is this: do not force the model to "read" the whole long input at once. Let the model manage the input access path like a program. The authors borrow from out-of-core algorithms: when small, fast main memory cannot handle a large dataset, the answer is not simply to enlarge main memory, but to schedule data movement intelligently. For LLMs, the corresponding move is not to stuff the entire prompt into the Transformer, but to let the model decide where to look, how to slice, and which fragments should be passed to sub-LMs. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-RLM applies the same shape to language:
+This is stronger than summarization / compaction because a summary assumes early details can be compressed or forgotten. In information-dense tasks, those details may not be disposable. RLM can keep the original input in the external environment and only retrieve local fragments when needed. It is also stronger than an ordinary recursive agent because many recursive agents can decompose the task recursively, but the original input still has to fit into the model window first. RLM puts the input itself in the external environment, so recursion happens over programmable slices. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-| Long-context approach | Assumption |
-| --- | --- |
-| Bigger context window | The model can attend to everything if it fits |
-| Summarization | Old detail can be compressed without fatal loss |
-| Retrieval | Relevant detail can be found by a query/index |
-| RLM-style environment | The model can program its own access path over raw input |
+But this insight also exposes what the method truly depends on. RLM does not automatically understand long context. It relies on the model writing code, doing heuristic search, and constructing subproblems. The paper's own trajectory analysis shows that models often use regex, keywords, and prior knowledge to narrow the search space. That is powerful, but it also means that when priors are weak, wording is adversarial, or data is out of distribution, the system may systematically miss evidence. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-The last option is powerful because the raw input remains available. The system can keep exact evidence outside the model context and pull in only what each step needs.
+---
 
-## Recursion is useful, but secondary
+## 4. Result: the strongest evidence is information-dense tasks, not 10M tokens itself
 
-"Recursive" is the name, but recursion is not the first-order contribution.
+Two results do the most work for the paper's claim.
 
-The paper's ablations suggest that even without subcalls, environment access can push past normal context limits. Recursive LM calls become most important on information-dense tasks where local semantic transformation and aggregation are needed, not merely on tasks that require search.
+First, BrowseComp+ at 6M-11M tokens: GPT-5 base is 0 because of context limits, while RLM(GPT-5) reaches 91.33, clearly ahead of the Summary agent at 70.47 and CodeAct+BM25 at 51.00. This result shows that RLM can really extend tasks beyond ordinary context. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-That changes how I would reuse the idea.
+Second, and more importantly, OOLONG-Pairs: the input is only 32K tokens, so it can fit in context, but GPT-5 base is almost 0, the Summary agent is also almost 0, and RLM(GPT-5) reaches 58.00. This result is more convincing than "it can process 10M tokens," because it shows that the problem is not just window length. It is the compositional computation structure inside long input. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-I would not start by asking, "How do we recursively call models?" I would start with:
+These results are not just pretty numbers. The authors include a base model, summary baseline, retrieval/code agent, no-sub-calls ablation, and tasks designed around constant, linear, and quadratic information density. That makes the evidence chain relatively complete. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-```text
-What is the external memory object?
-What operations can the model perform on it?
-How is evidence selected?
-How are local claims verified?
-How is recursive cost bounded?
-```
+But it still does not fully prove that the method is "generally effective." OOLONG-Pairs consists of 20 manually modified queries, so its external validity is limited. The BrowseComp+ advantage is strong, but no-sub-calls already comes close to full RLM, which means that in some tasks the core mechanism is not recursion, but REPL-based external access. The cost story is also not clean. The paper itself admits that RLM has long-tail, high-variance trajectories, with many outliers that are much more expensive than the base query. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-The system is only as good as the access policy. If the model uses brittle regexes, weak keywords, or prior assumptions to choose slices, the scaffold can miss evidence systematically.
+---
 
-## The strongest evidence
+## 5. Limitation: the fatal weakness is mechanism instability, not a lack of experiments
 
-Two reported results carry most of the argument.
+The fatal weakness is this: RLM currently looks more like a fragile agent scaffold that depends on strong model behavior than a stable algorithm. The appendix is quite candid. The same prompt can break across models; Qwen3-Coder needs extra prompting to avoid too many recursive calls; smaller models are hard to use because their coding ability is not strong enough; insufficient thinking tokens can interrupt trajectories; and the FINAL tag that separates final answers from intermediate thinking is also fragile. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-The first is BrowseComp+ at multi-million-token scale. The reported RLM setup can operate where a base model cannot fit the input, and it outperforms summary and retrieval/code-agent baselines.
+More seriously, the authors observe that RLM trajectories often make non-optimal decisions. Qwen3-Coder may launch hundreds or thousands of recursive subcalls on simple tasks, while GPT-5 makes only a dozen or so. Models may also construct the correct answer, drop it, waste more calls, and even choose the wrong final answer. ([arXiv](https://arxiv.org/pdf/2512.24601v1))
 
-The second is more interesting: OOLONG-Pairs. The input is small enough to fit into context, but the task requires dense pairwise information use. In that setting, base long-context reading and summary agents perform poorly, while the RLM-style method improves sharply.
+Does this weakness overturn the core conclusion? It does not overturn the conclusion that prompt-as-environment is valuable, but it does weaken the larger claim that RLM is a general, cheap, stable inference strategy. The current evidence says something closer to this: when the root model is strong enough, can write code, the task is decomposable, and the search strategy happens to work, RLM is very strong. It has not yet proven that it is predictable, auditable, and safe to deploy on real open-ended long tasks.
 
-That second result is the better evidence because it says the bottleneck is not only window size. The bottleneck is the structure of computation over the input.
+---
 
-The result shape is:
+## Final three sentences
 
-```text
-not just "can find a needle"
-but "can organize repeated access, local reasoning, and aggregation"
-```
-
-That is exactly the kind of problem where external-memory reasoning should help.
-
-## The weak point is stability
-
-The most serious limitation is not that the paper needs more benchmarks. It is that the mechanism still looks scaffold-dependent.
-
-The notes from the paper point to several practical fragilities:
-
-- smaller models struggle when the method depends on coding ability;
-- some models need extra prompting to avoid excessive recursive calls;
-- trajectories can have high cost variance;
-- models can construct the right intermediate answer and later discard it;
-- final-answer markers and control conventions become brittle;
-- the system depends on good search and decomposition heuristics.
-
-That does not invalidate the core idea. It does weaken the larger claim that RLM is already a general, cheap, stable inference strategy.
-
-My updated version of the claim would be:
-
-> When a strong model can write useful access code and the task is decomposable, treating context as an external environment can outperform direct long-context reading.
-
-That is still a good claim. It is just less magical and more engineering-shaped.
-
-## Reusable pattern
-
-The pattern I would reuse in agent systems is:
-
-```text
-raw evidence stays external
-model receives tools for exact access
-local slices become bounded subproblems
-subproblem outputs carry provenance
-aggregation checks support and contradiction
-cost controls limit recursive expansion
-```
-
-This fits many tasks beyond long papers: codebases, logs, trace stores, evaluation runs, data tables, and large documentation sets.
-
-The key is not recursion for its own sake. The key is letting the model reason with an external memory object without pretending the entire object is a prompt.
-
-## My takeaway
-
-RLM's best contribution is a systems abstraction:
-
-```text
-long context -> external memory -> programmable access -> local reasoning -> verified aggregation
-```
-
-The part to doubt is the slogan of arbitrary-length prompts. RLM does not make context free. It moves the bottleneck to environment design, search strategy, subcall cost, verification, and model reliability.
-
-That is a useful move. It also means the next research question is not "how do we make the context window even longer?" It is:
-
-> How do we train models to plan reads, preserve evidence, control recursive cost, and reason reliably over external memory?
-
-[Paper](https://arxiv.org/pdf/2512.24601v1)
+1. The most valuable thing to learn from this paper: it reframes long context from "expand the Transformer window" into "programmable data access in an external environment," which is a systems-level insight with real transfer value.
+2. The most suspicious thing about this paper: it packages a strong prompt + REPL + sub-model-call agent scaffold as a "general inference paradigm," but the current mechanism clearly depends on model behavior, prompt details, and task decomposability.
+3. The direction it suggests for future research: the valuable work is not to keep stacking longer context, but to train models to plan reading, verify evidence, control recursion cost, and execute reliable reasoning over external memory.

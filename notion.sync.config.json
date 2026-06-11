@@ -297,6 +297,50 @@
           "id": "37a4e07a-a023-80a7-b4f5-c931cff627f8",
           "title": "人月神话：第 7-12 章",
           "slug": "readings-mythical-man-month-ch7-12"
+        },
+        {
+          "id": "37a4e07a-a023-8067-b80e-c7482e360ddf",
+          "title": "人月神话：第 13 章-结尾",
+          "slug": "readings-mythical-man-month-ch13-end"
+        },
+        {
+          "id": "37a4e07a-a023-8017-bb5a-e9f8bb57f575",
+          "title": "Apodex-1.0",
+          "slug": "readings-apodex-1-0"
+        },
+        {
+          "id": "37a4e07a-a023-808e-889b-ca9be817fc40",
+          "title": "A Reading Stack for the AI-Coding Era",
+          "slug": "readings-books-for-ai-coding-era"
+        },
+        {
+          "id": "37b4e07a-a023-80b4-8a9f-c0160ed76e98",
+          "title": "RLM: Recursive Language Model",
+          "slug": "readings-rlm-recursive-language-model"
+        }
+      ]
+    },
+    {
+      "key": "codex-blogs",
+      "title": "codex blogs",
+      "id": "3774e07a-a023-804e-a411-c97b2cce9653",
+      "categories": ["agents", "systems"],
+      "tags": ["codex", "agent-runtime"],
+      "children": [
+        {
+          "id": "37c4e07a-a023-8103-b020-e7336f1c7a59",
+          "title": "Codex Source Dive (I): The Agentic Loop",
+          "slug": "codex-source-dive-agentic-loop"
+        },
+        {
+          "id": "37c4e07a-a023-8105-b6f1-fc49946cb014",
+          "title": "Codex Source Dive (II): Goals",
+          "slug": "codex-source-dive-goals"
+        },
+        {
+          "id": "37c4e07a-a023-8150-b043-ffe641c10be9",
+          "title": "Codex Source Dive (III): Subagents / Multi-agent",
+          "slug": "codex-source-dive-subagents"
         }
       ]
     }
