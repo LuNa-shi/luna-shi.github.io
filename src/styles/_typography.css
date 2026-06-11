@@ -1,11 +1,19 @@
 /*
- * Typography — matches al-folio's font stack exactly.
- * Fonts are loaded via Google Fonts in Base.astro.
+ * Typography — editorial type system (self-hosted variable fonts).
+ * Font files are imported in global.css via Fontsource.
+ *
+ *   --font-display  Fraunces Variable   — big editorial headings, hero, titles
+ *   --font-serif    Newsreader Variable — reading prose
+ *   --font-sans     Hanken Grotesk Var. — UI, nav, labels, meta (Styrene-like)
  */
 
 @theme {
-  --font-sans: 'Roboto', system-ui, -apple-system, sans-serif;
-  --font-condensed: 'Roboto Condensed', 'Arial Narrow', sans-serif;
+  --font-sans:
+    'Hanken Grotesk Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display:
+    'Fraunces Variable', 'Newsreader Variable', Georgia, Cambria, 'Times New Roman', serif;
+  --font-serif: 'Newsreader Variable', Georgia, Cambria, 'Times New Roman', serif;
+  --font-condensed: 'Hanken Grotesk Variable', 'Arial Narrow', sans-serif;
   --font-mono: 'Source Code Pro', 'Roboto Mono', 'Fira Code', ui-monospace, monospace;
 }
 
@@ -15,6 +23,7 @@ html {
   font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.6;
+  font-optical-sizing: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

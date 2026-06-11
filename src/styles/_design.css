@@ -1,0 +1,763 @@
+/*
+ * ─────────────────────────────────────────────────────────────────────────
+ *  as-folio · editorial redesign
+ *  Anthropic / Claude–inspired design language.
+ *
+ *  Everything is driven by a single token vocabulary. The three aesthetic
+ *  variants (clay · slate · ink) only ever redefine tokens — component CSS is
+ *  written once and reads tokens, so switching `html[data-variant]` swaps the
+ *  entire personality with zero per-variant component rules.
+ *
+ *  Fonts (self-hosted, see _fonts.css):
+ *    --font-display  Fraunces Variable   — editorial serif, big headings
+ *    --font-serif    Newsreader Variable — reading prose
+ *    --font-sans     Hanken Grotesk Var. — UI, labels, meta (Styrene-like)
+ * ─────────────────────────────────────────────────────────────────────────
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1 · VARIANT TOKENS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Clay — Anthropic-faithful warm editorial (default) ───────────────────── */
+:root,
+html[data-variant='clay'] {
+  color-scheme: light;
+
+  --page-bg: #faf8f3;
+  --page-bg-2: #f3efe6;
+  --surface: #fffdf9;
+  --surface-2: #f6f1e8;
+  --surface-inset: #f1ece2;
+
+  --ink: #28231d;
+  --ink-strong: #19140f;
+  --ink-soft: #6c6256;
+  --ink-faint: #998f80;
+
+  --border: rgba(64, 51, 36, 0.12);
+  --border-strong: rgba(64, 51, 36, 0.24);
+  --rule: rgba(64, 51, 36, 0.14);
+
+  --accent: #c0603f; /* clay — links / text on light */
+  --accent-bright: #cc785c; /* the brand clay — fills, rules, glows */
+  --accent-ink: #a2492c; /* hover / pressed */
+  --accent-soft: rgba(204, 120, 92, 0.13);
+  --accent-contrast: #fffdf9;
+
+  --footer-bg: #2a231c;
+  --footer-ink: #d9cdbd;
+  --footer-link: #f2e7d8;
+
+  --heading-font: var(--font-display);
+  --heading-weight: 560;
+  --heading-tracking: -0.012em;
+  --prose-font: var(--font-serif);
+  --prose-size: 1.085rem;
+  --prose-leading: 1.78;
+
+  --card-radius: 16px;
+  --pill-radius: 999px;
+
+  --shadow-rgb: 62, 45, 28;
+  --shadow-1: 0 1px 2px rgba(var(--shadow-rgb), 0.05);
+  --shadow-2:
+    0 1px 2px rgba(var(--shadow-rgb), 0.04), 0 14px 34px -14px rgba(var(--shadow-rgb), 0.16);
+  --shadow-hover:
+    0 2px 4px rgba(var(--shadow-rgb), 0.05), 0 26px 50px -20px rgba(var(--shadow-rgb), 0.26);
+  --lift: -4px;
+
+  --selection-bg: rgba(204, 120, 92, 0.22);
+  --ease: cubic-bezier(0.22, 0.61, 0.31, 1);
+
+  /* Faint warm paper texture (very low contrast). */
+  --page-texture:
+    radial-gradient(1200px 620px at 14% -8%, rgba(204, 120, 92, 0.06), transparent 60%),
+    radial-gradient(980px 560px at 96% 4%, rgba(190, 150, 92, 0.05), transparent 58%);
+}
+
+/* ── Slate — cool, minimal, product-page geometry ─────────────────────────── */
+html[data-variant='slate'] {
+  color-scheme: light;
+
+  --page-bg: #fbfbfa;
+  --page-bg-2: #f3f4f3;
+  --surface: #ffffff;
+  --surface-2: #f5f6f6;
+  --surface-inset: #f0f1f1;
+
+  --ink: #1c1f24;
+  --ink-strong: #0f1115;
+  --ink-soft: #5a616b;
+  --ink-faint: #969ca5;
+
+  --border: rgba(26, 32, 40, 0.1);
+  --border-strong: rgba(26, 32, 40, 0.2);
+  --rule: rgba(26, 32, 40, 0.1);
+
+  --accent: #b65539;
+  --accent-bright: #c8674a;
+  --accent-ink: #9a4329;
+  --accent-soft: rgba(182, 85, 57, 0.1);
+  --accent-contrast: #ffffff;
+
+  --footer-bg: #14171c;
+  --footer-ink: #aeb4bd;
+  --footer-link: #eef0f2;
+
+  /* Sans-forward, tighter, more confident product look. */
+  --heading-font: var(--font-sans);
+  --heading-weight: 680;
+  --heading-tracking: -0.022em;
+  --prose-font: var(--font-sans);
+  --prose-size: 1.045rem;
+  --prose-leading: 1.72;
+
+  --card-radius: 12px;
+
+  --shadow-rgb: 18, 24, 33;
+  --shadow-1: 0 1px 2px rgba(var(--shadow-rgb), 0.05);
+  --shadow-2:
+    0 1px 2px rgba(var(--shadow-rgb), 0.05), 0 12px 26px -16px rgba(var(--shadow-rgb), 0.2);
+  --shadow-hover:
+    0 2px 4px rgba(var(--shadow-rgb), 0.06), 0 22px 40px -22px rgba(var(--shadow-rgb), 0.28);
+  --lift: -3px;
+
+  --selection-bg: rgba(182, 85, 57, 0.16);
+
+  --page-texture: none;
+}
+
+/* ── Ink — dark editorial "frontier" ──────────────────────────────────────── */
+html[data-variant='ink'] {
+  color-scheme: dark;
+
+  --page-bg: #17130e;
+  --page-bg-2: #1d1812;
+  --surface: #211c15;
+  --surface-2: #262019;
+  --surface-inset: #1b1610;
+
+  --ink: #ece4d6;
+  --ink-strong: #fbf6ec;
+  --ink-soft: #ab9f8c;
+  --ink-faint: #7c7160;
+
+  --border: rgba(238, 226, 205, 0.12);
+  --border-strong: rgba(238, 226, 205, 0.24);
+  --rule: rgba(238, 226, 205, 0.13);
+
+  --accent: #e29873;
+  --accent-bright: #e7a684;
+  --accent-ink: #f0b694;
+  --accent-soft: rgba(226, 152, 115, 0.16);
+  --accent-contrast: #1b1610;
+
+  --footer-bg: #120f0a;
+  --footer-ink: #b7ab97;
+  --footer-link: #f1e6d4;
+
+  --heading-font: var(--font-display);
+  --heading-weight: 540;
+  --heading-tracking: -0.01em;
+  --prose-font: var(--font-serif);
+  --prose-size: 1.085rem;
+  --prose-leading: 1.8;
+
+  --card-radius: 16px;
+
+  --shadow-rgb: 0, 0, 0;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 1px 2px rgba(0, 0, 0, 0.35), 0 18px 40px -18px rgba(0, 0, 0, 0.62);
+  --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.4), 0 30px 60px -22px rgba(0, 0, 0, 0.7);
+  --lift: -4px;
+
+  --selection-bg: rgba(226, 152, 115, 0.26);
+
+  --page-texture:
+    radial-gradient(1200px 640px at 12% -10%, rgba(226, 152, 115, 0.1), transparent 58%),
+    radial-gradient(960px 560px at 98% 2%, rgba(150, 110, 80, 0.08), transparent 60%);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2 · REMAP — feed the existing al-folio (--global-*) + (--site-*) systems
+        from the token vocabulary so every legacy component recolors for free.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --global-bg-color: var(--page-bg);
+  --global-code-bg-color: var(--surface-inset);
+  --global-text-color: var(--ink);
+  --global-text-color-light: var(--ink-soft);
+  --global-theme-color: var(--accent);
+  --global-hover-color: var(--accent-ink);
+  --global-hover-text-color: var(--accent-contrast);
+  --global-dropdown-hover-bg: var(--accent);
+  --global-dropdown-hover-text: var(--accent-contrast);
+  --global-footer-bg-color: var(--footer-bg);
+  --global-footer-text-color: var(--footer-ink);
+  --global-footer-link-color: var(--footer-link);
+  --global-divider-color: var(--rule);
+  --global-card-bg-color: var(--surface);
+  --global-highlight-color: var(--accent-ink);
+
+  /* Blog backdrop tokens (defined originally in global.css). */
+  --site-page-bg: var(--page-bg);
+  --site-surface-bg: var(--surface);
+  --site-surface-border: var(--border);
+  --site-surface-shadow: var(--shadow-2);
+  --site-display-font: var(--heading-font);
+  --site-heading-ink: var(--ink-strong);
+  --site-navbar-bg: color-mix(in srgb, var(--page-bg) 82%, transparent);
+  --site-navbar-menu-bg: var(--page-bg);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3 · PAGE CANVAS + BASE ELEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html {
+  background-color: var(--page-bg);
+}
+
+body {
+  background-color: var(--page-bg);
+  color: var(--ink);
+  font-feature-settings: 'kern';
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 0.4s var(--ease),
+    color 0.4s var(--ease);
+}
+
+/* Fixed, non-scrolling texture layer. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--page-texture, none);
+  display: block !important;
+}
+
+::selection {
+  background: var(--selection-bg);
+}
+
+/* Headings — editorial display face, tuned tracking + balance. */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  color: var(--ink-strong);
+  text-wrap: balance;
+}
+h5,
+h6 {
+  font-family: var(--font-sans);
+}
+
+/* Thin warm scrollbar (WebKit). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4 · MOTION SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hidden state only applies once JS adds `.reveal-ready` to <html> — so if the
+   observer never runs (no-JS / failure) content stays fully visible. */
+@media (prefers-reduced-motion: no-preference) {
+  html.reveal-ready [data-reveal] {
+    opacity: 0;
+    transform: translateY(var(--reveal-y, 16px));
+    transition:
+      opacity 0.7s var(--ease),
+      transform 0.7s var(--ease);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  html.reveal-ready [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Animated underline — grows from the leading edge. */
+.u-underline {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.32s var(--ease);
+}
+.u-underline:hover,
+.u-underline:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+/* Lift utility for interactive surfaces. */
+.u-lift {
+  transition:
+    transform 0.32s var(--ease),
+    box-shadow 0.32s var(--ease),
+    border-color 0.32s var(--ease),
+    background-color 0.32s var(--ease);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .u-lift:hover {
+    transform: translateY(var(--lift));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5 · SHARED COMPONENTS (token-driven)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Eyebrow / kicker label. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.eyebrow::before {
+  content: '';
+  width: 1.6rem;
+  height: 1.5px;
+  background: var(--accent-bright);
+  opacity: 0.8;
+}
+
+/* Pill — outline chip used for tags, social, meta. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.28rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--pill-radius);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: var(--surface);
+  text-decoration: none;
+  transition:
+    color 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+a.pill:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* Buttons. */
+.btn-clay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.62rem 1.15rem;
+  border-radius: var(--pill-radius);
+  border: 1px solid transparent;
+  background: var(--accent-bright);
+  color: var(--accent-contrast);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.2s var(--ease),
+    background-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+  box-shadow: 0 1px 2px rgba(var(--shadow-rgb), 0.18);
+}
+.btn-clay:hover {
+  background: var(--accent-ink);
+  color: var(--accent-contrast);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--pill-radius);
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease),
+    transform 0.2s var(--ease);
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6 · SURFACES (page / post containers)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.page-container:has(.blog-index-page),
+.page-container:has(.post-list),
+.page-container:has(.tag-cloud),
+.post-container {
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+
+html[data-variant='ink'] .page-container:has(.blog-index-page),
+html[data-variant='ink'] .page-container:has(.post-list),
+html[data-variant='ink'] .page-container:has(.tag-cloud),
+html[data-variant='ink'] .post-container {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7 · VARIANT SWITCHER (dev preview widget)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.variant-switch {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  font-family: var(--font-sans);
+}
+.variant-switch__label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 0.4rem 0 0.55rem;
+}
+.variant-switch button {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0.34rem 0.7rem;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: transparent;
+  transition:
+    color 0.2s var(--ease),
+    background-color 0.2s var(--ease);
+}
+.variant-switch button:hover {
+  color: var(--ink-strong);
+}
+.variant-switch button[aria-pressed='true'] {
+  color: var(--accent-contrast);
+  background: var(--accent-bright);
+}
+@media (max-width: 640px) {
+  .variant-switch__label {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8 · INK VARIANT — fix third-party light-themed embeds
+        (site forces data-theme=light, so dark code colors are keyed here too)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html[data-variant='ink'] .astro-code,
+html[data-variant='ink'] .astro-code span {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+html[data-variant='ink'] :focus-visible {
+  outline-color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9 · READING — prose body (token-driven serif/sans + editorial detailing)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.prose {
+  font-family: var(--prose-font);
+  font-size: var(--prose-size);
+  line-height: var(--prose-leading);
+  color: var(--ink);
+}
+
+.prose :is(h2, h3, h4) {
+  color: var(--ink-strong);
+}
+.prose h2 {
+  font-size: 1.62rem;
+  margin-top: 2.5rem;
+  margin-bottom: 0.7rem;
+}
+.prose h3 {
+  font-size: 1.28rem;
+}
+.prose h4 {
+  font-size: 1.08rem;
+}
+
+.prose strong {
+  color: var(--ink-strong);
+  font-weight: 650;
+}
+
+/* Content links — restrained underline that warms on hover (not heading anchors). */
+.prose :is(p, li, td, th, figcaption) a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition:
+    text-decoration-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+.prose :is(p, li, td, th, figcaption) a:hover {
+  color: var(--accent-ink);
+  text-decoration-color: var(--accent);
+}
+
+.prose blockquote {
+  border-left: 3px solid var(--accent-bright);
+  background: var(--surface-2);
+  border-radius: 0 12px 12px 0;
+  padding: 0.85rem 1.4rem;
+  margin: 1.6rem 0;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 1.05rem;
+}
+.prose blockquote p {
+  margin-block: 0.4rem;
+}
+
+.prose hr {
+  border: 0;
+  height: 1px;
+  background: var(--rule);
+  margin: 2.6rem auto;
+}
+
+.prose code:not(pre code) {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.85em;
+  padding: 0.12em 0.4em;
+  border-radius: 5px;
+}
+
+.prose pre {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+}
+
+.prose img {
+  border-radius: 12px;
+  box-shadow: var(--shadow-2);
+}
+
+.prose table {
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.prose table th {
+  background: var(--surface-2);
+  color: var(--ink-strong);
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+.prose table th,
+.prose table td {
+  border-color: var(--border);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   10 · BLOG INDEX + POST LIST (editorial titles, hover affordance)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.post-list li {
+  transition: border-color 0.25s var(--ease);
+}
+
+.post-list li a.post-title {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  font-size: 1.48rem;
+  line-height: 1.2;
+  letter-spacing: var(--heading-tracking);
+  color: var(--ink-strong);
+  transition: color 0.2s var(--ease);
+}
+.post-list li:hover a.post-title,
+.post-list li a.post-title:hover {
+  color: var(--accent);
+}
+.post-list li > p {
+  color: var(--ink-soft);
+}
+
+.post-list .post-meta,
+.post .post-meta,
+.featured-posts .post-meta {
+  font-family: var(--font-sans);
+  color: var(--ink-faint);
+}
+
+/* Tags / categories / year → soft pills. */
+.post .post-tags a,
+.post-list .post-tags a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.16rem 0.6rem;
+  margin: 0.2rem 0.3rem 0.2rem 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-family: var(--font-sans);
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition:
+    color 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    background-color 0.18s var(--ease);
+}
+.post .post-tags a:hover,
+.post-list .post-tags a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+/* Strip the leading separators al-folio puts between tags (we use pills now). */
+.post .post-tags,
+.post-list .post-tags {
+  line-height: 2.2;
+}
+
+/* Blog index header — editorial display title. */
+.blog-index-page .header-bar h1 {
+  color: var(--ink-strong);
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  text-transform: none;
+}
+
+/* Featured (pinned) cards. */
+.featured-posts .card {
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.featured-posts .card.hoverable {
+  transition:
+    transform 0.3s var(--ease),
+    box-shadow 0.3s var(--ease),
+    border-color 0.3s var(--ease);
+}
+.featured-posts .card.hoverable:hover {
+  transform: translateY(var(--lift));
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-strong);
+}
+.featured-posts .card-title {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  font-size: 1.15rem;
+  color: var(--ink-strong);
+  text-transform: none;
+}
+
+/* Year markers in the list. */
+.blog-index-page h2.year,
+.publications h2.year {
+  color: var(--ink-faint);
+  font-family: var(--heading-font);
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   11 · NAVBAR + FOOTER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.navbar {
+  transition:
+    background-color 0.3s var(--ease),
+    border-color 0.3s var(--ease);
+}
+/* Editorial wordmark (brand is the first direct <a> in the navbar bar). */
+.navbar > div > a:first-child {
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-tracking);
+  font-size: 1.14rem;
+}
+
+footer {
+  font-family: var(--font-sans);
+}
+
+/* Reading-progress bar uses the bright accent. */
+#reading-progress {
+  background: var(--accent-bright) !important;
+}

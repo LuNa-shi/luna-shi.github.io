@@ -172,7 +172,7 @@ function ogCard(title: string, description: string | undefined, type: string) {
               textTransform: 'uppercase',
             },
           },
-          "LuNa's Notes",
+          "luna's Notes",
         ),
       ),
     ),

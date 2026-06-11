@@ -4,6 +4,7 @@ import '@styles/global.css';
 import Footer from '@components/Footer.astro';
 import Navbar from '@components/Navbar.astro';
 import SearchTrigger from '@components/search/SearchTrigger.astro';
+import VariantSwitch from '@components/VariantSwitch.astro';
 import { site } from '@config/site';
 import { ClientRouter } from 'astro:transitions';
 
@@ -174,14 +175,45 @@ const personJsonLd = isHome ? JSON.stringify({
     <!-- Named slot for page-specific head content (e.g. JSON-LD from Post.astro) -->
     <slot name="head" />
 
-    <script is:inline>
+    <script
+      is:inline
+      define:vars={{ defaultVariant: site.theme.variant, allowOverride: site.theme.previewVariants }}
+    >
       function applyTheme() {
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.documentElement.setAttribute('data-theme-setting', 'light');
+        var el = document.documentElement;
+        el.setAttribute('data-theme', 'light');
+        el.setAttribute('data-theme-setting', 'light');
+        // Editorial variant (clay · slate · ink). When previewing, ?variant=
+        // overrides + persists, else localStorage, else the committed default.
+        // When locked (previewVariants=false) always use the committed default,
+        // ignoring any stale localStorage. Set before first paint (no flash).
+        var v = defaultVariant;
+        if (allowOverride) {
+          try {
+            var q = new URL(window.location.href).searchParams.get('variant');
+            if (q) localStorage.setItem('site-variant', q);
+            v = localStorage.getItem('site-variant') || defaultVariant;
+          } catch (e) {
+            /* private mode */
+          }
+        }
+        el.setAttribute('data-variant', v);
+        // Enables scroll-reveal hiding only when JS is live (no-JS stays visible).
+        el.classList.add('reveal-ready');
       }
       applyTheme();
       document.addEventListener('astro:after-swap', applyTheme);
     </script>
+
+    <!-- No-JS / observer-failure failsafe: never leave reveal content hidden. -->
+    <noscript>
+      <style>
+        [data-reveal] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      </style>
+    </noscript>
   </head>
 
   <body
@@ -264,6 +296,9 @@ const personJsonLd = isHome ? JSON.stringify({
       )
     }
 
+    <!-- Variant preview switcher (clay · slate · ink) — only when previewing -->
+    {site.theme.previewVariants && <VariantSwitch />}
+
     <!-- Back to top button -->
     <button id="back-to-top" aria-label="Back to top" title="Back to top">
       <svg
@@ -304,6 +339,41 @@ const personJsonLd = isHome ? JSON.stringify({
         attachClick();
         updateVisibility();
       });
+    </script>
+
+    <!-- Scroll-reveal: fade/rise [data-reveal] elements into view once. -->
+    <script>
+      function initReveal() {
+        const els = document.querySelectorAll('[data-reveal]:not([data-reveal-done])');
+        if (!els.length) return;
+        if (
+          !('IntersectionObserver' in window) ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+          els.forEach((e) => {
+            e.setAttribute('data-reveal-done', '');
+            e.classList.add('is-visible');
+          });
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries, obs) => {
+            entries.forEach((en) => {
+              if (en.isIntersecting) {
+                en.target.classList.add('is-visible');
+                obs.unobserve(en.target);
+              }
+            });
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.06 },
+        );
+        els.forEach((e) => {
+          e.setAttribute('data-reveal-done', '');
+          io.observe(e);
+        });
+      }
+      initReveal();
+      document.addEventListener('astro:page-load', initReveal);
     </script>
   </body>
 </html>

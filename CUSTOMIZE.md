@@ -573,6 +573,36 @@ Set either value to `'auto'` to keep the built-in default for that mode.
 | Green            | `#009f06` | `#b7d12a` |
 | Orange           | `#f29105` | `#efcc00` |
 
+When `theme.color` is left at `'auto'` (the editorial default), the accent is
+driven by the design-variant system below instead of a single fixed colour.
+
+### Design variants (editorial theme)
+
+The site ships three token-driven design variants in `src/styles/_design.css`,
+each a complete palette + type + motion personality:
+
+| Variant | Feel                                | Headings       | Body             |
+| ------- | ----------------------------------- | -------------- | ---------------- |
+| `clay`  | warm editorial (Anthropic-faithful) | Fraunces serif | Newsreader serif |
+| `slate` | cool, minimal, product              | Hanken sans    | Hanken sans      |
+| `ink`   | dark "frontier"                     | Fraunces serif | Newsreader serif |
+
+Pick the committed default in `site.ts`:
+
+```typescript
+theme: {
+  color: { light: 'auto', dark: 'auto' },  // let the variant drive the accent
+  variant: 'slate',          // 'clay' | 'slate' | 'ink'
+  previewVariants: false,    // true → floating switcher to compare variants live
+},
+```
+
+Set `previewVariants: true` to show a floating switcher that flips variants in
+the browser (persisted to `localStorage`, or force one with `?variant=ink`).
+Set it back to `false` to lock the site to `variant`. Each variant's colours,
+fonts, shadows and motion are CSS custom properties at the top of
+`_design.css` — edit those to tune a variant or add your own.
+
 ---
 
 ## 15. Comments (Giscus / Disqus)

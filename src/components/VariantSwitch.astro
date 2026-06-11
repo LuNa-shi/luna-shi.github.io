@@ -1,0 +1,71 @@
+---
+/**
+ * Floating variant switcher — preview tool only.
+ *
+ * Lets you flip between the editorial design variants (clay · slate · ink) live
+ * in the browser, persisted to localStorage. Rendered by Base.astro only when
+ * `site.theme.previewVariants` is true (or in dev). Set that flag to false to
+ * lock the site to `site.theme.variant` for production.
+ */
+import { site } from '@config/site';
+
+const variants = [
+  { id: 'clay', label: 'Clay' },
+  { id: 'slate', label: 'Slate' },
+  { id: 'ink', label: 'Ink' },
+] as const;
+
+const def = site.theme.variant;
+---
+
+<div
+  class="variant-switch"
+  role="group"
+  aria-label="Design theme"
+  transition:persist
+>
+  <span class="variant-switch__label">Theme</span>
+  {
+    variants.map((v) => (
+      <button
+        type="button"
+        data-variant-btn={v.id}
+        aria-pressed={v.id === def ? 'true' : 'false'}
+      >
+        {v.label}
+      </button>
+    ))
+  }
+</div>
+
+<script is:inline define:vars={{ defaultVariant: def }}>
+  (function () {
+    function sync(v) {
+      document.querySelectorAll('[data-variant-btn]').forEach(function (b) {
+        b.setAttribute('aria-pressed', b.getAttribute('data-variant-btn') === v ? 'true' : 'false');
+      });
+    }
+    function apply(v) {
+      document.documentElement.setAttribute('data-variant', v);
+      try {
+        localStorage.setItem('site-variant', v);
+      } catch (e) {
+        /* private mode */
+      }
+      sync(v);
+    }
+    function current() {
+      return document.documentElement.getAttribute('data-variant') || defaultVariant;
+    }
+    function wire() {
+      document.querySelectorAll('[data-variant-btn]').forEach(function (b) {
+        b.onclick = function () {
+          apply(b.getAttribute('data-variant-btn'));
+        };
+      });
+      sync(current());
+    }
+    wire();
+    document.addEventListener('astro:after-swap', wire);
+  })();
+</script>

@@ -10,7 +10,7 @@ export type NavDropdown = { label: string; children: NavLeaf[] };
 export type NavItem = NavLeaf | NavDropdown;
 
 export const site = {
-  title: "LuNa's Notes",
+  title: "luna's Notes",
   description:
     'A personal site for blogs, projects, and research notes around multi-agent systems.',
   url: (import.meta.env.SITE ?? 'https://luna-shi.github.io').replace(/\/$/, ''),
@@ -23,6 +23,25 @@ export const site = {
     avatar: '/assets/img/avatar.webp',
     subtitle: `Multi-agent systems &nbsp;·&nbsp; agent swarms &nbsp;·&nbsp; public notes`,
     moreInfo: `<p>Dequan Wang Lab / Shanghai</p>`,
+  },
+
+  /**
+   * Homepage hero. All editorial copy lives here (never hardcoded in
+   * components) so it stays a single, easy edit.
+   */
+  home: {
+    hero: {
+      enabled: true,
+      /** Small kicker above the headline (topic or genre, not the affiliation
+          — affiliation already shows under your name in the hero). */
+      eyebrow: 'Research notebook',
+      /** Large display statement — set the tone of the whole site. Keep short. */
+      headline: 'Public notes on multi-agent systems.',
+      /** Optional one-line lead under the headline (blank = use about.mdx only). */
+      lead: '',
+      /** Show the avatar + social row in the hero. */
+      showProfile: true,
+    },
   },
 
   socials: {
@@ -70,7 +89,7 @@ export const site = {
   },
 
   blog: {
-    name: 'blog',
+    name: 'Blog',
     description: 'Small notes make unfinished thought durable.',
     postsPerPage: 8,
     displayTags: ['pi-agent', 'sutton-rl', 'cs336'],
@@ -203,10 +222,26 @@ export const site = {
 
   theme: {
     default: 'light' as 'light' | 'dark' | 'system',
+    /**
+     * Legacy single-accent override. Set to 'auto' so the accent is driven by
+     * the editorial variant system (_design.css) instead of one fixed colour.
+     */
     color: {
-      light: '#0f766e' as string,
-      dark: '#0f766e' as string,
+      light: 'auto' as string,
+      dark: 'auto' as string,
     },
+    /**
+     * Editorial design variant — the committed default personality:
+     *   'clay'  warm ivory + clay, serif-forward (Anthropic-faithful)
+     *   'slate' cool, minimal, sans-forward (product-page feel)
+     *   'ink'   dark editorial, glowing clay (frontier mode)
+     */
+    variant: 'slate' as 'clay' | 'slate' | 'ink',
+    /**
+     * Show the floating variant switcher for live preview. Set to false before
+     * shipping to lock the site to `variant` above.
+     */
+    previewVariants: false as boolean,
   },
 } as const;
 

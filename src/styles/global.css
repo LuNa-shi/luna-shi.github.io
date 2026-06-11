@@ -1,6 +1,18 @@
 @import 'tailwindcss';
+
+/* ─── Editorial variable fonts (self-hosted via Fontsource) ──────────────────
+   Fraunces (display serif) · Newsreader (reading serif) · Hanken Grotesk (sans).
+   Anthropic-style pairing: grotesque UI + warm editorial serif. */
+@import '@fontsource-variable/fraunces/standard.css';
+@import '@fontsource-variable/fraunces/standard-italic.css';
+@import '@fontsource-variable/hanken-grotesk/index.css';
+@import '@fontsource-variable/hanken-grotesk/wght-italic.css';
+@import '@fontsource-variable/newsreader/standard.css';
+@import '@fontsource-variable/newsreader/standard-italic.css';
+
 @import './_colors.css';
 @import './_typography.css';
+@import './_design.css';
 /* KaTeX math CSS — bundled locally so it's always available (no CDN dependency) */
 @import 'katex/dist/katex.min.css';
 
@@ -82,56 +94,14 @@
 /* Configure dark: variant to use data-theme attribute (matches Base.astro) */
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/* ─── Site backdrop ─────────────────────────────────────────────────────── */
-
-:root {
-  --site-page-bg: #f7f2ea;
-  --site-surface-bg: rgba(255, 252, 247, 0.78);
-  --site-surface-border: rgba(94, 70, 45, 0.1);
-  --site-surface-shadow: 0 18px 48px rgba(79, 56, 35, 0.045);
-  --site-display-font: ui-serif, Georgia, Cambria, 'Times New Roman', serif;
-  --site-heading-ink: #251c15;
-  --site-navbar-bg: rgba(247, 242, 234, 0.9);
-  --site-navbar-menu-bg: #f7f2ea;
-}
-
-html {
-  background-color: var(--site-page-bg);
-}
+/* ─── Site backdrop ─────────────────────────────────────────────────────────
+   All backdrop, surface, navbar and heading tokens now live in _design.css and
+   are driven by the variant system (clay · slate · ink). Only the structural
+   isolation context remains here. */
 
 body {
   position: relative;
   isolation: isolate;
-  background: var(--site-page-bg);
-}
-
-body::before {
-  content: '';
-  display: none;
-}
-
-html[data-theme='dark'] {
-  --site-page-bg: #171717;
-  --site-surface-bg: rgba(28, 28, 29, 0.82);
-  --site-surface-border: rgba(160, 170, 180, 0.16);
-  --site-surface-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
-  --site-heading-ink: #f2eee6;
-  --site-navbar-bg: rgba(28, 28, 29, 0.9);
-  --site-navbar-menu-bg: #1c1c1d;
-  background-color: var(--site-page-bg);
-}
-
-html[data-theme='dark'] body::before {
-  display: none;
-}
-
-html[data-theme='dark'] .page-container:has(.blog-index-page),
-html[data-theme='dark'] .page-container:has(.post-list),
-html[data-theme='dark'] .page-container:has(.tag-cloud),
-html[data-theme='dark'] .post-container {
-  border-color: var(--site-surface-border);
-  background: var(--site-surface-bg);
-  box-shadow: var(--site-surface-shadow);
 }
 
 /* ─── Breadcrumb navigation (shared by blog posts, projects, publications) ── */
