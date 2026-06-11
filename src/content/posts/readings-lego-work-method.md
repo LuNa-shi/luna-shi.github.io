@@ -1,49 +1,101 @@
 ---
-title: 'Lego 工作法'
+title: 'The Lego work method: simplicity is an operating discipline'
 date: '2026-06-09'
 overview: >-
-  TLDR: Lego 工作法把组织执行看成客户、创新、问责、外包和学习责任的组合系统：客户不是独裁者，创新必须贴着交付，责任不能因为外包而消失。它适合提醒 agent 工作流也需要清晰
-  owner、透明沟通和持续迭代。
+  TLDR: The useful lesson from Lego is not a slogan about creativity. It is an operating discipline: stay close to the
+  customer, keep accountability internal, reduce complexity, and make execution visible.
 description: >-
-  TLDR: Lego 工作法把组织执行看成客户、创新、问责、外包和学习责任的组合系统：客户不是独裁者，创新必须贴着交付，责任不能因为外包而消失。它适合提醒 agent 工作流也需要清晰
-  owner、透明沟通和持续迭代。
+  TLDR: The useful lesson from Lego is not a slogan about creativity. It is an operating discipline: stay close to the
+  customer, keep accountability internal, reduce complexity, and make execution visible.
 tags:
   - 'readings'
 categories:
   - 'reading'
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 37a4e07a-a023-8004-b162-e9ed1d26735a parent=Readings url=https://app.notion.com/p/37a4e07aa0238004b162e9ed1d26735a -->
 
-1. 客户是上帝，但不是独裁者。交付是核心。理解客户的逻辑，他们要为自己赚钱。（零售商vs乐高）
+It is easy to turn Lego into a creativity story: colorful bricks, playful products, strong brand.
 
-1. 创新和执行息息相关，底层也要参与创新。
+The more useful reading is operational. Lego's work method is about keeping a company understandable enough to execute: clear customer logic, disciplined innovation, visible accountability, careful outsourcing, and constant reduction of complexity.
 
-1. 业务创新的核心目标还是消费者。持续改进，持续迭代，而非颠覆
+That is also why it maps well to agent workflows. Agents can produce more work, but they can also multiply ambiguity unless the operating system around them stays simple.
 
-1. 领导与管理不同。高管要免于被琐事缠身，但也要对底层实现有20%的掌握。
+## The customer is central, not absolute
 
-1. 执行力比战略更重要
+"The customer is God" is a dangerous phrase if it means the customer dictates every implementation detail.
 
-1. 问责制，沟通，透明
+The better version is: understand the customer's economic logic. A retailer, a child, a parent, and a brand team all want different things from the same product. Good execution starts by knowing which demand is real, which demand is noise, and which tradeoff the company is willing to own.
 
-1. 外包商是生态系统的一部分，责任不能外包
+For agent products, this matters because users often ask for features in the language of symptoms:
 
-1. 学习是个人责任，没人会主动帮你，但是需要多寻求帮助。
+```text
+"Make the agent more autonomous."
+"Add memory."
+"Let it use more tools."
+"Make it faster."
+```
 
-1. 组织有一个连续的战略，而非每个部门自己定
+The operating question is: what customer problem is being solved, and what risk does the company now own?
 
-1. 战略要不断对话，迭代适应市场需求
+## Innovation has to stay attached to delivery
 
-1. 扩大自己的饼的时候要慢，不要一年3，4个新东西，不要稀释品牌价值
+Innovation detached from execution becomes theater. Execution without innovation becomes local optimization.
 
-1. 视觉工厂，每周简报，没有PPT，打印稿，平等对话，守时
+The Lego lesson I want to keep is that innovation should happen close to the people who see real constraints: manufacturing, retail, support, design, and operations. The people doing the work usually know where friction hides.
 
-1. 过度的复杂度会终结一个企业，降低复杂度会提高透明度和效率，提高灵活性和创新
+In agent systems, the equivalent is letting tool builders, support engineers, eval owners, and workflow users influence the roadmap. A clever agent design that ignores test flakiness, permission friction, or review burden is not really clever.
 
-1. 内部负责人要有领导能力，与其他职能部门建立合作。
+## Accountability cannot be outsourced
 
-1. 自动化，技术，是达到目的的手段，管理好人的系统才是第一要务
+Outsourcing can expand capacity. It cannot move responsibility out of the company.
+
+If a vendor ships bad work, the customer still experiences it as your product. If an agent makes a bad change, the user still experiences it as your system. The owner cannot point at the contractor, the model, or the tool call and declare the problem external.
+
+This is the rule I would write down:
+
+```text
+Execution can be delegated.
+Accountability cannot.
+```
+
+That has practical consequences. External contributors, vendors, and agents need clear interfaces, review paths, quality bars, and escalation rules. Otherwise outsourcing becomes complexity laundering.
+
+## Simplicity is not minimalism
+
+The strongest theme is complexity control. Too much complexity kills transparency, slows learning, and makes accountability vague.
+
+Simplicity here does not mean doing less important work. It means making the system easier to inspect:
+
+- one strategy instead of every department inventing its own;
+- fewer simultaneous expansions;
+- visible weekly operating rhythms;
+- direct conversations instead of presentation theater;
+- clear owners across functions;
+- technology as a means, not the management system itself.
+
+The "visual factory" idea is useful because it treats transparency as infrastructure. People should be able to see the state of work without a meeting that reconstructs reality from scratch.
+
+## A checklist I would reuse
+
+For a team or agent workflow, the Lego-inspired checklist is:
+
+| Question | Why it matters |
+| --- | --- |
+| Who is the real customer? | Prevents feature work from drifting into theater |
+| What is the delivery promise? | Keeps innovation attached to execution |
+| Who owns the outcome? | Prevents responsibility from dissolving across vendors or agents |
+| What is visible every week? | Turns execution into shared state |
+| What complexity can be removed? | Restores speed, transparency, and learning |
+| What should not expand yet? | Protects the core brand or product promise |
+
+This is not glamorous, but it is powerful.
+
+## My takeaway
+
+The Lego work method is not mainly about creativity. It is about making a complex organization simple enough to keep learning.
+
+That is the same problem agent teams will face. Adding agents, tools, vendors, automations, and dashboards can increase capacity, but only if the system still has visible work, clear owners, customer logic, and a habit of removing complexity.

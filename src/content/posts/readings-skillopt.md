@@ -1,39 +1,108 @@
 ---
-title: 'SkillOpt'
+title: 'SkillOpt: training the procedure outside the weights'
 date: '2026-06-08'
 overview: >-
-  TLDR: SkillOpt 把 agent skill 当成可训练的文本参数：冻结目标模型，用 optimizer 从 rollout 证据中提出受控编辑，并通过 validation
-  gate 只接受真实变好的 skill。它说明可复用流程和失败纪律可以在权重之外被稳定优化。
+  TLDR: SkillOpt treats an agent skill as an optimizable text artifact. The model stays frozen, rollouts provide evidence,
+  an optimizer proposes edits, and a validation gate accepts only real improvements.
 description: >-
-  TLDR: SkillOpt 把 agent skill 当成可训练的文本参数：冻结目标模型，用 optimizer 从 rollout 证据中提出受控编辑，并通过 validation
-  gate 只接受真实变好的 skill。它说明可复用流程和失败纪律可以在权重之外被稳定优化。
+  TLDR: SkillOpt treats an agent skill as an optimizable text artifact. The model stays frozen, rollouts provide evidence,
+  an optimizer proposes edits, and a validation gate accepts only real improvements.
 tags:
   - 'readings'
 categories:
   - 'reading'
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3794e07a-a023-8042-92aa-f0e4bb5288c1 parent=Readings url=https://app.notion.com/p/3794e07aa023804292aaf0e4bb5288c1 -->
 
-> SkillOpt 把 agent skill 从“人写的提示词/经验总结”，改写成一个可以被训练的外部状态。目标模型保持冻结，只负责带着当前 skill 执行任务；另一个 optimizer model 读取带分数的 rollouts，把成功和失败轨迹压缩成受控的 add/delete/replace 编辑，并且只有当候选 skill 在 held-out validation split 上严格变好时才接受。它的核心主张很直接：如果 skill 是 agent 的程序性记忆，那它就不该靠一次性手写，而应该像参数一样被稳定优化。
+The easy way to talk about agent skills is to call them prompts.
+
+SkillOpt makes that feel wrong. A skill is closer to procedural memory: a small external artifact that tells an agent how to behave in a domain, what to check first, which mistakes to avoid, and what evidence counts.
+
+The paper's main move is simple but powerful: keep the target model frozen, then optimize the skill text from rollout evidence.
 
 ![Notion image](/assets/img/notion/readings-skillopt-01.webp)
 
 ![Notion image](/assets/img/notion/readings-skillopt-02.webp)
 
-- Skill document 被当成 text-space 参数: 论文把 domain adaptation 的对象从 model weights 和 prompt，转移到一个可审计的 `best_skill.md`。这个文件通常只有 300-2,000 tokens，部署时不调用 optimizer、不改模型权重，只把训练好的 skill 放进 direct chat、Codex 或 Claude Code 这类 harness 里使用。
+## What is being trained
 
-- 优化器不是自由改写，而是有学习率的文本更新: SkillOpt 用 rollout batch 收集证据，再把失败和成功轨迹分成 reflection minibatches，让 optimizer model 产出结构化编辑。所谓 textual learning rate 就是每步最多允许应用多少条 skill edits；默认还配合 schedule、batch/minibatch、merge/rank/clip，让 skill 的变化像训练步长一样可控，而不是每轮重写一份新 prompt。
+SkillOpt does not tune model weights. It trains a file.
 
-- Validation gate 是稳定性的核心: 每个 candidate skill 都必须在 selection split 上严格超过当前分数才会被接受，平局也拒绝。被拒绝的 edits 不会浪费，而是进入 rejected-edit buffer，成为后续优化的负反馈；再加上 epoch-wise slow/meta update，系统可以保留长期有效的编辑方向，同时避免局部失败把 skill 拉偏。
+That distinction matters. The deployable object is a compact `best_skill.md`, often small enough to inspect directly. At inference time, the optimizer disappears. The harness simply loads the trained skill and lets the target model use it.
 
-- 实证结果很激进: SkillOpt 在 6 个 benchmark、7 个 target model、3 种执行 harness 上，52/52 个评测单元都是最好或并列最好。以 GPT-5.5 为例，它把 direct chat 的平均 no-skill accuracy 提高 +23.5，在 Codex loop 里提高 +24.8，在 Claude Code 里提高 +19.1；在 direct chat 下还比每个 cell 里最强的 human skill、one-shot LLM skill、Trace2Skill、TextGrad、GEPA、EvoSkill 等 baseline oracle 高 +5.4。
+This gives the method a nice engineering shape:
 
-- 学到的是可迁移的程序，而不是题目记忆: 训练出的 skill 可以跨模型、跨 harness、跨相近 benchmark 迁移。SpreadsheetBench skill 从 Codex 转到 Claude Code 仍带来 +59.7，Claude Code 转 Codex 带来 +43.6；OlympiadBench skill 转到 Omni-MATH 也在三个模型规模上保持正收益。案例里保留下来的规则也很像人类专家会写的程序性约束，例如“先检查 workbook 结构和公式，再写入静态值”或“把问题绑定到确切表格行/字段后再复制答案”。
+```text
+frozen model
+  + current skill
+  + task rollouts
+  + scored outcomes
+  -> optimizer proposes edits
+  -> validation gate accepts or rejects
+  -> better skill artifact
+```
 
-**为什么重要**: 这篇论文把 “skills” 从 prompt 工程产物推到了一个更像优化对象的位置。它给 agent builder 的启发是：很多能力提升不一定要进权重，也不一定要靠更长的系统提示；可以把可复用流程、工具纪律、格式约束和失败模式压进一个小型 skill artifact，再用训练式 controls 去改它。更有意思的是，这个 artifact 部署时几乎没有额外系统复杂度，但训练时可以享受 optimizer strength、validation gate、learning-rate schedule、negative feedback 这些机器学习里成熟的稳定化工具。
+The skill becomes a parameter in text space: readable, versionable, auditable, and portable across harnesses.
+
+## Why not just rewrite the prompt
+
+The important detail is control. The optimizer is not asked to freely produce a new mega-prompt each round. It proposes bounded edits: add, delete, replace, merge, rank, or clip specific instructions.
+
+The paper treats this like a textual learning rate. If each update can change too much, the skill becomes unstable. If it changes too little, it cannot learn. A good skill optimizer therefore needs the same discipline as any training loop:
+
+- batches and minibatches;
+- reflection over successes and failures;
+- limited edit budgets;
+- negative examples;
+- slow updates for stable patterns;
+- validation before deployment.
+
+This is the part I like most. The paper turns "prompt improvement" from taste into an optimization protocol.
+
+## The validation gate is the center
+
+The validation gate is what prevents the system from becoming an enthusiastic prompt rewriter.
+
+A candidate skill must beat the current skill on a held-out selection split. A tie is not enough. Rejected edits are not thrown away as useless; they become negative feedback for future rounds.
+
+That creates a useful asymmetry:
+
+```text
+easy to propose
+hard to accept
+```
+
+For agent engineering, this is the right default. Text instructions are cheap to mutate and easy to overfit. The gate forces the system to prove that the change survives outside the rollout batch that inspired it.
+
+## What the learned skills contain
+
+The most interesting learned rules are not magic phrases. They look like domain procedures.
+
+For spreadsheet tasks, a useful skill might say: inspect workbook structure and formulas before writing static values. For QA tasks, it might say: bind the answer to exact table rows or fields before copying text. For coding tasks, it might say: reproduce the failing case before changing the implementation.
+
+That is why "skill" is the right word. A skill compresses repeated practice:
+
+```text
+failure trace -> rule -> reusable procedure -> validation
+```
+
+It is not a memory of one task. It is a maintained way of acting.
+
+## Why this matters
+
+SkillOpt suggests a middle path between two expensive extremes:
+
+- putting every improvement into model weights;
+- writing a longer and longer system prompt by hand.
+
+Many gains live in procedural constraints: what to inspect, what to avoid, how to verify, how to format, when to stop. Those gains can be stored in a small artifact outside the model.
+
+That is exactly the pattern I want for personal blog writing too. A blog skill should not force every draft into one rigid template. It should preserve the reusable procedure: find the through-line, pick a loose format, write in English, use code/math only when they help, and QA the rendered page.
+
+The broader lesson is that agents will need trainable artifacts around them, not only larger models inside them.
 
 [Paper](https://arxiv.org/abs/2605.23904) | [Code](https://github.com/microsoft/SkillOpt) | [Project](https://microsoft.github.io/SkillOpt/)

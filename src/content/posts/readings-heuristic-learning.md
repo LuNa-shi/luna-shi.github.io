@@ -1,12 +1,12 @@
 ---
-title: 'Heuristic Learning: 用代码维护可验证的启发式系统'
+title: 'Heuristic Learning: maintaining a learning system in code'
 date: '2026-05-21'
 overview: >-
-  TLDR: Heuristic Learning frames iterative agent work as maintaining a living heuristic system, where patches, rules,
-  and code are compressed into reusable practice.
+  TLDR: Heuristic Learning treats iterative agent work as maintaining a verifiable software system. Feedback updates
+  code, tests, rules, state representations, and memory rather than neural network weights.
 description: >-
-  TLDR: Heuristic Learning frames iterative agent work as maintaining a living heuristic system, where patches, rules,
-  and code are compressed into reusable practice.
+  TLDR: Heuristic Learning treats iterative agent work as maintaining a verifiable software system. Feedback updates
+  code, tests, rules, state representations, and memory rather than neural network weights.
 tags:
   - readings
 categories:
@@ -14,74 +14,103 @@ categories:
   - systems
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3674e07a-a023-8075-8242-f7df546ecb44 parent=Readings url=https://app.notion.com/p/3674e07aa02380758242f7df546ecb44 -->
 
-## 0. 一句话
+After working with coding agents for a while, I needed a name for a pattern that was not quite reinforcement learning and not just manual programming.
 
-Heuristic Learning 是把“和 coding agent 一起反复试错”的过程，看成一个持续维护启发式系统的学习过程：反馈来自测试、日志、环境和人类判断，更新对象不是神经网络参数，而是代码、状态表示、规则、评估器和记忆。
+I started calling it **Heuristic Learning**.
 
-## 1. Heuristic Learning 是什么
+The loop is familiar: state, action, feedback, update. The difference is the update target. Deep RL updates neural network parameters. Heuristic Learning updates a software system: code, state detectors, rules, tests, evaluators, configuration, memory, and documentation.
 
-After more iteration with Codex, I started calling this process **Heuristic Learning (HL)**.
+## The object being maintained
 
-HL 和常见 Deep RL 一样，也有 state、action、feedback、update 的循环。区别在于：Deep RL 更新的是 neural-network parameters，而 HL 更新的是 software structure。
+A single heuristic is not enough. A heuristic becomes useful when it belongs to a system that can absorb feedback and preserve what worked.
 
-- HL is built out of program code.
+I call that object a **Heuristic System**.
 
-- Its feedback is consumed by a coding agent, and can come from environment reward, test cases, logs, videos, replays, or human feedback.
+It usually contains:
 
-- Its updates do not use backpropagation. The coding agent directly edits policies, state detectors, tests, configuration, or memory.
+- a programmatic policy;
+- an explicit state representation;
+- feedback channels such as tests, logs, rewards, videos, or replays;
+- experiment records;
+- memory of failures and fixes;
+- an update mechanism, often executed by a coding agent.
 
-- HL is the learning and update process. The object maintained by HL over time can be called a **Heuristic System (HS)**.
+The important point is connectivity. A rule, a replay, and a test have to meet. Otherwise the system learns once and then forgets the reason.
 
-## 2. Heuristic System 的组成
+## How it differs from Deep RL
 
-An HS is more than an isolated `policy.py`. It contains at least a programmatic policy, state representation, feedback channels, experiment records, replays or tests, memory, and an update mechanism executed by a coding agent.
+The comparison is useful because the surface loop looks similar.
 
-A single rule is not enough. Rules, feedback, history, and the next update path all need to connect before it becomes an HS.
+| Axis | Deep RL | Heuristic Learning |
+| --- | --- | --- |
+| Policy | neural network parameters | code, rules, state machines, controllers, macro-actions |
+| State | observations and learned representations | explicit variables, detectors, caches, typed state |
+| Action | neural network forward pass | executable logic or tool calls |
+| Feedback | mostly reward signals | tests, logs, replays, environment feedback, human judgment |
+| Update | gradient-based training | direct edits by a coding agent or human |
+| Memory | replay buffers or hidden weights | trials, summaries, failures, replays, version diffs |
 
-## 3. 和 Deep RL 的区别
+This does not make Heuristic Learning better in every domain. It makes it attractive when the environment is inspectable and verification is cheap enough to run repeatedly.
 
-As a table:
+## Why it is worth doing now
 
-| Axis     | Deep RL                                                                       | HL                                                                                              |
-| -------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Policy   | Neural network parameters                                                     | Code: rules, state machines, controllers, MPC, macro-actions                                    |
-| State    | Usually explicit observations                                                 | Usually explicit variables, detectors, caches, and other readable representations               |
-| Action   | Produced by a neural network forward pass                                     | Produced by executing code logic                                                                |
-| Feedback | Mainly fixed reward                                                           | Provided through coding-agent context: tests, environment feedback, logs, and replays all count |
-| Update   | Gradient-based updates to neural-network parameters in a Deep RL algorithm    | Direct code edits by a coding agent                                                             |
-| Memory   | On-policy methods basically have none; off-policy methods have replay buffers | Can explicitly store trials, summaries, failure reasons, replays, and version diffs             |
+Before coding agents, many heuristic systems were too annoying to maintain. They accumulated special cases, stale comments, weak tests, and forgotten context.
 
-## 4. 为什么值得维护
+Agents change the cost curve. They can read logs, edit code, add tests, simplify rules, and compare behavior across runs. That makes a new class of explicit heuristic systems worth owning.
 
-Heuristic Learning has several useful properties compared with Deep RL:
+The benefits are practical:
 
-- Explainability: neural networks are hard to explain, while HL policies can often be translated into plain language.
+- **Explainability**: policies can often be translated into ordinary language.
+- **Sample efficiency**: one good code edit can jump to a better policy immediately.
+- **Regression testing**: old wins can become tests, replays, or golden cases.
+- **Constrained overfitting**: multi-seed checks and simplification act as engineering regularization.
+- **Less forgetting**: capabilities can live in tests and rules, not only in weights.
 
-- Sample Efficiency: one effective code update can jump directly to a new policy, rather than slowly climbing through learning-rate tuning.
+The risk is also practical. A heuristic system can overfit to seeds, exploit test loopholes, or become an unreadable pile of patches. That is why compression is part of learning.
 
-- Regression-testability: old capabilities can become tests, replays, or golden cases.
+## The minimum healthy loop
 
-- Overfitting can be constrained: code heuristics can still overfit to seeds, environment details, or test loopholes, but simplification, regression checks, and multi-seed evaluation provide an engineering form of regularization.
+A healthy Heuristic System needs two repeated operations:
 
-- It can avoid part of catastrophic forgetting: old capabilities do not have to live only inside model weights; they can be written into rule sets and tests.
+```text
+absorb feedback
+  -> write failures, rewards, logs, and replays back into the system
 
-The point is that a class of heuristics that used to be too expensive to maintain may now be worth owning.
+compress history
+  -> fold local patches into simpler rules, tests, and representations
+```
 
-## 5. 最小维护循环
+Without absorption, the system does not learn. Without compression, it becomes unmaintainable.
 
-A healthy HS therefore needs at least two operations:
+## A small example
 
-1. Absorb feedback: write new failures, logs, and rewards back into the system.
+Imagine an agent controlling a browser workflow. The first version fails when a modal appears. A coding agent adds a rule: close the modal if it exists. Later, another failure shows that the modal is sometimes a login prompt that should not be closed.
 
-1. Compress history: fold local patches back into simpler, more maintainable representations.
+A weak system keeps both patches as special cases.
 
-That turns Continual Learning from "how do we update parameters?" into "how do we maintain a software system that keeps absorbing feedback?"
+A stronger Heuristic System adds:
 
-## 6. Takeaway
+- a state detector for modal type;
+- a replay for each failure;
+- a test that distinguishes dismissible overlays from authentication gates;
+- a policy rule that acts only after classification;
+- a note explaining why the rule exists.
 
-凡是可以验证的，都开始能被解决。
+The system did not update weights. It still learned.
+
+## My takeaway
+
+Heuristic Learning turns continual learning into a software maintenance problem:
+
+```text
+What can be verified can often be improved.
+What can be improved should be compressed.
+What is compressed becomes reusable practice.
+```
+
+This is one of the reasons coding agents feel powerful. They do not only write code. They can help maintain the loop that turns repeated failure into a readable, testable system.

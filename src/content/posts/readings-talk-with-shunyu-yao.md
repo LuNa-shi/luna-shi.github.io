@@ -1,12 +1,12 @@
 ---
-title: 'Talk with Shunyu Yao: AI 研究的反馈、系统与长期方向'
+title: 'Talk with Shunyu Yao: feedback is the center of AI research'
 date: '2026-05-14'
 overview: >-
-  TLDR: The conversation frames agent research as moving from raw model scaling toward long-horizon tool use, memory,
-  personalization, science, and grounded reliability.
+  TLDR: The conversation is useful because it frames AI research as system-driven experimental work: define verifiable
+  problems, build feedback loops, debug carefully, and choose directions where scaling paths are still being shaped.
 description: >-
-  TLDR: The conversation frames agent research as moving from raw model scaling toward long-horizon tool use, memory,
-  personalization, science, and grounded reliability.
+  TLDR: The conversation is useful because it frames AI research as system-driven experimental work: define verifiable
+  problems, build feedback loops, debug carefully, and choose directions where scaling paths are still being shaped.
 tags:
   - readings
 categories:
@@ -14,45 +14,103 @@ categories:
   - research
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3604e07a-a023-80f2-b561-c32ec5d703d7 parent=Readings url=https://app.notion.com/p/3604e07aa02380f2b561c32ec5d703d7 -->
 
-## 一、访谈内容与主线
+The conversation is long, but the main line is simple:
 
-这期访谈的对象是姚顺宇，清华本科、斯坦福博士，原本从事理论物理研究，方向包括非厄米系统、量子物理与高能物理；之后转入 AI，曾在 Anthropic 和 Google DeepMind 做研究科学家，参与过 Claude 3.7、Claude 4.5、Gemini 3 等模型相关工作。这期节目时长接近 4 小时，主线并不是单纯讲某个模型或某家公司，而是通过他个人从物理到 AI、从 Anthropic 到 Google DeepMind 的经历，讨论当下前沿 AI 研究的技术、组织和人才逻辑。
+```text
+AI research is becoming system-driven experimental science.
+```
 
-访谈前半部分主要围绕几个判断展开：第一，pre-training 并没有明显到头，至少从前沿实验室的体感看，模型能力仍在持续提升；第二，coding 是 AI-native 场景里最早真正跑通的大规模应用之一，因为它有清晰数据、清晰反馈和较强可验证性；第三，机器人、多模态生成等方向虽然很重要，但还没有像语言模型那样找到稳定 scale 的路径。姚顺宇反复强调，很多所谓“范式撞墙”，可能并不是理论极限，而是实验、数据、工程或 bug 没做好。
+That does not mean ideas stop mattering. It means ideas increasingly need to survive data, infrastructure, evaluation, debugging, and long feedback loops. A beautiful story is not enough if the system cannot tell whether it is working.
 
-中段比较有价值的是他对科研迁移的反思。他从物理训练中带走的不是具体技术，而是“把事情想清楚、深度阅读、不要过分相信纯理论”的习惯。他也提到，高能物理的问题在于实验反馈太弱，评价标准容易变成小圈子内部判断；而 AI 的吸引力在于它有更强的实验性和客观反馈，能通过实验迅速检验想法。
+## From theory to feedback
 
-后半段的核心，是他对 AI 研究组织形态的判断：语言模型领域的“个人英雄主义”时代已经过去。Transformer 之后，前沿模型越来越依赖大型工程系统、清晰分工、稳定 infra、数据 pipeline、评估体系和组织协作。个人当然仍重要，但更像是站在浪上的冲浪者，而不是单独制造浪的人。访谈中他明确把 Google 的进步归因于组织逻辑逐渐清晰、预训练流程工程化，以及大规模系统能力发挥作用。
+One useful thread is the contrast between fields with weak feedback and fields with strong feedback.
 
-最后，他对年轻研究者的建议很值得重视：纯语言模型方向已经不再是早期蓝海，但 AI 仍然很大，多模态、机器人、AI for science、long horizon、ML coding 等方向仍有大量未解决问题。对足够年轻的研究者而言，一味追逐最热方向未必是最优选择，反而应寻找那些尚未被充分定义、但一旦 scale 起来会产生巨大影响的方向。
+In areas where experiments are slow, scarce, or socially mediated, taste and internal consensus can dominate for a long time. In AI, the feedback is not perfect, but it is often much faster. You can run experiments, inspect failures, change data, adjust evaluation, and learn from the result.
 
-## 二、对当下 AI 研究者的核心启发
+That speed is part of the attraction. It also changes the researcher profile. The valuable researcher is not only the person with a clever idea. It is the person who can make the idea testable.
 
-这次访谈最重要的 takeaway 是：今天的 AI 研究正在从“idea-driven science”转向“system-driven experimental science”。过去一个研究者可能靠一个漂亮理论、一个新结构、一个巧妙 loss 就能获得巨大影响；但在当前前沿模型阶段，真正决定研究质量的，越来越是能否把问题变成可验证任务，能否构造高质量数据和评估信号，能否快速迭代实验，能否发现系统里的真实瓶颈，而不是被 benchmark 或漂亮叙事误导。
+## Why coding moved early
 
-因此，对 AI 研究者来说，“聪明”不再是最稀缺的品质。更稀缺的是靠谱、细致、能闭环、能 debug、能对结果负责。姚顺宇在访谈中甚至说，AI 这个行业最重要的特质不是玄学式天才，而是“靠谱、做事细、对自己做的事情负责任”；这句话听起来很反直觉，但对研究训练非常关键。
+Coding is one of the first AI-native applications to become broadly useful because it has unusually good feedback:
 
-另一个重要启发是：研究者要重视“反馈信号”。Coding 之所以率先爆发，不只是因为代码数据多，而是因为它天然可执行、可测试、可评价。相反，产品审美、机器人泛化、复杂 agent 行为等问题更难，是因为反馈更稀疏、更模糊、更长链条。未来优秀研究者的能力，可能很大程度体现在能否为复杂问题设计出好的 feedback loop。
+- code can be executed;
+- tests can be run;
+- diffs can be reviewed;
+- failures can be reproduced;
+- tasks can be decomposed into concrete artifacts.
 
-第三，AI 研究者需要主动适应“AI 加速 AI 研究”的时代。访谈中提到 ML coding 和 long horizon 是下一阶段关键方向之一，因为它们有可能让 AI 参与代码编写、实验运行、结果分析、假设生成和新实验设计，逐步形成自动化研究闭环。  这意味着研究者的核心能力会从“亲手完成每个步骤”，转向“定义问题、设计系统、判断结果、组织人和 AI 协作”。
+That does not make coding easy. It makes the feedback loop legible.
 
-## 三、对研究者发展的建议
+Many harder domains, such as robotics, product taste, personalization, or long-horizon agents, have weaker feedback. The reward is delayed, ambiguous, or entangled with the environment. Progress there depends on building better evaluation loops, not only larger models.
 
-第一，训练自己提出“可实验化问题”的能力。不要只问“这个方向有没有前途”，而要问：我能不能把它变成一个明确任务？数据从哪里来？评估指标是否可靠？失败后如何定位原因？能否在一周内得到第一轮反馈？这类问题比宏大判断更重要。
+## The end of solo heroics
 
-第二，把数据、评估和 debug 当作研究能力的一部分。很多研究者喜欢模型结构和方法创新，但前沿 AI 里，大量进步来自数据分布、训练细节、评估设计和 bug 修复。一个能稳定发现问题、修复 pipeline、解释实验异常的人，长期价值会高于只会提出抽象 idea 的人。
+Another strong thread is that frontier AI research has become more organizational.
 
-第三，学会和 AI 协作，而不是仅仅“使用 AI”。访谈中提到的 24 小时 RL 项目面试，本质是在考察候选人是否能借助 AI 快速完成从选题、实现、实验到讨论的闭环，而不是把任务完全丢给 AI。  未来研究者要会把 AI 当作代码助手、实验助手、阅读助手和反驳者，但最终判断仍必须由自己承担。
+Transformer-era breakthroughs still leave room for individual taste and judgment, but modern frontier systems depend on:
 
-第四，不要迷信热门赛道。纯 LLM 主干模型研究已经高度集中，资源门槛极高，个人或小团队很难正面对抗大实验室。但这不意味着机会消失，而是机会转移到了更具体、更真实、更难被 benchmark 简化的问题上，例如长时程 agent、可靠工具使用、个性化记忆、科学实验自动化、机器人泛化、AI for domain science 等。
+- data pipelines;
+- training infrastructure;
+- evaluation suites;
+- debugging culture;
+- product feedback;
+- safety and reliability processes;
+- clear division of labor.
 
-第五，建立“系统视角”。当下 AI 研究已经不是单点算法竞赛，而是模型、数据、算力、产品、组织和评估共同作用的复杂系统。研究者如果只看 paper，容易低估工程组织；如果只看产品，又容易低估底层技术。更好的路径是同时理解技术细节与系统约束，知道自己的工作如何嵌入更大的研究闭环。
+The individual researcher still matters, but more like someone surfing a large system than someone creating the whole wave alone.
 
-## 四、最终 takeaway
+This is not a romantic view, but it is useful. If the field is system-driven, then being reliable, careful, and able to close loops becomes a research advantage.
 
-这期访谈对研究者最大的提醒是：AI 前沿研究正在变得更工程化、更系统化，也更依赖客观反馈。未来优秀研究者不一定是最会讲宏大概念的人，而是能把模糊问题拆成可验证实验、把 AI 工具纳入研究流程、持续迭代并对结果负责的人。对年轻研究者而言，与其追逐已经拥挤的主航道，不如寻找那些反馈尚未建立、scale 路径尚未清晰、但一旦跑通就会打开新空间的问题。
+## What young researchers should train
+
+The practical advice I take from the conversation is not "chase the hottest model direction." It is to build the ability to turn vague questions into experimental systems.
+
+Useful questions include:
+
+```text
+What exactly is the task?
+Where does the data come from?
+What feedback signal is trustworthy?
+What would count as failure?
+Can the first experiment run this week?
+How will I know whether a result is real or a bug?
+What should be automated, and what still needs judgment?
+```
+
+This is less glamorous than naming a new paradigm, but it is how research compounds.
+
+## Working with AI as part of research
+
+The next shift is that AI will increasingly help with AI research itself: coding, reading, experiment setup, debugging, result analysis, hypothesis generation, and literature search.
+
+The important distinction is between using AI and collaborating with AI. Collaboration means the researcher still owns the problem framing, evidence standard, and final judgment. The model can accelerate work, but it should also be used as a critic, assistant, and executor inside a controlled loop.
+
+For long-horizon work, this becomes a systems problem again. The researcher needs tools, memory, evals, and review points so that AI assistance improves the research loop instead of adding untrusted output.
+
+## Where opportunity remains
+
+The conversation also cautions against assuming that the main language-model track is the only place to work.
+
+Some directions are crowded and resource-heavy. Others are under-defined but potentially important:
+
+- long-horizon agents;
+- reliable tool use;
+- personal memory;
+- AI for science;
+- robotics and grounded interaction;
+- multimodal generation and understanding;
+- ML coding and automated experimentation.
+
+The attractive direction is not necessarily the loudest one. It is the one where feedback can be built and scaled.
+
+## My takeaway
+
+The strongest lesson is that modern AI research rewards feedback discipline.
+
+Good researchers will still need taste, courage, and theory. But the daily advantage may come from something less dramatic: making problems measurable, building clean loops, debugging honestly, using AI well, and staying responsible for the result.

@@ -1,52 +1,111 @@
 ---
-title: 'Paper Reading Skills'
+title: 'Paper reading skills: read for the argument, not the inventory'
 date: '2026-06-08'
 overview: >-
-  TLDR: Paper Reading Skills 是一套论文精读提示模板，要求围绕 motivation、contribution、method、evidence 和 limitation
-  做批判性阅读。它把阅读目标从逐段复述改成抓住 problem -> insight -> method -> evidence -> weakness 的主线。
+  TLDR: A good paper-reading prompt should force the reader to recover the argument: problem, insight, method, evidence,
+  and weakness. It should not reward section-by-section summarization.
 description: >-
-  TLDR: Paper Reading Skills 是一套论文精读提示模板，要求围绕 motivation、contribution、method、evidence 和 limitation
-  做批判性阅读。它把阅读目标从逐段复述改成抓住 problem -> insight -> method -> evidence -> weakness 的主线。
+  TLDR: A good paper-reading prompt should force the reader to recover the argument: problem, insight, method, evidence,
+  and weakness. It should not reward section-by-section summarization.
 tags:
   - 'readings'
 categories:
   - 'reading'
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3794e07a-a023-8028-84b9-e1898636a741 parent=Readings url=https://app.notion.com/p/3794e07aa023802884b9e1898636a741 -->
 
-请你用论文精读的方式分析这篇论文，但不要逐段总结，也不要罗列太多细节。
+Bad paper notes often look complete. They mention every module, every dataset, every table, and every limitation. The problem is that they do not tell me what the paper is actually doing.
 
-请围绕以下 5 个最关键问题回答：
+The reading skill I want is different: recover the argument.
 
-1. Motivation：
-   这篇论文真正想解决的痛点是什么？这个痛点是真问题，还是作者包装出来的问题？
+Not the outline. Not the PDF structure. The argument.
 
-1. Contribution：
-   这篇论文最核心的贡献到底是什么？如果只能保留一个贡献，应该是哪一个，为什么？
+## The five questions
 
-1. Method：
-   方法的关键 insight 是什么？它为什么能解决前人方法解决不了的问题？
+When reading a paper deeply, I want the note to answer five questions.
 
-1. Result：
-   最能支撑作者 claim 的证据是什么？这些实验结果是否真的证明了方法有效，而不只是数字更好看？
+| Question | What I am testing |
+| --- | --- |
+| Motivation | Is the pain real, or is it mostly packaging? |
+| Contribution | If only one idea survives, what is it? |
+| Method | What is the key insight that makes the method work? |
+| Evidence | Which result actually supports the claim? |
+| Limitation | What weakness could change the conclusion? |
 
-1. Limitation：
-   这篇论文最致命的弱点是什么？这个弱点会不会动摇论文的核心结论？
+These questions keep the note from becoming a polite abstract.
 
-请回答得尖锐、简洁、批判性强。
-不要按章节复述论文。
-不要把所有模块、公式、实验都展开。
-只抓最关键的逻辑：
-problem → insight → method → evidence → weakness。
+## The prompt
 
-最后用 3 句话总结：
+Here is the reusable prompt shape:
 
-1. 这篇论文最值得学的地方。
+```text
+Read this paper as a critical research note.
 
-1. 这篇论文最值得怀疑的地方。
+Do not summarize section by section.
+Do not list every module, formula, and experiment.
 
-1. 这篇论文对后续研究的启发。
+Recover the core argument:
+
+1. Motivation:
+   What pain is the paper really trying to solve?
+   Is this a real problem or a packaged problem?
+
+2. Contribution:
+   What is the core contribution?
+   If only one contribution survives, which one is it and why?
+
+3. Method:
+   What is the key insight?
+   Why might it solve something previous methods could not?
+
+4. Result:
+   What evidence best supports the main claim?
+   Does the result prove effectiveness, or only look numerically better?
+
+5. Limitation:
+   What is the most serious weakness?
+   Does it weaken the core conclusion?
+
+End with three sentences:
+
+- The most useful idea to learn from this paper.
+- The most important reason to doubt it.
+- The research direction it opens.
+```
+
+## What this prevents
+
+This prompt is mainly defensive. It prevents three common reading failures.
+
+First, it prevents module worship. A paper may have many components, but the note should identify the component that actually carries the claim.
+
+Second, it prevents benchmark hypnosis. A better number is not automatically a better idea. I want to know which experiment makes the causal story plausible.
+
+Third, it prevents fake balance. A limitation section is only useful if it says whether the weakness threatens the conclusion or merely marks future work.
+
+## What a good answer feels like
+
+A good answer should be sharp enough that I can disagree with it.
+
+It should have this shape:
+
+```text
+The paper matters because ...
+The central move is ...
+The strongest evidence is ...
+The weakness is ...
+I would reuse ...
+I would not yet trust ...
+```
+
+That is much more useful than a neutral summary, because it gives the reader a position.
+
+## My takeaway
+
+The goal of paper reading is not to remember every detail. The goal is to extract the argument and decide what to trust.
+
+For agent-assisted reading, this matters even more. Models are good at exhaustive summaries. The skill is to force judgment: what problem is real, what idea is new, what evidence matters, and what weakness could break the claim.

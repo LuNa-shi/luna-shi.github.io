@@ -1,12 +1,12 @@
 ---
-title: 'Compression Is All You Need: 把数学进展看成可测压缩'
+title: 'Compression Is All You Need: measuring mathematical progress'
 date: '2026-05-21'
 overview: >-
-  TLDR: Mathematical progress can be viewed as compression when a new abstraction makes many downstream proofs shorter,
-  reusable, or easier to maintain.
+  TLDR: A mathematical abstraction is valuable when it compresses downstream work: proofs become shorter, repeated
+  patterns disappear, and the library becomes easier to extend.
 description: >-
-  TLDR: Mathematical progress can be viewed as compression when a new abstraction makes many downstream proofs shorter,
-  reusable, or easier to maintain.
+  TLDR: A mathematical abstraction is valuable when it compresses downstream work: proofs become shorter, repeated
+  patterns disappear, and the library becomes easier to extend.
 tags:
   - readings
 categories:
@@ -14,63 +14,81 @@ categories:
   - systems
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3674e07a-a023-80e7-bb86-f340766fef05 parent=Readings url=https://app.notion.com/p/3674e07aa02380e7bb86f340766fef05 -->
 
-## 0. 一句话
+The phrase "good abstraction" is usually treated as taste. Mathematicians can often feel when a definition is right, but that feeling is hard to operationalize.
 
-这篇论文最有用的地方，是把“数学进展”转成一个可测的工程指标：压缩。一个好的 abstraction 不只是看起来优雅，而是应该让更多证明变短、复用率变高、维护成本下降。
+The useful move in this paper is to treat mathematical progress as compression. A new abstraction is not just elegant. It should make a region of proof work shorter, more reusable, or easier to maintain.
 
-## 1. 压缩作为评价指标
+That turns taste into a measurable engineering signal.
 
-一个新 abstraction 是否有价值，可以问：
+## The compression test
+
+For a candidate abstraction, ask:
 
 ```text
-加入它之后，多少证明变短了？
-多少重复模式消失了？
-多少 downstream theorem 更容易证明了？
-它是否成为高 PageRank/高复用的依赖节点？
-它是否降低了 proof depth 或 wrapped length？
+After adding it, how many proofs get shorter?
+How many repeated proof patterns disappear?
+How many downstream theorems become easier to prove?
+Does it become a high-reuse dependency node?
+Does it reduce proof depth or wrapped proof length?
+Does it make future maintenance simpler?
 ```
 
-这套问题把“数学家的 taste”部分转成了可观测信号：如果一个抽象真的有价值，它应该能压缩一批已有证明，并且在依赖图里产生稳定复用。
+The key is not any single metric. The key is that a valuable abstraction should leave a trace in the proof library. It should compress work beyond the theorem that introduced it.
 
-## 2. 抽象推荐系统
+## Why this is a good AI problem
 
-这非常适合 AI 团队做。团队不一定要先具备完整的数学直觉，但可以构造一个“抽象推荐系统”：
+This is a surprisingly natural task for AI systems around Lean or similar formal libraries.
 
-1. 在 mathlib 依赖图里找重复证明片段、重复 term pattern、重复 tactic pattern。
+A team does not need the model to become a fully autonomous mathematician on day one. The first useful system can be an abstraction recommender:
 
-1. 提出候选 definition / lemma / theorem。
+1. Search the library for repeated proof terms, tactic patterns, and local lemmas.
+2. Propose candidate definitions or lemmas that factor out the repetition.
+3. Rewrite a batch of existing proofs using the candidate abstraction.
+4. Verify all rewritten proofs with Lean.
+5. Rank candidates by compression, reuse, breakage, and naming cost.
+6. Send only the best candidates to human maintainers.
 
-1. 自动重写一批已有证明，看是否显著缩短。
+That changes the maintainer's job from "manually discover every abstraction" to "review high-evidence candidates."
 
-1. 用 Lean 验证全部新证明。
+## Three levels of contribution
 
-1. 用压缩率、复用率、破坏率、命名复杂度排序。
+I would split AI-for-formal-math work into three layers.
 
-1. 只把 top candidates 交给数学家或 maintainer 审查。
+| Layer | What the system does | Why it matters |
+| --- | --- | --- |
+| Proof generation | Prove one theorem in a fixed library | Important, but easy to turn into benchmark chasing |
+| Library-aware engineering | Suggest lemmas that shorten many proofs | Starts shaping the mathematical codebase |
+| Abstraction discovery | Find a shared structure and propose a new concept | Closest to the work of mathematical taste |
 
-这就把数学家从“亲自找所有抽象”变成“审核高置信候选”。杠杆会高很多。
+The second and third layers are the interesting ones for long-term leverage. They are not only about solving today's theorem. They are about making tomorrow's theorems easier.
 
-## 3. 不只是 proof performance
+## The maintenance angle
 
-我会把可做的贡献分成三层：
+Compression can also fail. A new abstraction might shorten proofs but make names confusing. It might become a brittle dependency. It might hide structure that should remain explicit. It might help one area while making another harder to understand.
 
-### 第一层：固定 mathlib 下的证明生成
+So I would not rank candidates by length reduction alone. A useful score should include:
 
-这是现在很多 AI4Lean 的主战场：给 theorem，生成 proof。重要，但容易变成 benchmark chasing。
+```text
+compression
+reuse
+proof stability
+dependency centrality
+name clarity
+review cost
+future extensibility
+```
 
-### 第二层：library-aware proof engineering
+The system should look less like a theorem prover and more like a library engineer.
 
-模型不只是证明一个 theorem，而是会建议“先加这个 lemma，后面 30 个 theorem 都变短”。这已经是在搭数学体系。
+## My takeaway
 
-### 第三层：abstraction discovery
+The deepest idea here is that abstraction has evidence.
 
-自动发现某类证明共享同一个结构，提出新定义、新 typeclass、新 theorem schema。这是最接近数学家的地方，也是最有研究价值的地方。
+If a definition is genuinely good, it should compress a neighborhood of mathematical work. That gives AI systems a foothold: propose, rewrite, verify, measure, and then ask humans to judge the candidates with the strongest evidence.
 
-## 4. Takeaway
-
-即使不是数学团队，也可以主攻第二、三层中的“可测部分”：找重复、提出抽象、重写证明、验证压缩率，再把高置信候选交给真正的 maintainer 审查。
+For me, the most promising research direction is not only "generate more Lean proofs." It is "maintain a proof library so that the next hundred proofs become simpler."

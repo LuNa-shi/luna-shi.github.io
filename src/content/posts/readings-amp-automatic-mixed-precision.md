@@ -1,12 +1,12 @@
 ---
-title: 'AMP: Automatic Mixed Precision 技术笔记'
+title: 'AMP: automatic mixed precision as a dispatch policy'
 date: '2026-05-18'
 overview: >-
-  TLDR: AMP speeds training and reduces memory by choosing lower precision for safe ops while keeping higher precision
-  where numerical stability matters.
+  TLDR: AMP is not "turn the model into half precision." It is a runtime policy that runs safe, high-throughput ops in
+  lower precision while protecting numerically sensitive paths.
 description: >-
-  TLDR: AMP speeds training and reduces memory by choosing lower precision for safe ops while keeping higher precision
-  where numerical stability matters.
+  TLDR: AMP is not "turn the model into half precision." It is a runtime policy that runs safe, high-throughput ops in
+  lower precision while protecting numerically sensitive paths.
 tags:
   - readings
 categories:
@@ -14,189 +14,149 @@ categories:
   - systems
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3644e07a-a023-80b8-99a5-d9363dba6a0a parent=Readings url=https://app.notion.com/p/3644e07aa02380b899a5d9363dba6a0a -->
 
-AMP 的目标是：**在不手动改模型 dtype 的情况下，让训练自动混合使用高精度与低精度，从而提升速度、降低显存，同时尽量保持数值稳定。**
+The easiest mistake with AMP is to think it means "train the whole model in half precision."
 
-它主要由两部分组成：
+That is not the right mental model. AMP is a runtime precision policy. It lets PyTorch choose lower precision for operations that benefit from it, while keeping sensitive operations in safer precision.
 
+The goal is practical:
+
+```text
+more throughput
+less activation memory
+minimal manual dtype surgery
+acceptable numerical stability
 ```
-autocast：自动决定每个 op 用什么 dtype
-GradScaler：主要为 fp16 防止梯度 underflow / overflow
+
+## The two moving parts
+
+In PyTorch, AMP is mainly two mechanisms:
+
+```text
+autocast: choose execution dtype per operation
+GradScaler: protect fp16 gradients from underflow and overflow
 ```
 
-## 1. autocast 做了什么
-
-典型写法：
+A typical bf16 training step looks like this:
 
 ```python
-with torch.autocast(devicetype="cuda", dtype=torch.bfloat16):
+with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
     logits = model(x)
-    loss = F.crossentropy(logits, y)
+    loss = F.cross_entropy(logits, y)
 
 loss.backward()
 optimizer.step()
-optimizer.zerograd(settonone=True)
+optimizer.zero_grad(set_to_none=True)
 ```
 
-进入 `autocast` 后，PyTorch 会启用一个 autocast 状态。之后每个 PyTorch op 会经过 dispatcher，dispatcher 根据该 op 的 policy 决定执行 dtype。
+The important part is the boundary. `autocast` wraps the forward computation. Backward usually does not need its own autocast block because it follows dtype decisions recorded in the forward graph.
 
-简化理解：
+## Autocast is a dispatcher decision
 
-| op 类型                      | 常见 autocast 行为    | 原因                  |
-| ---------------------------- | --------------------- | --------------------- |
-| `matmul` / `linear` / `conv` | 用 bf16/fp16          | Tensor Cores 加速明显 |
-| attention 中的大矩阵乘法     | 用 bf16/fp16          | 计算量大，收益高      |
-| softmax / norm / reduction   | 常用 fp32 或内部 fp32 | 数值敏感              |
-| loss，如 cross entropy       | 常保留 fp32 路径      | 避免 loss 不稳定      |
-| 普通 elementwise             | 多数跟随输入 dtype    | 计算成本较低          |
+Inside `autocast`, each PyTorch operation goes through a policy decision. Some operations are safe and profitable in lower precision. Others are numerically sensitive.
 
-重点：**autocast 不是把整个模型改成低精度，而是按 op 自动选择 dtype。**
+| Operation family | Typical autocast behavior | Reason |
+| --- | --- | --- |
+| `matmul`, `linear`, `conv` | bf16 or fp16 | Tensor Cores can make these much faster |
+| Attention matrix multiplies | bf16 or fp16 | high arithmetic intensity |
+| Softmax, norm, reductions | fp32 or internal fp32 | numerically sensitive |
+| Loss functions | often fp32 path | protects loss stability |
+| Elementwise ops | usually follows inputs | lower performance leverage |
 
-## 2. autocast 不会永久改变参数 dtype
+So AMP is not a global conversion. It is a per-op execution policy.
 
-假设模型参数是 fp32：
+## Parameters usually stay where they are
+
+If model weights start as fp32, autocast does not permanently rewrite them.
 
 ```python
 model.weight.dtype  # torch.float32
-```
 
-在 autocast 中：
-
-```python
-with torch.autocast("cuda", dtype=torch.bfloat16):
+with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
     y = model(x)
+
+model.weight.dtype  # still torch.float32
 ```
 
-PyTorch 可能临时把 `linear` 的输入和权重 cast 到 bf16 执行，但参数本体仍是 fp32。
+During a `linear` call, PyTorch may use lower-precision temporary inputs or kernels. The parameter object itself remains fp32. Optimizer states also usually remain fp32.
 
-```python
-model.weight.dtype  # 仍然是 torch.float32
+This is why AMP reduces activation and temporary buffer cost more than it reduces the entire training-state footprint.
+
+## bf16 and fp16 solve different pain
+
+The main difference is dynamic range.
+
+| dtype | Dynamic range | Precision | Training behavior |
+| --- | --- | --- | --- |
+| fp32 | large | high | most stable |
+| fp16 | small | medium | can underflow or overflow |
+| bf16 | close to fp32 | coarser | usually easier for large models |
+
+bf16 keeps the fp32 exponent width, so it has a much larger dynamic range than fp16. That is why bf16 training often does not need a `GradScaler`.
+
+fp16 is different. Small gradients may underflow to zero:
+
+```text
+small gradient -> underflow -> 0
 ```
 
-这意味着：
-
-- optimizer 更新的通常还是 fp32 参数。
-
-- optimizer states 通常也仍是 fp32。
-
-- AMP 主要节省 activations 和临时计算 buffer，不一定让全部训练状态减半。
-
-## 3. bf16 vs fp16
-
-| dtype | 动态范围  | 精度 | 训练稳定性                |
-| ----- | --------- | ---- | ------------------------- |
-| fp32  | 大        | 高   | 最稳                      |
-| fp16  | 小        | 中   | 容易 underflow / overflow |
-| bf16  | 接近 fp32 | 较粗 | 通常比 fp16 稳            |
-
-bf16 的关键优势：**exponent 位数和 fp32 一样多，所以动态范围大**。因此大模型训练中，bf16 通常比 fp16 更省心，也通常不需要 `GradScaler`。
-
-## 4. GradScaler 为什么主要用于 fp16
-
-fp16 动态范围小，小梯度可能变成 0：
-
-```
-small grad -> underflow -> 0
-```
-
-`GradScaler` 的做法是先放大 loss：
-
-```python
-scaledloss = loss  scale
-```
-
-于是 backward 得到的梯度也被放大：
-
-```
-scaledgrad = truegrad × scale
-```
-
-optimizer step 前再除回来，并检查是否出现 `inf` / `nan`。
-
-典型 fp16 写法：
+`GradScaler` works by scaling the loss before backward, then unscaling gradients before the optimizer step:
 
 ```python
 scaler = torch.cuda.amp.GradScaler()
 
-with torch.autocast(devicetype="cuda", dtype=torch.float16):
+with torch.autocast(device_type="cuda", dtype=torch.float16):
     logits = model(x)
-    loss = F.crossentropy(logits, y)
+    loss = F.cross_entropy(logits, y)
 
 scaler.scale(loss).backward()
 scaler.step(optimizer)
 scaler.update()
-optimizer.zerograd(settonone=True)
+optimizer.zero_grad(set_to_none=True)
 ```
 
-内部逻辑：
+Conceptually:
 
-```
-1. scale(loss)
-2. backward 得到 scaled gradients
-3. step 前 unscale gradients
-4. 检查 inf / nan
-5. 如果正常：optimizer.step()
-6. 如果异常：跳过 step，降低 scale
-```
-
-## 5. backward 一般不包进 autocast
-
-推荐：
-
-```python
-with torch.autocast("cuda", dtype=torch.bfloat16):
-    loss = computeloss(model, x, y)
-
-loss.backward()
+```text
+scale loss
+  -> backward produces scaled gradients
+  -> unscale before step
+  -> check inf or nan
+  -> step if safe, skip and lower scale if unsafe
 ```
 
-不推荐特意写成：
+## Gradient clipping has one trap
 
-```python
-with torch.autocast("cuda", dtype=torch.bfloat16):
-    loss = computeloss(model, x, y)
-    loss.backward()
-```
-
-原因：backward 的 dtype 通常由 forward graph 中记录的 op 决定。forward 用什么路径，backward 会沿着对应 graph 执行，不需要额外包 autocast。
-
-## 6. 常见注意点
-
-| 场景              | 正确做法                                          |
-| ----------------- | ------------------------------------------------- |
-| bf16 训练         | 通常只用 `autocast(dtype=torch.bfloat16)`         |
-| fp16 训练         | 用 `autocast(dtype=torch.float16)` + `GradScaler` |
-| gradient clipping | fp16 下先 `scaler.unscale_(optimizer)`，再 clip   |
-| debug 数值问题    | 打印 tensor dtype、检查 `nan/inf`                 |
-| 评估/inference    | 可以用 autocast，但不需要 GradScaler              |
-| 手动 `.half()`    | 不等价于 AMP，风险更高                            |
-
-gradient clipping 示例：
+For fp16 with a scaler, clip after unscaling:
 
 ```python
 scaler.scale(loss).backward()
-scaler.unscale(optimizer)
+scaler.unscale_(optimizer)
 
-torch.nn.utils.clipgradnorm(model.parameters(), maxnorm=1.0)
+torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
 scaler.step(optimizer)
 scaler.update()
+optimizer.zero_grad(set_to_none=True)
 ```
 
-## 7. 最重要的 mental model
+If you clip scaled gradients directly, the clipping threshold no longer means what you think it means.
 
+## The mental model
+
+The useful summary is:
+
+```text
+master parameters: usually fp32
+large matmuls: temporary low precision
+sensitive ops: fp32 or internal fp32
+fp16: use GradScaler
+bf16: usually no GradScaler
+backward: follows the forward graph
 ```
-参数主副本：通常 fp32
-大矩阵乘法：临时低精度，用 Tensor Cores
-数值敏感 op：保留 fp32 或内部 fp32
-fp16：需要 GradScaler
-bf16：通常不需要 GradScaler
-```
 
-一句话总结：
-
-> AMP 的本质是在 PyTorch dispatcher 层面，根据 op 的性能收益和数值稳定性，自动选择执行精度；它不是简单地把模型整体转成半精度。
+AMP is a dispatch-layer precision policy. It is not the same as manually calling `.half()` on the model, and treating those two as equivalent is the fastest way to get confused debugging numerical issues.

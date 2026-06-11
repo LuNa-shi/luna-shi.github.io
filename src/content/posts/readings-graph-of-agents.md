@@ -1,35 +1,95 @@
 ---
-title: 'Graph of Agents'
+title: 'Graph of Agents: multi-agent value comes from information flow'
 date: '2026-06-08'
 overview: >-
-  TLDR: Graph of Agents 把多模型协作变成按题动态建图：先选择相关 agent，再用互评形成有向通信结构，最后通过 graph pooling 合成答案。它说明多 agent
-  的杠杆不在堆模型数量，而在自适应拓扑和信息流方向。
+  TLDR: Graph of Agents is useful because it treats collaboration as a test-time graph problem: choose relevant agents,
+  score their answers, pass messages in the right direction, and pool the result.
 description: >-
-  TLDR: Graph of Agents 把多模型协作变成按题动态建图：先选择相关 agent，再用互评形成有向通信结构，最后通过 graph pooling 合成答案。它说明多 agent
-  的杠杆不在堆模型数量，而在自适应拓扑和信息流方向。
+  TLDR: Graph of Agents is useful because it treats collaboration as a test-time graph problem: choose relevant agents,
+  score their answers, pass messages in the right direction, and pool the result.
 tags:
   - 'readings'
 categories:
   - 'reading'
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3794e07a-a023-80ec-a232-d6059c614420 parent=Readings url=https://app.notion.com/p/3794e07aa02380eca232d6059c614420 -->
 
-> GoA 把多 LLM 协作从“把所有 agent 的答案拼起来再聚合”，改写成一次测试时动态建图。每个模型是一个节点，模型之间的回答相关性变成有向边，信息沿着边来回传递，最后再用 graph pooling 得到统一答案。它瞄准的是 LLM zoo 时代的一个很现实的问题：模型越来越多，真正困难的不是再接入一个模型，而是每道题该叫谁、谁该听谁、最后该信谁。
+The weak version of multi-agent collaboration is simple: ask several models, combine the answers, hope the crowd is wiser than the parts.
+
+Graph of Agents is interesting because it does not stop there. It asks a more structural question: for this query, which agents should participate, who should listen to whom, and how should the final answer be pooled?
+
+That makes the paper less about agent quantity and more about information flow.
 
 ![Notion image](/assets/img/notion/readings-graph-of-agents-01.webp)
 
-- 选择本身成为推理的一部分: GoA 先用 HF model cards 描述每个模型的领域、任务专长和参数规模，再让一个通用 meta-LLM 按 query 选择 top-k agent。论文和代码默认强调 top-k=3，而不是把 6 个模型全拉进来；这一步直接过滤掉与问题无关的法律、金融、代码或医学模型，避免 MoA 式全员广播带来的噪声和成本。
+## The model zoo problem
 
-- 边不是固定拓扑，而是互评出来的信任关系: 被选中的 agent 先各自作答，然后每个 agent 给其他 agent 的回答打分，依据是 correctness、coherence 和 relevance，分数归一化后形成 relevance score。GoA 再按这些分数排序、剪掉低于阈值的弱节点，并把高相关 agent 设为 source，低相关 agent 设为 target；也就是说，图结构不是预设架构，而是每道题现场长出来的通信结构。
+Once there are many available models, "use multiple agents" becomes under-specified.
 
-- 消息传递有方向，而且方向很关键: GoA 先做 Source-to-Target，让更可靠的高相关回答去修正低相关节点，再做 Target-to-Source，把低相关节点吸收后的改进反馈回高相关节点。消融里反向传递是最大伤害项，在 MMLU-Pro 上掉 2.60，在 GPQA 上掉 5.05；这说明收益不是来自“多聊几轮”，而是来自正确的信息流方向和 relevance-aware weighting。
+Some models are stronger at code, some at medicine, some at law, some at general reasoning. Calling all of them for every question wastes tokens and adds noise. A multi-agent system therefore needs selection before collaboration.
 
-- 少用 agent 反而更强: 在 MMLU、MMLU-Pro、GPQA、MATH、HumanEval、MedMCQA 上，GoA 用 3 个 agent 超过多种 6-agent baseline。GoA-Max 在 MMLU 79.18、MMLU-Pro 54.78、MedMCQA 60.04 上最好，GoA-Mean 在 GPQA 40.54、MATH 73.12、HumanEval 84.98 上最好；MMLU-Pro 的效率对比也很直接，MoA 需要 19 次调用、56.05k tokens、240.26 秒，而 GoA-Max 降到 11 次调用、19.18k tokens、100.43 秒，同时准确率还更高。
+Graph of Agents starts with model-card information and a meta-LLM that chooses a small top-k set for the current query. This is already an important design choice. The system is not trying to make a larger meeting. It is trying to invite the right room.
 
-**为什么重要**: 这篇论文的实际启发不是“多 agent 更好”，而是“多 agent 系统需要可学习或可构造的通信结构”。GoA 把 agent selection、peer scoring、directed message passing 和 pooling 串成一个纯 prompt-interface 的测试时框架，不需要微调，也兼容黑盒 API；它还说明 MoA 可以被看作 GoA 的一个退化特例：选中全部节点、全连接、边权相同、mean pooling。对 agent builder 来说，真正的杠杆不在堆更多模型，而在把模型池组织成一个每题自适应的小图。
+## Edges are earned by peer scoring
+
+After selection, each agent answers independently. Then agents score one another's answers for correctness, coherence, and relevance. Those scores become a relevance structure.
+
+The graph is not fixed in advance:
+
+```text
+query
+  -> select relevant agents
+  -> collect initial answers
+  -> peer-score answers
+  -> form directed communication edges
+  -> pass messages
+  -> pool final answer
+```
+
+This is the part that separates Graph of Agents from a simple mixture. The communication pattern is constructed at test time from the agents' own outputs.
+
+## Direction matters
+
+The most useful intuition is that messages should not move symmetrically.
+
+High-relevance answers first guide lower-relevance agents. Then the lower-relevance agents, after absorbing that guidance, can send updated information back. In other words, the graph has a directional refinement loop.
+
+The paper's ablations suggest that reversing this direction hurts. That makes sense. If weaker or less relevant answers steer the stronger ones too early, collaboration becomes contamination.
+
+The lesson is not "let agents talk more." The lesson is "control who gets to influence whom, and when."
+
+## Pooling is a design choice too
+
+The final answer still needs aggregation. Graph of Agents tests pooling variants such as mean and max. That detail is easy to skip, but it matters because pooling expresses a trust policy.
+
+Mean pooling says the group signal matters. Max pooling says the strongest signal may be enough. A production system might need more explicit policies:
+
+| Pooling policy | When it fits |
+| --- | --- |
+| Mean-like | broad reasoning where several partial views help |
+| Max-like | domains where one specialist may dominate |
+| Verifier-weighted | tasks with an external checker |
+| Human-gated | high-risk outputs or unclear disagreement |
+
+The graph is only useful if the final decision rule matches the task.
+
+## My takeaway
+
+Graph of Agents is a useful paper because it reframes multi-agent design from "more agents" to "adaptive topology."
+
+The reusable pattern is:
+
+```text
+select fewer agents
+score relevance
+direct information flow
+pool with a task-appropriate policy
+```
+
+This is also a good caution for agent builders. A six-agent system with a fixed all-to-all chat can be weaker, slower, and more expensive than a three-agent system with the right communication structure.
 
 [Paper](https://arxiv.org/abs/2604.17148) | [Code](https://github.com/UNITES-Lab/GoA/tree/main)

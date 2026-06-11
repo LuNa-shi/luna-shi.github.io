@@ -1,37 +1,121 @@
 ---
-title: 'The End of Software Engineering'
+title: 'The End of Software Engineering: code is becoming a runtime artifact'
 date: '2026-06-08'
 overview: >-
-  TLDR: The End of Software Engineering 把 agent 时代的软件工程描述成从维护静态代码转向表达意图、编排 agents 和验证
-  outcome。标题很激进，但真正有用的是提醒我们 durable assets 可能是 memory、tools、skills、evals 和 governance。
+  TLDR: The title is deliberately provocative, but the useful claim is narrower: agentic systems move durable value
+  away from static code alone and toward intent, tools, memory, evals, observability, and governance.
 description: >-
-  TLDR: The End of Software Engineering 把 agent 时代的软件工程描述成从维护静态代码转向表达意图、编排 agents 和验证
-  outcome。标题很激进，但真正有用的是提醒我们 durable assets 可能是 memory、tools、skills、evals 和 governance。
+  TLDR: The title is deliberately provocative, but the useful claim is narrower: agentic systems move durable value
+  away from static code alone and toward intent, tools, memory, evals, observability, and governance.
 tags:
   - 'readings'
 categories:
   - 'reading'
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3794e07a-a023-80a0-bd41-cdbf8413c599 parent=Readings url=https://app.notion.com/p/3794e07aa02380a0bd41cdbf8413c599 -->
 
-> 这篇文章不是在提出一个新的 coding agent，而是在给 agent 时代的软件工程换底层叙事。它的核心判断是：传统软件把 code 当成系统本体和决策逻辑的载体，而 agentic system 把 LLM 当成 runtime reasoning core，code 只是为完成当前任务临时生成、调用、丢弃的工具。换句话说，软件工程的中心从“写出并维护一个静态系统”，转向“表达意图、编排 agents、验证 outcome”。
+The title sounds like a prediction: software engineering is ending.
+
+My read is more conservative and more useful. The paper is not saying that engineering disappears. It is saying that the durable center of engineering may move. In traditional software, the codebase is the long-lived body of the system. In agentic software, some code becomes a runtime artifact: generated, executed, inspected, and discarded inside a larger reasoning loop.
+
+That does not end engineering. It changes what has to be engineered.
 
 ![Notion image](/assets/img/notion/readings-the-end-of-software-engineering-01.webp)
 
-- Code 从系统本体变成临时工具: 论文把传统软件形式化成 `S=(C,D,E)`，其中 `D` 是人类提前写好的静态决策规则；agentic system 则是 `A=(M,T,Memory,Pi)`，由 LLM、工具、记忆和规划机制组成，决策逻辑在运行时生成。这个转向的关键不是“AI 帮人写更多代码”，而是 code 不再必须作为最终产品长期存在，它可以只是 LLM reasoning loop 里的中间动作。
+## The shallow reading
 
-- AaaS 是 SaaS 之后的复杂度继续外包: 作者把软件交付史写成三代：本地软件让用户承担安装和维护，SaaS 把基础设施和更新交给 vendor，Agent-as-a-Service 则进一步把理解需求、构造流程、执行工具和交付结果交给 agent。对应的范式也从 `AI -> Software -> Result` 变成 `Agent -> Result`，用户不再购买一套软件对象，而是购买被持续完成的 outcome。
+The shallow reading is:
 
-- Agentic Engineering 重定义人的工作: 文章引用 LangChain 的 Agentic Engineering 叙事，把未来工程师描述成 intent architect、agent coordinator 和 outcome auditor。人的价值不再主要体现在能不能手写正确代码，而是能不能把目标、约束、架构边界、共享记忆、观测与验收机制设计清楚，让多个 agent 在可追踪的控制面里工作。
+```text
+AI writes code, so programmers matter less.
+```
 
-- 证据支持方向，但还不足以支撑“终局已到”: SWE-bench Verified 里 Lingma SWE-GPT 72B 达到 30.20%，接近 GPT-4o 的 31.80%，说明面向开发过程训练的模型确实在真实 issue 修复上有进展；但 EvoClaw 更像冷水，agent 在 isolated tasks 上超过 80%，到 continuous software evolution 只剩最多 38%。这意味着当前 agent 能做局部任务增强，但长期维护、上下文压缩、错误累积和验证机制仍是硬瓶颈。
+That frame is too small. It still imagines code as the final object, only produced by a different actor.
 
-- Roadmap 的价值在于校准当前位置: 论文把演进拆成 Tool-Augmented、Single-Task Autonomous、Multi-Agent Teams、Self-Evolving Ecosystems 四阶段。现在更像处在第一阶段到第二阶段之间，并且刚开始碰到第三阶段的基础设施问题：role specialization、shared memory、observability、human-in-the-loop governance 都还没有成为成熟工程标准。
+The stronger frame is:
 
-**为什么重要**: 这篇文章的标题很激进，但真正有用的地方不是宣称“软件工程结束了”，而是把一个正在发生的角色迁移说清楚：builder 的杠杆从写代码，转向定义目标、设计 agent 工作流、建立验证闭环和管理长期系统状态。它适合作为 agent builder 的概念地图：如果 code 只是临时工具，那么未来真正耐久的资产可能是 agent 的 memory、tools、skills、evaluation harness、observability 和 governance，而不是某一次生成出来的代码本身。
+```text
+Some decision logic moves from static code into a runtime agent loop.
+```
+
+The long-lived assets then become the things that make the loop reliable: task specification, tools, memory, policies, evals, traces, permission boundaries, and human review points.
+
+## From software object to delivered outcome
+
+The paper describes a historical movement from local software to SaaS and then to Agent-as-a-Service.
+
+The direction is not just "more cloud." It is a deeper outsourcing of complexity:
+
+| Era | User buys | Vendor carries |
+| --- | --- | --- |
+| Local software | an installed object | limited updates and support |
+| SaaS | a maintained service | infra, deployment, upgrades |
+| Agent-as-a-Service | an outcome loop | planning, tool use, execution, validation |
+
+In that last frame, the user may not care whether a specific script survives. The user cares whether the agent can keep producing the desired result under changing conditions.
+
+This is where the paper becomes interesting. If code is sometimes a temporary tool, the question is no longer only "Is the code elegant?" It is also "Can the loop choose the right tool, verify the result, recover from failure, and preserve useful state?"
+
+## What becomes durable
+
+If generated code is less permanent, something else must carry continuity.
+
+The obvious candidates are:
+
+- **Memory**: what the system keeps about users, projects, failures, and preferences.
+- **Tools**: the stable operations the agent can call safely.
+- **Skills**: reusable procedures and constraints outside model weights.
+- **Evals**: the standing definition of acceptable outcomes.
+- **Observability**: traces, logs, replays, and explanations.
+- **Governance**: permissioning, audit, approval, rollback, and policy.
+
+These are not decorations around the model. They are the engineering surface.
+
+## Evidence is directional, not final
+
+The paper's evidence supports the direction, but it does not prove an end state.
+
+Benchmarks where agents repair isolated issues show clear progress. At the same time, continuous software evolution remains much harder: context goes stale, errors accumulate, tests miss intent, and long-horizon work needs memory and governance.
+
+That contrast is the real lesson. Agents are already useful on bounded tasks with strong feedback. They are less mature when the task is long-lived, cross-cutting, and dependent on ambiguous product judgment.
+
+So I would not read the roadmap as "we are already at self-evolving ecosystems." I would read it as a map of missing infrastructure:
+
+```text
+tool-augmented work
+  -> single-task autonomy
+  -> multi-agent teams
+  -> self-evolving systems
+```
+
+The gap between the second and third stages is not just model capability. It is role design, shared memory, evaluation, observability, and human governance.
+
+## The new engineering job
+
+The paper's best phrase is not the title. It is the role shift: engineers become intent architects, agent coordinators, and outcome auditors.
+
+That sounds abstract, so I translate it into concrete work:
+
+- write goals that survive contact with messy repositories;
+- expose safe tools with typed boundaries;
+- design memory that helps without contaminating context;
+- build evals that catch regressions;
+- create traces that make failures inspectable;
+- decide which actions require human approval;
+- maintain skills that compress repeated practice.
+
+None of this is less technical than writing code. It is technical at a different layer.
+
+## My takeaway
+
+The useful claim is not that software engineering ends. The useful claim is that code may stop being the only durable artifact worth organizing around.
+
+If an agent can generate code on demand, the scarce asset becomes the runtime that tells it what to generate, when to trust it, how to test it, how to remember the result, and when to ask for help.
+
+That makes this paper a good conceptual map for agent builders. The future may contain less hand-maintained boilerplate, but it will need more careful engineering of intent, tools, skills, memory, evals, observability, and governance.
 
 [Paper](https://arxiv.org/abs/2606.05608) | [HTML](https://arxiv.org/html/2606.05608) | [PDF](https://arxiv.org/pdf/2606.05608)

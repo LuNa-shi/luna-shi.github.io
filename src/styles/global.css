@@ -1310,15 +1310,23 @@ html[data-theme='dark'] .post-container {
 
   /* Shiki code blocks */
   .prose pre {
+    max-width: 100%;
     border-radius: 6px;
     padding: 1rem;
     overflow-x: auto;
   }
 
+  .prose pre code {
+    min-width: 0;
+  }
+
   .prose table {
-    width: 100%;
+    display: block;
+    width: max-content;
+    max-width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    overflow-x: auto;
   }
 
   .prose table th,
@@ -1334,8 +1342,11 @@ html[data-theme='dark'] .post-container {
   }
 
   /* KaTeX display math */
-  .prose .math-display {
+  .prose .math-display,
+  .prose .katex-display {
+    max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     padding: 0.5rem 0;
   }
 }

@@ -1,12 +1,12 @@
 ---
-title: 'Yuandong Tian Talks: 搜索空间、RSI 与 Metaproductivity'
+title: 'Yuandong Tian talks: search quality is action-space quality'
 date: '2026-05-22'
 overview: >-
-  TLDR: Search quality depends on shaping the action space, not only increasing rollouts; good representations make
-  planning and learning much more effective.
+  TLDR: More rollouts are not enough. Search becomes powerful when the action space, representation, evaluator, and
+  memory make good trajectories easier to find.
 description: >-
-  TLDR: Search quality depends on shaping the action space, not only increasing rollouts; good representations make
-  planning and learning much more effective.
+  TLDR: More rollouts are not enough. Search becomes powerful when the action space, representation, evaluator, and
+  memory make good trajectories easier to find.
 tags:
   - readings
 categories:
@@ -14,65 +14,100 @@ categories:
   - research
 math: true
 toc: true
-relatedPosts: true
+relatedPosts: false
 ---
 
 <!-- notion-sync: 3674e07a-a023-80d7-86aa-ec175675ff65 parent=Readings url=https://app.notion.com/p/3674e07aa02380d786aaec175675ff65 -->
 
-## 0. 一句话
+The shallow lesson from search is "try more things."
 
-搜索不是只靠更多 rollouts，关键是把 action space 表示成适合搜索的形状。
+The stronger lesson is that search quality depends on the shape of the action space. If the representation is bad, more rollouts mostly explore bad neighborhoods faster. If the representation is good, search can become sample-efficient, interpretable, and surprisingly strong.
 
-## 1. 搜索空间的形状
+That is the through-line I take from Yuandong Tian's talks.
 
-- **AlphaZero**：棋盘规则天然给了很好的搜索空间，MCTS 很有效。
+## Search needs a shape
 
-- **LaMCTS**：很多现实优化问题没有天然好树结构，所以要学习 search space partition。
+AlphaZero works partly because board games give search a clean structure. The rules define legal moves, states are inspectable, and rollouts can be evaluated through a stable game objective.
 
-- **Learning Beyond Gradients**：coding agent 在程序空间里搜索 heuristic；当程序空间不够表达任务时，就要升级抽象，比如宏动作、状态图、MPC、memory。
+Many real optimization problems do not arrive with that gift. LaMCTS is interesting because it learns how to partition the search space. Learning Beyond Gradients is interesting because it treats coding agents as systems that search over heuristic programs, not just answers.
 
-- **RSI**：真正的自我改进系统不只是改答案，而是会改自己的搜索空间、评估器、程序结构和迭代方式。
+The common pattern is:
 
-## 2. 重点材料
+```text
+better representation
+  -> better local moves
+  -> better search
+  -> better learning from feedback
+```
 
-[Yuandong Tian 的 talks 页面](https://yuandong-tian.com/talks/)收集了他近几年公开发表的 slides。这里最值得优先看的几份是：
+When the action space is too weak, the right move is often not "sample more." It is "change the abstraction."
 
-- [MIT NLP talk](https://yuandong-tian.com/talks/talk_mit_nlp.pdf)
+## What this means for coding agents
 
-- [EIT talk](https://yuandong-tian.com/talks/talk_eit.pdf)
+A coding agent can search in several spaces:
 
-- [Recursive Self-Improvement Workshop](https://recursive-workshop.github.io/)
+- text responses;
+- patches;
+- tool-call sequences;
+- tests;
+- state machines;
+- controllers;
+- memory records;
+- eval definitions;
+- environment generators.
 
-- [RSI workshop talk](https://yuandong-tian.com/talks/rsi_workshop.pdf)
+The mistake is to keep the agent in the smallest space and expect intelligence to compensate. If a task needs a macro-action, a state graph, a replay, or an evaluator, then "write the next patch" is the wrong action space.
 
-## 3. Metaproductivity
+This is where recursive self-improvement becomes concrete. A self-improving system should not only improve the current answer. It should improve the representation that future searches use.
 
-这里的关键字段是 `metaproductivity`。Huxley-Gödel Machine 的核心洞见就是：一个 agent 当前 benchmark performance 高，不代表它有更好的后续自我改进潜力；他们称之为 Metaproductivity-Performance Mismatch，并用 descendant performance 的 clade-level 指标来指导 self-modification tree search。
+## Metaproductivity
 
-## 4. 一个可记录的 context pattern
+The most useful word here is `metaproductivity`.
 
-```js
+Current performance and improvement potential are not the same thing. A system can do well on today's benchmark while leaving no reusable structure for tomorrow. Another system may produce a modest immediate gain but create a better evaluator, controller, abstraction, or memory format that makes future improvement easier.
+
+That distinction matters for agent research. We should track not only direct task gain, but also whether a change improves the next round of search.
+
+## A context pattern worth saving
+
+Here is a schema I would use to preserve agent experience as searchable, testable objects:
+
+```json
 {
-  "type": "trace | failuremode | heuristic | controller | evaluator | environmentgenerator | test | negativeresult | abstraction | protocol",
-  "content": "自然语言、代码、prompt、测试、replay、state graph、controller 参数等",
-  "scope": "适用任务、状态区域、模型族、预算区间、不可用条件",
-  "evidence": "positive trials, negative trials, ablation, held-out transfer",
-  "lineage": "由哪些 agent、哪些 trajectory、哪些 previous CP 生成",
+  "type": "trace | failure_mode | heuristic | controller | evaluator | environment_generator | test | negative_result | abstraction | protocol",
+  "content": "natural language, code, prompt, test, replay, state graph, or controller parameters",
+  "scope": "tasks, state regions, model families, budget ranges, and known invalid conditions",
+  "evidence": "positive trials, negative trials, ablations, and held-out transfer",
+  "lineage": "agents, trajectories, and previous context pieces that produced it",
   "fitness": {
-    "directgain": "...",
-    "costreduction": "...",
+    "direct_gain": "...",
+    "cost_reduction": "...",
     "transfer": "...",
     "robustness": "...",
     "metaproductivity": "...",
-    "diversityimpact": "...",
-    "safetyrisk": "..."
+    "diversity_impact": "...",
+    "safety_risk": "..."
   },
   "status": "raw | candidate | validated | canonical | deprecated | distilled"
 }
 ```
 
-这个 schema 的重点是把一次 agent 轨迹中产生的经验，记录成可以被后续搜索、验证、废弃和蒸馏的对象。特别是 `metaproductivity` 字段，它记录的不是当前收益，而是这个对象是否提高了后续自我改进的能力。
+The important field is not just `direct_gain`. It is `metaproductivity`: does this object make future improvement easier?
 
-## 5. 后续阅读
+## Reading path
 
-- [talk_mit_nlp_annotated_notes](https://app.notion.com/p/3684e07aa02380169547f2c1b7b7f36c)
+The talks page is the best starting point:
+
+- [Yuandong Tian's talks](https://yuandong-tian.com/talks/)
+- [MIT NLP talk](https://yuandong-tian.com/talks/talk_mit_nlp.pdf)
+- [EIT talk](https://yuandong-tian.com/talks/talk_eit.pdf)
+- [Recursive Self-Improvement Workshop](https://recursive-workshop.github.io/)
+- [RSI workshop talk](https://yuandong-tian.com/talks/rsi_workshop.pdf)
+
+## My takeaway
+
+Search is not only an algorithmic budget. It is an interface to a space of possible actions.
+
+For agent systems, the most important improvements may come from designing better spaces to search: richer actions, clearer state, stronger evaluators, reusable memory, and abstractions that increase future learning speed.
+
+[Annotated notes](https://app.notion.com/p/3684e07aa02380169547f2c1b7b7f36c)
