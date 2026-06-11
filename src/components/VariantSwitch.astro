@@ -18,20 +18,11 @@ const variants = [
 const def = site.theme.variant;
 ---
 
-<div
-  class="variant-switch"
-  role="group"
-  aria-label="Design theme"
-  transition:persist
->
+<div class="variant-switch" role="group" aria-label="Design theme" transition:persist>
   <span class="variant-switch__label">Theme</span>
   {
     variants.map((v) => (
-      <button
-        type="button"
-        data-variant-btn={v.id}
-        aria-pressed={v.id === def ? 'true' : 'false'}
-      >
+      <button type="button" data-variant-btn={v.id} aria-pressed={v.id === def ? 'true' : 'false'}>
         {v.label}
       </button>
     ))
