@@ -199,11 +199,16 @@ When the user asks to sync or deploy the Markdown vault, use this source:
 Import rules:
 
 - Copy vault posts from `blogs/*.md` into `src/content/posts/`, keeping the original Markdown filename unless the user asks for a rename. For language suffixes like `.en` or `.zh`, convert the destination filename suffix to `-en` or `-zh` so Astro generates readable routes.
+- Do not sync Chinese posts by default. Skip `.zh.md` files and posts whose title/body is primarily Chinese unless the user explicitly asks for the Chinese version to be published.
 - Copy only local image assets actually referenced by each post.
 - Put imported post images under `public/assets/img/blog/<site-post-basename>/`.
 - Rewrite vault image links from `../attachments/<blog-file-basename>/<asset-file>` to `/assets/img/blog/<site-post-basename>/<asset-file>`.
 - Do not copy vault prompt files, drafts in the root, `.obsidian/`, unused attachments, package/source files from temporary exports, or generated build output.
 - The posts schema requires `title` and `date`; if a vault post lacks `date`, add the sync date in frontmatter.
+- Every synced post should include a TLDR:
+  - add frontmatter `overview` for listing cards and search context;
+  - add a visible `TLDR: ...` paragraph near the top of the post, after the H1/subtitle and before the main opening;
+  - summarize only the post's existing core judgment; do not introduce claims not supported by the body.
 - Preserve post prose, headings, code blocks, tables, external links, citations, and author intent. Only change frontmatter or image paths needed for this site.
 
 Validation after sync:

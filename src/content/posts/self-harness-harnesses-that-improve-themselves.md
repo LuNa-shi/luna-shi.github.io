@@ -3,9 +3,14 @@ title: 'Self-Harness: Harnesses That Improve Themselves'
 source: 'https://app.notion.com/p/3804e07aa0238047bfb0fee61997d7cb'
 paper_url: 'https://arxiv.org/pdf/2606.09498'
 date: 2026-06-15
+overview: >-
+  Self-Harness is best read as evidence-driven harness versioning: mine failed traces, propose bounded scaffold edits,
+  and promote only changes that survive regression tests.
 ---
 
 # Self-Harness: Harnesses That Improve Themselves
+
+TLDR: The paper’s durable contribution is not open-ended self-improvement. It is evidence-driven harness versioning: keep the model and evaluator fixed, mine failed traces, propose bounded edits to the scaffold around the model, and promote only changes that survive regression tests.
 
 ## Core Judgment
 

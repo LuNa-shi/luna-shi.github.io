@@ -4,11 +4,16 @@ subtitle: 'How Codex safely lets a model read files, run commands, edit code, an
 series: 'Codex Source Dive'
 part: 4
 date: 2026-06-15
+overview: >-
+  Codex tools are model-visible schemas backed by a policy-bound runtime that routes shell commands, patches, MCP,
+  skills, permissions, sandboxing, streams, and history through one managed execution path.
 ---
 
 # Codex Source Dive (IV): The Tool Runtime
 
 Subtitle: **How Codex safely lets a model read files, run commands, edit code, and call MCP tools.**
+
+TLDR: Codex tools are not just functions exposed to a model. They are a model-facing menu backed by a policy-bound runtime that owns execution, permissions, sandboxing, stream events, MCP wrapping, skill injection, and history feedback.
 
 The first post argued that Codex's agentic loop is not a toy `while tool` demo. A turn is a managed runtime boundary.
 

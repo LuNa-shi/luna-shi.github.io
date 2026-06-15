@@ -3,11 +3,16 @@ title: 'Codex Source Dive (VI): Context Engineering'
 description: 'How AGENTS.md, Skills, and Compaction build the model’s real working context.'
 date: 2026-06-15
 tags: ['codex', 'agents', 'context-engineering', 'source-dive']
+overview: >-
+  Codex context is a managed runtime surface: AGENTS.md, skills, thread history, compaction, and runtime settings each
+  have ownership rules that let long-running work survive.
 ---
 
 # Codex Source Dive (VI): Context Engineering
 
 **How AGENTS.md, Skills, and Compaction build the model’s real working context.**
+
+TLDR: Codex does not simply shove a repository into the prompt. It gives context separate owners, budgets, scopes, and replacement rules, so project instructions, skills, thread history, compaction, and runtime settings can keep a long-running task coherent.
 
 A tempting way to describe Codex is to say that it “puts the repo into the prompt.” That is also the fastest way to misunderstand it.
 

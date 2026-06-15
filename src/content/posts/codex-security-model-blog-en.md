@@ -5,11 +5,16 @@ series: 'Codex Source Dive'
 part: 5
 date: 2026-06-15
 tags: [codex, agents, security, sandbox, approval, exec-policy]
+overview: >-
+  Codex security is a layered execution membrane: sandboxing defines the technical boundary, approvals decide review,
+  exec policy classifies command risk, and OS backends enforce the result.
 ---
 
 # Codex Source Dive (V): The Security Model
 
 **Sandbox, approvals, and exec policy behind one command.**
+
+TLDR: Codex security is not one confirmation box. A command crosses several gates: exec policy classifies it, approval policy decides whether a human must review it, sandbox mode defines what it can touch, and platform-specific backends enforce the boundary.
 
 In the first four parts, we looked at the shape of Codex as an agent runtime:
 

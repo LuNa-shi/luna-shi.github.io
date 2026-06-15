@@ -4,9 +4,14 @@ date: 2026-06-15
 tags: [LLM, attention, long context, sparse attention, pretraining]
 source_paper: 'MiniMax Sparse Attention'
 paper_url: 'https://arxiv.org/abs/2606.13392'
+overview: >-
+  MiniMax Sparse Attention turns long context into searchable memory: a learned index selects relevant key-value blocks,
+  then exact softmax attention reads only those blocks.
 ---
 
 # MiniMax Sparse Attention: Teaching Long-Context Models to Use an Index
+
+TLDR: MiniMax Sparse Attention treats long context as searchable memory rather than a flat wall of tokens. A lightweight learned index branch selects the most relevant key-value blocks, and the main branch still uses exact softmax attention over those selected blocks.
 
 Long-context language models promise a simple magic trick: place a whole codebase, a long research report, a web-browsing trace, or a multi-hour conversation into the prompt, and let the model reason over all of it at once. The promise is attractive because many real tasks are not short. Software agents need repository history. Research assistants need dozens of documents. Personal assistants need memory. Multimodal agents need long video and screen traces.
 
