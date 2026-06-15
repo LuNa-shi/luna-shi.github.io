@@ -188,6 +188,37 @@ const { pirsch } = site.analytics;
 
 ---
 
+## Markdown Vault Sync
+
+When the user asks to sync or deploy the Markdown vault, use this source:
+
+```text
+/Users/luna/Projects/Blogs
+```
+
+Import rules:
+
+- Copy vault posts from `blogs/*.md` into `src/content/posts/`, keeping the original Markdown filename unless the user asks for a rename. For language suffixes like `.en` or `.zh`, convert the destination filename suffix to `-en` or `-zh` so Astro generates readable routes.
+- Copy only local image assets actually referenced by each post.
+- Put imported post images under `public/assets/img/blog/<site-post-basename>/`.
+- Rewrite vault image links from `../attachments/<blog-file-basename>/<asset-file>` to `/assets/img/blog/<site-post-basename>/<asset-file>`.
+- Do not copy vault prompt files, drafts in the root, `.obsidian/`, unused attachments, package/source files from temporary exports, or generated build output.
+- The posts schema requires `title` and `date`; if a vault post lacks `date`, add the sync date in frontmatter.
+- Preserve post prose, headings, code blocks, tables, external links, citations, and author intent. Only change frontmatter or image paths needed for this site.
+
+Validation after sync:
+
+```bash
+rg -n 'attachments/|\\.\\./attachments' src/content/posts/<post-file>.md
+NODE_OPTIONS="--use-system-ca" \
+NODE_EXTRA_CA_CERTS="/Users/luna/.homebrew/etc/ca-certificates/cert.pem" \
+yarn build
+```
+
+Commit and push only the intended imported posts, imported assets, and instruction updates. Deployment is handled by the GitHub Pages workflow after pushing to `main`; confirm the workflow finishes successfully.
+
+---
+
 ## Testing
 
 ```bash
