@@ -24,7 +24,7 @@ categories:
 
 TLDR: Source text does not contain a hidden tree. A scanner first turns characters into typed tokens, then the parser uses grammar, precedence, and associativity to choose one AST that later phases can evaluate and diagnose without rediscovering the structure.
 
-```lox
+```text
 print 1 - 2 * 3 < 4 == false;
 ```
 
@@ -99,7 +99,7 @@ This is the first structural gain. Five characters have become one typed unit. T
 
 A scanner can look like a glorified `switch`, but the edge cases reveal that it is enforcing language design. Consider three small tests:
 
-```lox
+```text
 or
 orchid
 
@@ -172,7 +172,7 @@ The boundaries are settled. The list is richer than the source string, but it is
 
 Strip the opening line down to its arithmetic center:
 
-```lox
+```text
 1 - 2 * 3
 ```
 
@@ -239,7 +239,17 @@ primary    → NUMBER | STRING | "true" | "false" | "nil"
            | "(" expression ")" ;
 ```
 
-The crucial relationship is that a lower-precedence rule asks the next tighter rule to parse each operand. `term()` does not parse arbitrary expressions around `-`; it asks `factor()` for both sides. `factor()` in turn asks `unary()`. A multiplication therefore has a chance to finish before control returns to the subtraction layer.
+The names `term` and `factor` come from ordinary arithmetic grammar, but the important part is their position in the ladder. In this parser, `term()` is the addition/subtraction layer. `factor()` is the multiplication/division layer. Since multiplication binds tighter than subtraction, `term()` is not allowed to grab an arbitrary expression as the right side of `-`. It must ask the next tighter layer, `factor()`, to parse that operand.
+
+That delegation is where precedence becomes control flow. When `term()` is parsing `1 - 2 * 3`, it first asks `factor()` for the left operand and gets `1`. Then it sees `-`, consumes it, and asks `factor()` for the right operand. This second `factor()` starts at `2`. Because `*` belongs to the factor layer, `factor()` keeps going: it consumes `*`, parses `3`, and builds the subtree `2 * 3` before returning to `term()`.
+
+So `term()` never gets the token `2` alone as the right operand of subtraction. It receives the already-finished tree `Binary(2, STAR, 3)`. Only then can it build the subtraction node:
+
+```text
+Binary(1, MINUS, Binary(2, STAR, 3))
+```
+
+This is the key idea: higher precedence does not come from the scanner marking `*` as special. It comes from the parser giving the tighter grammar layer a chance to finish before the looser layer continues.
 
 Recursive descent translates that grammar almost literally into methods. Term and factor share the same shape:
 
@@ -282,6 +292,22 @@ result: ((1 - 2) - 3)
 ```
 
 Now trace only the calls needed for `1 - 2 * 3`.
+
+A compact trace makes the handoff visible:
+
+```text
+term()
+  left = factor()                 -> Literal(1)
+  sees "-"
+  right = factor()
+    left = unary()                -> Literal(2)
+    sees "*"
+    right = unary()               -> Literal(3)
+    returns Binary(2, STAR, 3)
+  returns Binary(1, MINUS, Binary(2, STAR, 3))
+```
+
+The caller waits. The tighter rule consumes what belongs to it. The returned subtree becomes one operand for the looser rule.
 
 `expression()` calls `equality()`, which calls `comparison()`, which calls `term()`. The first `factor()` under `term()` parses the primary literal `1` and returns it. `term()` sees `-`, so it consumes the operator and asks `factor()` for the right operand.
 
@@ -359,6 +385,29 @@ The AST also solves an architectural ownership problem. The parser creates the t
 
 Stuffing all of those operations into the node classes would mix unrelated phases. `jlox` instead uses the Visitor pattern. Each node knows how to dispatch to the right visit method, while each operation lives in its own class. The tree classes remain a typed data model; the visitors provide parser-independent behavior.
 
+A plain way to read Visitor is: the AST nodes are the nouns, and visitors are the verbs.
+
+The node classes answer the question, “What kind of syntax is this?” A `Binary` node has a left child, an operator, and a right child. A `Literal` node has a value. Those facts should not change just because we later want to print, evaluate, resolve, or type-check the tree.
+
+The visitors answer a different question: “What are we doing with this syntax right now?” An `AstPrinter` visitor turns each node into text. An interpreter visitor turns each node into runtime behavior. A resolver visitor, introduced later, walks the same shape to attach scope information.
+
+Without Visitor, every syntax class would slowly collect unrelated methods:
+
+```text
+Binary.print()
+Binary.evaluate()
+Binary.resolve()
+Binary.typeCheck()
+```
+
+That makes each node class a dumping ground for every future compiler pass. Visitor flips the ownership. The node only performs dispatch:
+
+```text
+"I am a Binary node; call visitBinaryExpr(this)."
+```
+
+The operation itself lives in the visitor. This keeps the AST as a stable data model while allowing new tree-walking passes to be added beside it.
+
 ![Parser produces an AST; resolver, interpreter, and printer consume it](/assets/img/blog/article-en/04-ast-crosses-phase-boundaries.png)
 
 *Figure 4. The AST is a durable agreement: the parser fixes structure once, and later passes consume that structure for different purposes.*
@@ -373,7 +422,7 @@ The Visitor pattern is sometimes explained as a catalog item. Here the causal re
 
 Consider a missing right parenthesis followed by a valid statement:
 
-```lox
+```text
 print (1 + 2;
 print 99;
 ```
@@ -381,6 +430,17 @@ print 99;
 While parsing the grouping expression, the parser successfully reads `1 + 2`. It then calls `consume(RIGHT_PAREN, ...)`. The next token is a semicolon, so the expected grammar production cannot complete.
 
 A weak parser has two bad options. It can crash and expose an implementation exception, or it can keep calling grammar methods in a corrupted state and produce a cascade of misleading errors. `jlox` chooses panic-mode recovery: report one precise error, abandon the damaged production, move to a likely boundary, and resume from there.
+
+Panic mode sounds dramatic, but the idea is modest: once the parser knows the current statement is damaged, it stops trying to understand the damaged part in detail. It looks for a place where parsing can restart with some confidence.
+
+After `1 + 2`, the parser expects `)`. Instead it sees `;`. At that moment, the parser knows the grouping expression is broken. If it keeps parsing token by token as if nothing happened, it may misread `print 99;` as part of the broken expression and produce several fake errors. The real mistake was only one missing parenthesis.
+
+So the parser does two separate things:
+
+1. It reports the local error: “Expect ')' after expression.”
+2. It skips ahead until it reaches a likely statement boundary.
+
+That second step is synchronization.
 
 The local control-flow mechanism is a tiny `ParseError` exception. Throwing it unwinds the recursive-descent call frames that represented the half-finished `primary()`, `unary()`, `factor()`, `term()`, and outer statement parse. Catching it at a statement or declaration boundary restores the parser to a rule from which a fresh statement can begin.
 
@@ -404,9 +464,26 @@ private void synchronize() {
 }
 ```
 
-The method is intentionally heuristic. A semicolon probably ended the bad statement. A leading keyword such as `print`, `var`, or `if` probably starts the next one. “Probably” is enough because recovery is already best effort: the parser has reported the original error at the token where its expectation failed.
+The method is intentionally heuristic. It does not prove that the next token is safe. It uses common landmarks.
 
-For the example, the parser has consumed the malformed statement through `2` and is looking at `;` when it reports “Expect ')' after expression.” Recovery consumes that semicolon, recognizes the boundary, and leaves the second `print` ready for normal parsing. A single run can therefore diagnose the first statement without sacrificing the rest of the file.
+A semicolon is useful because it often ends a statement. Statement-starting keywords are useful because `class`, `fun`, `var`, `for`, `if`, `while`, `print`, and `return` usually begin a fresh syntactic unit. When the parser reaches one of those landmarks, it stops discarding tokens and lets the normal declaration or statement parser take over again.
+
+For the example, recovery works like this:
+
+```text
+print (1 + 2;
+             ^
+             parser expected ")"
+
+report error
+discard until statement boundary
+stop after the semicolon
+resume at: print 99;
+```
+
+The parser has not repaired the first statement. It has only prevented the first error from poisoning the second statement. That is the purpose of panic mode: bound the damage.
+
+A single run can therefore diagnose the first statement without sacrificing the rest of the file.
 
 Chapter 6 introduces the recovery machinery while the parser still accepts only one expression, so there is not yet much to resume. Once statements are parsed as a sequence, the same mechanism becomes visibly useful: catch at the declaration boundary, synchronize the tokens, and continue.
 
@@ -426,7 +503,7 @@ Replay the opening line in three representations.
 
 **Source text**
 
-```lox
+```text
 print 1 - 2 * 3 < 4 == false;
 ```
 
