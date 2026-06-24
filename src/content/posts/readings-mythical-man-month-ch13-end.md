@@ -7,13 +7,15 @@ overview: >-
 description: >-
   A faithful English reading note on the final chapters of The Mythical Man-Month, mapped to agent coding without
   changing the original structure or claims.
-tags:
-  - readings
-categories:
-  - reading
 math: false
 toc: true
 relatedPosts: false
+tags:
+  - mythical-man-month
+  - software-engineering
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 37a4e07a-a023-8067-b80e-c7482e360ddf parent=Readings url=https://app.notion.com/p/37a4e07aa0238067b80ec7482e360ddf -->

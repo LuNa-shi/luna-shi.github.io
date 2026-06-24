@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: This note maps the interpreter pipeline from source text through tokens, parsing, semantic analysis, code
   generation, and runtime choices.
-tags:
-  - crafting-interpreters
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - crafting-interpreters
+  - interpreters
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 36b4e07a-a023-80ea-b60e-ccaf11efbb5a parent=Crafting interpreters url=https://app.notion.com/p/36b4e07aa02380eab60eccaf11efbb5a -->

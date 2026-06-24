@@ -126,8 +126,8 @@ title: "Post Title"
 date: 2024-06-01
 lastmod: 2024-09-01  # optional: last modified date — shown in header and JSON-LD
 description: "Shown in listings and meta tags"
-tags: [physics, math]
-categories: [science]
+tags: [crafting-interpreters, parsing]
+categories: [learning, systems]
 math: true           # enable KaTeX rendering
 toc: true            # sidebar table of contents (default: true)
 pinned: false        # pin to top of blog listing
@@ -145,6 +145,12 @@ $$
 \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
 $$
 ```
+
+Use `categories` and `tags` for different jobs:
+
+- `categories` are broad blog shelves. Keep them lowercase kebab-case and choose at most two from the canonical set: `agents`, `systems`, `learning`, `reading`, `research`.
+- `tags` are hashtag-style series or topic labels. Keep them lowercase kebab-case, use one to three specific labels, and avoid duplicating a category name. Good examples: `codex-source-dive`, `crafting-interpreters`, `sutton-rl`, `multi-agent-systems`, `context-engineering`.
+- Do not use generic duplicate pairs such as `categories: [reading]` plus `tags: [readings]`. The category already says the post is a reading note; the tag should identify the source, series, or precise topic.
 
 ### Blog listing options
 

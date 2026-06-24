@@ -7,13 +7,14 @@ overview: >-
 description: >-
   A curated reading note that turns several raw recommendation lists into one map of books for the AI-coding era, focused
   on the abilities that become more valuable when implementation cost falls.
-tags:
-  - readings
-categories:
-  - reading
 math: false
 toc: true
 relatedPosts: false
+tags:
+  - ai-coding
+  - reading-list
+categories:
+  - reading
 ---
 
 <!-- notion-sync: 37a4e07a-a023-808e-889b-ca9be817fc40 parent=Readings url=https://app.notion.com/p/37a4e07aa023808e889bca9be817fc40 -->

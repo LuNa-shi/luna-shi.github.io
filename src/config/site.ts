@@ -92,8 +92,8 @@ export const site = {
     name: 'Blog',
     description: 'Small notes make unfinished thought durable.',
     postsPerPage: 8,
-    displayTags: ['pi-agent', 'sutton-rl', 'cs336'],
-    displayCategories: ['agents', 'learning', 'reading'],
+    displayTags: ['codex-source-dive', 'crafting-interpreters', 'sutton-rl', 'cs336', 'pi-agent'],
+    displayCategories: ['agents', 'systems', 'learning', 'reading', 'research'],
     externalSources: [] as Array<{
       name: string;
       rssUrl?: string;

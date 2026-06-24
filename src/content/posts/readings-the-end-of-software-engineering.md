@@ -7,13 +7,15 @@ overview: >-
 description: >-
   TLDR: The title is deliberately provocative, but the useful claim is narrower: agentic systems move durable value
   away from static code alone and toward intent, tools, memory, evals, observability, and governance.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - ai-coding
+  - software-engineering
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 3794e07a-a023-80a0-bd41-cdbf8413c599 parent=Readings url=https://app.notion.com/p/3794e07aa02380a0bd41cdbf8413c599 -->

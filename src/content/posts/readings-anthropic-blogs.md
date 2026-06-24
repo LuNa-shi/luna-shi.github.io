@@ -7,14 +7,15 @@ overview: >-
 description: >-
   A reading synthesis of Anthropic engineering posts on context reset, generator/evaluator loops, managed agents,
   sandboxing, credential boundaries, and harness design.
-tags:
-  - readings
-categories:
-  - reading
-  - research
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - harness-engineering
+  - context-engineering
+categories:
+  - reading
+  - research
 ---
 
 <!-- notion-sync: 3424e07a-a023-8070-b2e1-f2c5c55f26ea parent=Readings url=https://app.notion.com/p/3424e07aa0238070b2e1f2c5c55f26ea -->

@@ -7,13 +7,15 @@ overview: >-
 description: >-
   TLDR: Chapters 7-12 make one old lesson feel new again: large software fails when coordination, budgets, documents,
   prototypes, and tools are treated as secondary work. Agent systems inherit the same constraints.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - mythical-man-month
+  - software-engineering
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 37a4e07a-a023-80a7-b4f5-c931cff627f8 parent=Readings url=https://app.notion.com/p/37a4e07aa02380a7b4f5c931cff627f8 -->

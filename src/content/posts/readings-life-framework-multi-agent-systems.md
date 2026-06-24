@@ -7,14 +7,15 @@ overview: >-
 description: >-
   A compressed reading note on the LIFE framework for LLM-based multi-agent systems, with emphasis on collaboration,
   failure attribution, self-evolution, and agent-runtime design.
-tags:
-  - readings
-categories:
-  - reading
-  - agents
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - multi-agent-systems
+  - agent-systems
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3724e07a-a023-809e-9252-e039fa3668d2 parent=Readings url=https://app.notion.com/p/3724e07aa023809e9252e039fa3668d2 -->

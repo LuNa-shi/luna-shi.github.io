@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Parents and children cooperate through shared genes, but their interests are not identical, which makes family
   care a site of real strategic conflict.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 36b4e07a-a023-808e-822e-edeacdc347b8 parent=自私的基因 url=https://app.notion.com/p/36b4e07aa023808e822eedeacdc347b8 -->

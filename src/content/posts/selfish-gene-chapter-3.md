@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: The durable unit is not the body but the replicating gene: bodies disappear, while genetic information keeps
   competing through copying and recombination.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 3654e07a-a023-8034-9fd4-f70751c4a930 parent=自私的基因 url=https://app.notion.com/p/3654e07aa02380349fd4f70751c4a930 -->

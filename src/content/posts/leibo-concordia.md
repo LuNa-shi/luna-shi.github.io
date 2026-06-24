@@ -7,14 +7,15 @@ overview: >-
 description: >-
   A research-lens note on Concordia and why social simulation with LLM agents needs world state, intervention points,
   and careful validation.
-tags:
-  - leibo
-categories:
-  - agents
-  - research
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - leibo
+  - social-simulation
+categories:
+  - agents
+  - research
 ---
 
 <!-- notion-sync: 3674e07a-a023-8048-9620-f5ec9ea6dfc0 parent=Leibo's paper url=https://app.notion.com/p/3674e07aa02380489620f5ec9ea6dfc0 -->

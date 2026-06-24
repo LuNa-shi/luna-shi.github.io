@@ -7,16 +7,16 @@ overview: >-
 description: >-
   A source-reading note on Codex Goals: thread ownership, GoalRuntimeEvent, accounting, idle continuation, budget steering,
   authority separation, and resume.
-tags:
-  - codex
-  - agent-runtime
-categories:
-  - agents
-  - systems
 math: false
 mermaid: true
 toc: true
 relatedPosts: false
+tags:
+  - codex-source-dive
+  - agent-runtime
+categories:
+  - agents
+  - systems
 ---
 
 <!-- notion-sync: 37c4e07a-a023-8105-b6f1-fc49946cb014 parent=codex blogs url=https://app.notion.com/p/37c4e07aa0238105b6f1fc49946cb014 -->

@@ -7,14 +7,14 @@ overview: >-
 description: >-
   TLDR: RL is interaction for long-term reward: policy chooses actions, reward gives feedback, value estimates future
   return, and Bellman equations connect the pieces.
-tags:
-  - sutton-rl
-categories:
-  - learning
-  - rl
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - sutton-rl
+  - rl
+categories:
+  - learning
 ---
 
 <!-- notion-sync: 36d4e07a-a023-806d-a6b6-e65280e51648 parent=Sutton-RL url=https://app.notion.com/p/36d4e07aa023806da6b6e65280e51648 -->

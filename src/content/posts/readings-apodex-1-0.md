@@ -7,13 +7,15 @@ overview: >-
 description: >-
   A reading note on Apodex-1.0, Apodex-1.0-H, asynchronous agent teams, shared evidence pools, verifier agents, claim
   graphs, and AgentOS as a reusable multi-agent substrate.
-tags:
-  - readings
-categories:
-  - reading
 math: false
 toc: true
 relatedPosts: false
+tags:
+  - deep-research
+  - agent-systems
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 37a4e07a-a023-8017-bb5a-e9f8bb57f575 parent=Readings url=https://app.notion.com/p/37a4e07aa0238017bb5ae9f8bb57f575 -->

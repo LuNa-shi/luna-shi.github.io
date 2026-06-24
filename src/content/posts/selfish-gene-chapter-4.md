@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Bodies and brains are gene-built action machines: genes set up the machinery, but fast behavior has to be
   delegated to perception, memory, and decision systems.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 36a4e07a-a023-8091-8350-e0ba721799ff parent=自私的基因 url=https://app.notion.com/p/36a4e07aa02380918350e0ba721799ff -->

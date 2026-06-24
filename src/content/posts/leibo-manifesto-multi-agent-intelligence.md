@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: Multi-agent intelligence should study how cooperation, competition, specialization, and shared discoveries
   create abilities that isolated agents would miss.
-tags:
-  - leibo
-categories:
-  - agents
-  - research
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - leibo
+  - multi-agent-systems
+categories:
+  - agents
+  - research
 ---
 
 <!-- notion-sync: 3624e07a-a023-80f3-8a3b-d2f4fe8c0e35 parent=Leibo’s paper url=https://app.notion.com/p/3624e07aa02380f38a3bd2f4fe8c0e35 -->

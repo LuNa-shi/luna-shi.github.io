@@ -7,13 +7,14 @@ overview: >-
 description: >-
   TLDR: A good paper-reading prompt should force the reader to recover the argument: problem, insight, method, evidence,
   and weakness. It should not reward section-by-section summarization.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - paper-reading
+  - research-methods
+categories:
+  - reading
 ---
 
 <!-- notion-sync: 3794e07a-a023-8028-84b9-e1898636a741 parent=Readings url=https://app.notion.com/p/3794e07aa023802884b9e1898636a741 -->

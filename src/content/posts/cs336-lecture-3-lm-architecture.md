@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: LM architecture is a stack of trade-offs across normalization, activations, attention, positional encoding,
   hyperparameters, stability, and inference cost.
-tags:
-  - cs336
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - cs336
+  - lm-architecture
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 3644e07a-a023-80ef-b7a9-c6ee7bad8040 parent=CS336 url=https://app.notion.com/p/3644e07aa02380efb7a9c6ee7bad8040 -->

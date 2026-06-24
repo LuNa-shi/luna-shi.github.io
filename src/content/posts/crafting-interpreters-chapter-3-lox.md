@@ -7,14 +7,16 @@ overview: >-
 description: >-
   TLDR: Lox is the small language that carries the book: expressive enough for classes, closures, and control flow, but
   compact enough to implement twice.
-tags:
-  - crafting-interpreters
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - crafting-interpreters
+  - interpreters
+  - lox
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 36b4e07a-a023-80ed-bbe1-ed954cdf9b57 parent=Crafting interpreters url=https://app.notion.com/p/36b4e07aa02380edbbe1ed954cdf9b57 -->

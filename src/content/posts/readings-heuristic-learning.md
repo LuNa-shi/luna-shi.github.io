@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: Heuristic Learning treats iterative agent work as maintaining a verifiable software system. Feedback updates
   code, tests, rules, state representations, and memory rather than neural network weights.
-tags:
-  - readings
-categories:
-  - reading
-  - systems
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - heuristic-learning
+  - learning-systems
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 3674e07a-a023-8075-8242-f7df546ecb44 parent=Readings url=https://app.notion.com/p/3674e07aa02380758242f7df546ecb44 -->

@@ -6,14 +6,15 @@ overview: >-
   checkpoints, and mixed precision all have resource prices.
 description: >-
   A compact CS336 lecture note on PyTorch mechanics and resource accounting for language-model training.
-tags:
-  - cs336
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - cs336
+  - resource-accounting
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 3644e07a-a023-8037-81e3-fbd69dc4a41f parent=CS336 url=https://app.notion.com/p/3644e07aa023803781e3fbd69dc4a41f -->

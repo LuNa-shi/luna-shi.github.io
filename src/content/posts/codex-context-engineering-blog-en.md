@@ -2,10 +2,15 @@
 title: 'Codex Source Dive (VI): Context Engineering'
 description: 'How AGENTS.md, Skills, and Compaction build the model’s real working context.'
 date: 2026-06-15
-tags: ['codex', 'agents', 'context-engineering', 'source-dive']
 overview: >-
   Codex context is a managed runtime surface: AGENTS.md, skills, thread history, compaction, and runtime settings each
   have ownership rules that let long-running work survive.
+tags:
+  - codex-source-dive
+  - context-engineering
+categories:
+  - agents
+  - systems
 ---
 
 # Codex Source Dive (VI): Context Engineering

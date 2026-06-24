@@ -7,14 +7,14 @@ overview: >-
 description: >-
   TLDR: TD learning updates from partial experience by bootstrapping current value estimates, combining Monte Carlo
   sampling with dynamic-programming-style updates.
-tags:
-  - sutton-rl
-categories:
-  - learning
-  - rl
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - sutton-rl
+  - rl
+categories:
+  - learning
 ---
 
 <!-- notion-sync: 3704e07a-a023-800d-89ea-e01649e15c67 parent=Sutton-RL url=https://app.notion.com/p/3704e07aa023800d89eae01649e15c67 -->

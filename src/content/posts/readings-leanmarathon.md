@@ -7,13 +7,15 @@ overview: >-
 description: >-
   A reading note on LeanMarathon as a durable harness for AI-assisted Lean autoformalization, with lessons for
   long-horizon agent systems.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - formal-methods
+  - agent-systems
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3784e07a-a023-807c-a90f-def705e178e6 parent=Readings url=https://app.notion.com/p/3784e07aa023807ca90fdef705e178e6 -->

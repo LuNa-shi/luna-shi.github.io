@@ -7,16 +7,16 @@ overview: >-
 description: >-
   A source-reading note on turn/start, RegularTask, run_turn, turn/steer, turn/interrupt, pending input, and why Codex's
   agentic loop is more than while model calls tools.
-tags:
-  - codex
-  - agent-runtime
-categories:
-  - agents
-  - systems
 math: false
 mermaid: true
 toc: true
 relatedPosts: false
+tags:
+  - codex-source-dive
+  - agent-runtime
+categories:
+  - agents
+  - systems
 ---
 
 <!-- notion-sync: 37c4e07a-a023-8103-b020-e7336f1c7a59 parent=codex blogs url=https://app.notion.com/p/37c4e07aa0238103b020e7336f1c7a59 -->

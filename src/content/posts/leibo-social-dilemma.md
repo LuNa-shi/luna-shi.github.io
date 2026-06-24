@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: Social dilemmas show why individually rational actions can damage group outcomes, and why cooperation depends on
   payoffs, repetition, reputation, and norms.
-tags:
-  - leibo
-categories:
-  - agents
-  - research
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - leibo
+  - social-dilemmas
+categories:
+  - agents
+  - research
 ---
 
 <!-- notion-sync: 3624e07a-a023-8062-ace3-ff7091dfc64e parent=Leibo’s paper url=https://app.notion.com/p/3624e07aa0238062ace3ff7091dfc64e -->

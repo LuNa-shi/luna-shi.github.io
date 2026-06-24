@@ -7,14 +7,15 @@ overview: >-
 description: >-
   A source-reading note that treats Claude Code as an agent process with filesystem, tool-call, permission, and context
   management boundaries.
-tags:
-  - readings
-categories:
-  - reading
-  - systems
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - claude-code
+  - agent-runtime
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 3414e07a-a023-809f-8b9d-e5c4c2151d32 parent=Readings url=https://app.notion.com/p/3414e07aa023809f8b9de5c4c2151d32 -->

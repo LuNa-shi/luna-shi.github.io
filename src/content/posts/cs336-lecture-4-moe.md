@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: MoE scales parameter count through sparse expert routing, but the real work is balancing tokens, capacity,
   communication cost, and specialization.
-tags:
-  - cs336
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - cs336
+  - moe
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 3684e07a-a023-80de-bacd-e1ae8e6bd89d parent=CS336 url=https://app.notion.com/p/3684e07aa02380debacde1ae8e6bd89d -->

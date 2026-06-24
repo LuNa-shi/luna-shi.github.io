@@ -11,11 +11,14 @@ overview: >-
   Source text becomes executable structure in phases: scanning creates token boundaries, parsing turns precedence and
   associativity into an AST, and later phases consume that preserved tree.
 description: "How characters acquire boundaries, hierarchy, and evaluation order."
-tags: [crafting-interpreters, interpreters, parsing]
-categories: [learning, systems]
+tags:
+  - crafting-interpreters
+  - interpreters
+  - parsing
+categories:
+  - learning
+  - systems
 ---
-
-# Crafting Interpreters (I): When Source Text Becomes Structure
 
 ## How characters acquire boundaries, hierarchy, and evaluation order
 

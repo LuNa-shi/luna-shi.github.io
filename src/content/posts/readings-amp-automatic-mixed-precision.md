@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: AMP is not "turn the model into half precision." It is a runtime policy that runs safe, high-throughput ops in
   lower precision while protecting numerically sensitive paths.
-tags:
-  - readings
-categories:
-  - reading
-  - systems
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - mixed-precision
+  - gpu-systems
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 3644e07a-a023-80b8-99a5-d9363dba6a0a parent=Readings url=https://app.notion.com/p/3644e07aa02380b899a5d9363dba6a0a -->

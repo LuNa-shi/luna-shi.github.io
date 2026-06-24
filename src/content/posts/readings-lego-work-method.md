@@ -7,13 +7,15 @@ overview: >-
 description: >-
   TLDR: The useful lesson from Lego is not a slogan about creativity. It is an operating discipline: stay close to the
   customer, keep accountability internal, reduce complexity, and make execution visible.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - work-methods
+  - software-engineering
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 37a4e07a-a023-8004-b162-e9ed1d26735a parent=Readings url=https://app.notion.com/p/37a4e07aa0238004b162e9ed1d26735a -->

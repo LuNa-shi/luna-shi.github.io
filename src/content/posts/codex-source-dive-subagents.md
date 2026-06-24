@@ -7,16 +7,16 @@ overview: >-
 description: >-
   A source-reading note on Codex multi-agent design: AgentControl, AgentRegistry, agent paths, spawn_agent, fork_turns,
   mailboxes, wait/interrupt semantics, and session-tree recovery.
-tags:
-  - codex
-  - agent-runtime
-categories:
-  - agents
-  - systems
 math: false
 mermaid: true
 toc: true
 relatedPosts: false
+tags:
+  - codex-source-dive
+  - agent-runtime
+categories:
+  - agents
+  - systems
 ---
 
 <!-- notion-sync: 37c4e07a-a023-8150-b043-ffe641c10be9 parent=codex blogs url=https://app.notion.com/p/37c4e07aa0238150b043ffe641c10be9 -->

@@ -7,6 +7,12 @@ date: 2026-06-15
 overview: >-
   Codex tools are model-visible schemas backed by a policy-bound runtime that routes shell commands, patches, MCP,
   skills, permissions, sandboxing, streams, and history through one managed execution path.
+tags:
+  - codex-source-dive
+  - tool-runtime
+categories:
+  - agents
+  - systems
 ---
 
 # Codex Source Dive (IV): The Tool Runtime

@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Aggression is not simply about being harsher; stable strategies depend on injury cost, resource value, opponent
   behavior, and the wider population mix.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 36a4e07a-a023-80cf-b9c8-d299a6305a8f parent=自私的基因 url=https://app.notion.com/p/36a4e07aa02380cfb9c8d299a6305a8f -->

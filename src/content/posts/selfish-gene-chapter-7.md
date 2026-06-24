@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Reproduction is a trade-off between more offspring and better-supported offspring, so restraint can be
   self-interested rather than species-minded.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 36b4e07a-a023-80dc-ab09-ffae71c95b87 parent=自私的基因 url=https://app.notion.com/p/36b4e07aa02380dcab09ffae71c95b87 -->

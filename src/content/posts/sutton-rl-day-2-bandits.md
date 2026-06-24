@@ -7,14 +7,14 @@ overview: >-
 description: >-
   TLDR: Multi-armed bandits isolate the exploration/exploitation problem by removing state transitions and making
   action-value estimation the center.
-tags:
-  - sutton-rl
-categories:
-  - learning
-  - rl
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - sutton-rl
+  - rl
+categories:
+  - learning
 ---
 
 <!-- notion-sync: 36e4e07a-a023-8083-8bea-d2d6d803a1d6 parent=Sutton-RL url=https://app.notion.com/p/36e4e07aa02380838bead2d6d803a1d6 -->

@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: The conversation is useful because it frames AI research as system-driven experimental work: define verifiable
   problems, build feedback loops, debug carefully, and choose directions where scaling paths are still being shaped.
-tags:
-  - readings
-categories:
-  - reading
-  - research
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - research-methods
+  - agent-systems
+categories:
+  - reading
+  - research
 ---
 
 <!-- notion-sync: 3604e07a-a023-80f2-b561-c32ec5d703d7 parent=Readings url=https://app.notion.com/p/3604e07aa02380f2b561c32ec5d703d7 -->

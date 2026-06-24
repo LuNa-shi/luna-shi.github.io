@@ -7,14 +7,14 @@ overview: >-
 description: >-
   A clean Sutton and Barto reading note on dynamic programming, policy evaluation, policy improvement, policy iteration,
   value iteration, and generalized policy iteration.
-tags:
-  - sutton-rl
-categories:
-  - learning
-  - rl
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - sutton-rl
+  - rl
+categories:
+  - learning
 ---
 
 <!-- notion-sync: 36e4e07a-a023-8055-ae32-e78d60c3c5cb parent=Sutton-RL url=https://app.notion.com/p/36e4e07aa0238055ae32e78d60c3c5cb -->

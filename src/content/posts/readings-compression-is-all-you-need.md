@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: A mathematical abstraction is valuable when it compresses downstream work: proofs become shorter, repeated
   patterns disappear, and the library becomes easier to extend.
-tags:
-  - readings
-categories:
-  - reading
-  - systems
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - mathematical-progress
+  - evaluation
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 3674e07a-a023-80e7-bb86-f340766fef05 parent=Readings url=https://app.notion.com/p/3674e07aa02380e7bb86f340766fef05 -->

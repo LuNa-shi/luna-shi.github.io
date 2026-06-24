@@ -6,13 +6,15 @@ overview: >-
   intermediate outputs, and let the harness carry the parts a single prompt cannot reliably hold.
 description: >-
   A reading note on Dynamic Workflows as an agent-system design pattern rather than a Claude Code feature note.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - agent-runtime
+  - workflows
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3774e07a-a023-8017-897a-cec0c6080c93 parent=Readings url=https://app.notion.com/p/3774e07aa0238017897acec0c6080c93 -->

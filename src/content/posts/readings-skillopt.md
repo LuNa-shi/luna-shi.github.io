@@ -7,13 +7,15 @@ overview: >-
 description: >-
   TLDR: SkillOpt treats an agent skill as an optimizable text artifact. The model stays frozen, rollouts provide evidence,
   an optimizer proposes edits, and a validation gate accepts only real improvements.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - skill-learning
+  - agent-systems
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3794e07a-a023-8042-92aa-f0e4bb5288c1 parent=Readings url=https://app.notion.com/p/3794e07aa023804292aaf0e4bb5288c1 -->

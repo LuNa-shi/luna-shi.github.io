@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: This page is a ranked reading shortlist for recent MAS papers, prioritizing collaboration structure, topology
   design, runtime efficiency, and verification.
-tags:
-  - readings
-categories:
-  - reading
-  - agents
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - multi-agent-systems
+  - paper-list
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3724e07a-a023-8003-b635-dc2a685c0733 parent=Readings url=https://app.notion.com/p/3724e07aa0238003b635dc2a685c0733 -->

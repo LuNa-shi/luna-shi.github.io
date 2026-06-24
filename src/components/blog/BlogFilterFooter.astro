@@ -26,7 +26,7 @@ const base = site.base;
         displayCategories.map((cat, i) => (
           <>
             <li>
-              <Icon name="fa-solid:tag" /> <a href={`${base}/blog/category/${cat}/`}>{cat}</a>
+              <Icon name="fa-solid:folder" /> <a href={`${base}/blog/category/${cat}/`}>{cat}</a>
             </li>
             {i < displayCategories.length - 1 && <p>&bull;</p>}
           </>

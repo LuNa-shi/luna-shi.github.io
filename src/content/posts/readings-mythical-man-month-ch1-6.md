@@ -7,13 +7,15 @@ overview: >-
 description: >-
   A reading note on why The Mythical Man-Month becomes more relevant, not less, once coding agents make local
   implementation cheaper.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - mythical-man-month
+  - software-engineering
+categories:
+  - reading
+  - systems
 ---
 
 <!-- notion-sync: 37a4e07a-a023-800c-8af1-ee64e89eafa1 parent=Readings url=https://app.notion.com/p/37a4e07aa023800c8af1ee64e89eafa1 -->

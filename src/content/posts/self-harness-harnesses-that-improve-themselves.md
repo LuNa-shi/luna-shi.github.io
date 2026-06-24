@@ -6,6 +6,12 @@ date: 2026-06-15
 overview: >-
   Self-Harness is best read as evidence-driven harness versioning: mine failed traces, propose bounded scaffold edits,
   and promote only changes that survive regression tests.
+tags:
+  - self-harness
+  - harness-engineering
+categories:
+  - agents
+  - research
 ---
 
 # Self-Harness: Harnesses That Improve Themselves

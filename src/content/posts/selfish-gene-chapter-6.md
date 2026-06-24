@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Kin selection explains why helping relatives can still serve selfish genes, because the same gene may be
   preserved through another body.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 36a4e07a-a023-80d8-b2ab-f53a4dc24312 parent=自私的基因 url=https://app.notion.com/p/36a4e07aa02380d8b2abf53a4dc24312 -->

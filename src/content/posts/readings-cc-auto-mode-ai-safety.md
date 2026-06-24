@@ -7,14 +7,15 @@ overview: >-
 description: >-
   A reading note on Claude Code auto mode as an agent permission system, focused on trust boundaries, blast radius, and
   classifier-gated autonomy.
-tags:
-  - readings
-categories:
-  - reading
-  - agents
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - claude-code
+  - agent-safety
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 35f4e07a-a023-80d0-b60b-d03f945569f6 parent=Readings url=https://app.notion.com/p/35f4e07aa02380d0b60bd03f945569f6 -->

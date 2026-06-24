@@ -7,13 +7,13 @@ overview: >-
 description: >-
   A reading reflection on chapter 11 of The Selfish Gene, focused on memes, cultural evolution, and the possibility of
   resisting blind replicators.
+math: true
+toc: true
+relatedPosts: false
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: false
 ---
 
 <!-- notion-sync: 3724e07a-a023-802d-a6b9-ec82d241bb15 parent=The Selfish Gene url=https://app.notion.com/p/3724e07aa023802da6b9ec82d241bb15 -->

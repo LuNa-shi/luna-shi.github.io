@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: Human-like AI may require populations of agents learning through social interaction, where cooperation and
   competition generate skills beyond single-agent training.
-tags:
-  - leibo
-categories:
-  - agents
-  - research
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - leibo
+  - social-ai
+categories:
+  - agents
+  - research
 ---
 
 <!-- notion-sync: 3604e07a-a023-80fa-a831-efb72f57930b parent=Leibo’s paper url=https://app.notion.com/p/3604e07aa02380faa831efb72f57930b -->

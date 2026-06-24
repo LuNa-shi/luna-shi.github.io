@@ -7,13 +7,15 @@ overview: >-
 description: >-
   A faithful English reading note on Recursive Language Models, prompt-as-environment, out-of-core reasoning, recursive
   subcalls, OOLONG, BrowseComp+, context rot, and scaffold-dependent long-context systems.
-tags:
-  - readings
-categories:
-  - reading
 math: false
 toc: true
 relatedPosts: false
+tags:
+  - recursive-language-model
+  - agent-systems
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 37b4e07a-a023-80b4-8a9f-c0160ed76e98 parent=Readings url=https://app.notion.com/p/37b4e07aa02380b48a9fc0160ed76e98 -->

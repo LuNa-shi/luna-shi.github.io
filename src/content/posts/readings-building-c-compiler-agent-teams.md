@@ -8,14 +8,15 @@ overview: >-
 description: >-
   A reading note on Anthropic's multi-agent C compiler experiment, focused on why Git, tests, task locks, logs, and
   verifier design mattered more than agent chat.
-tags:
-  - readings
-categories:
-  - reading
-  - agents
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - compiler-agents
+  - multi-agent-systems
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3524e07a-a023-801e-b99b-cabbe0723411 parent=Readings url=https://app.notion.com/p/3524e07aa023801eb99bcabbe0723411 -->

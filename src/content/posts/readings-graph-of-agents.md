@@ -7,13 +7,15 @@ overview: >-
 description: >-
   TLDR: Graph of Agents is useful because it treats collaboration as a test-time graph problem: choose relevant agents,
   score their answers, pass messages in the right direction, and pool the result.
-tags:
-  - 'readings'
-categories:
-  - 'reading'
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - multi-agent-systems
+  - information-flow
+categories:
+  - reading
+  - agents
 ---
 
 <!-- notion-sync: 3794e07a-a023-80ec-a232-d6059c614420 parent=Readings url=https://app.notion.com/p/3794e07aa02380eca232d6059c614420 -->

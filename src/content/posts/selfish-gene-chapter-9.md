@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Sexual conflict begins with unequal parental investment, pushing males and females toward different strategies
   around mating, care, loyalty, and display.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 36c4e07a-a023-80ad-b7c8-e8d02f8ff878 parent=自私的基因 url=https://app.notion.com/p/36c4e07aa02380adb7c8e8d02f8ff878 -->

@@ -123,6 +123,7 @@ export default defineConfig({
           'users',
           'building',
           'calendar',
+          'folder',
           'tag',
           'tags',
           'newspaper',

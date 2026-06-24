@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: Modern LM work is easiest to understand by building the stack yourself, because tokenization, data, compute, and
   evaluation are all leaky engineering choices.
-tags:
-  - cs336
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - cs336
+  - language-modeling
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 3644e07a-a023-80eb-8d38-ec6298187d83 parent=CS336 url=https://app.notion.com/p/3644e07aa02380eb8d38ec6298187d83 -->

@@ -7,14 +7,14 @@ overview: >-
 description: >-
   TLDR: Monte Carlo methods learn value from complete sampled episodes, trading model-free simplicity for delayed
   updates and return variance.
-tags:
-  - sutton-rl
-categories:
-  - learning
-  - rl
 math: true
 toc: true
 relatedPosts: true
+tags:
+  - sutton-rl
+  - rl
+categories:
+  - learning
 ---
 
 <!-- notion-sync: 36f4e07a-a023-8082-803b-dd60e0a687ce parent=Sutton-RL url=https://app.notion.com/p/36f4e07aa0238082803bdd60e0a687ce -->

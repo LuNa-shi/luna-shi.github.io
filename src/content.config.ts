@@ -11,7 +11,9 @@ const posts = defineCollection({
     /** Short human-readable preview used in blog cards. */
     overview: z.string().optional(),
     description: z.string().optional(),
+    /** Hashtag-style series or topic labels, e.g. 'codex-source-dive' or 'sutton-rl'. */
     tags: z.array(z.string()).optional().default([]),
+    /** Broad blog shelves, e.g. 'agents', 'systems', 'learning', 'reading', or 'research'. */
     categories: z.array(z.string()).optional().default([]),
     /** Enable KaTeX math rendering. */
     math: z.boolean().optional().default(false),

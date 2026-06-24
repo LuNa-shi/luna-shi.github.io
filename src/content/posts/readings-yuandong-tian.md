@@ -7,14 +7,15 @@ overview: >-
 description: >-
   TLDR: More rollouts are not enough. Search becomes powerful when the action space, representation, evaluator, and
   memory make good trajectories easier to find.
-tags:
-  - readings
-categories:
-  - reading
-  - research
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - search
+  - research-methods
+categories:
+  - reading
+  - research
 ---
 
 <!-- notion-sync: 3674e07a-a023-80d7-86aa-ec175675ff65 parent=Readings url=https://app.notion.com/p/3674e07aa02380d786aaec175675ff65 -->

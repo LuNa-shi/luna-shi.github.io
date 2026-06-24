@@ -1,12 +1,18 @@
 ---
 title: 'MiniMax Sparse Attention: Teaching Long-Context Models to Use an Index'
 date: 2026-06-15
-tags: [LLM, attention, long context, sparse attention, pretraining]
 source_paper: 'MiniMax Sparse Attention'
 paper_url: 'https://arxiv.org/abs/2606.13392'
 overview: >-
   MiniMax Sparse Attention turns long context into searchable memory: a learned index selects relevant key-value blocks,
   then exact softmax attention reads only those blocks.
+tags:
+  - llm
+  - long-context
+  - sparse-attention
+categories:
+  - research
+  - systems
 ---
 
 # MiniMax Sparse Attention: Teaching Long-Context Models to Use an Index

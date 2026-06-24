@@ -7,14 +7,16 @@ overview: >-
 description: >-
   A tutorial-style note on scanner design in Crafting Interpreters, including tokens, lexemes, lookahead, strings,
   numbers, identifiers, and keyword recognition.
-tags:
-  - crafting-interpreters
-categories:
-  - learning
-  - systems
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - crafting-interpreters
+  - interpreters
+  - scanning
+categories:
+  - learning
+  - systems
 ---
 
 <!-- notion-sync: 36b4e07a-a023-807a-8d48-ee3feeb2275d parent=Crafting interpreters url=https://app.notion.com/p/36b4e07aa023807a8d48ee3feeb2275d -->

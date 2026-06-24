@@ -7,14 +7,15 @@ overview: >-
 description: >-
   A systems note on Pi Agent containerization, compaction, branch summarization, and why coding-agent reliability depends
   on both sandboxing and continuation memory.
-tags:
-  - pi-agent
-categories:
-  - agents
-  - research
 math: true
 toc: true
 relatedPosts: false
+tags:
+  - pi-agent
+  - agent-runtime
+categories:
+  - agents
+  - research
 ---
 
 <!-- notion-sync: 3754e07a-a023-8012-aca8-e0ea5c13afb5 parent=Pi agents doc url=https://app.notion.com/p/3754e07aa0238012aca8e0ea5c13afb5 -->

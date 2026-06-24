@@ -7,13 +7,13 @@ overview: >-
 description: >-
   TLDR: Repeated interaction changes the logic of selfishness, making cooperation viable when strategies can be nice,
   retaliatory, forgiving, and non-envious.
+math: true
+toc: true
+relatedPosts: true
 tags:
   - selfish-gene
 categories:
   - reading
-math: true
-toc: true
-relatedPosts: true
 ---
 
 <!-- notion-sync: 3724e07a-a023-805d-8c3d-ec93c5e7ff73 parent=自私的基因 url=https://app.notion.com/p/3724e07aa023805d8c3dec93c5e7ff73 -->
