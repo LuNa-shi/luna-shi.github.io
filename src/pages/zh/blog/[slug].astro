@@ -10,7 +10,10 @@ export async function getStaticPaths() {
     .flatMap((post) => {
       const canonical = contentSlug(post);
       const legacy = legacyContentSlug(post);
-      const paths = [
+      const paths: Array<{
+        params: { slug: string };
+        props: { post: typeof post; redirectTo?: string };
+      }> = [
         {
           params: { slug: canonical },
           props: { post },
