@@ -1,7 +1,7 @@
 ---
 title: Crafting Interpreters：第 4 章 扫描
 date: '2026-05-25'
-overview: 扫描是解释器中的第一个结构边界：原始字符变成 token，因此解析器可以使用语言单元而不是单个字节。
+overview: 扫描是解释器里的第一个结构边界：原始字符先变成 token，解析器才能处理语言单元，而不是一个个字节。
 description: Crafting Interpreters 中扫描器设计的教程式笔记：token、lexeme、lookahead、字符串、数字、标识符和关键字识别。
 math: true
 toc: true
@@ -22,7 +22,7 @@ canonicalSlug: crafting-interpreters-chapter-4-scanning
 
 > 问题：解释器如何把源代码字符转换成 token？
 
-第 4 章解释器不再是一个想法，而是开始成为一条管道。
+到了第 4 章，解释器不再只是一个想法，而开始变成一条管道。
 ```text
 characters -> tokens -> parser -> AST -> interpreter
 ```
@@ -30,12 +30,12 @@ characters -> tokens -> parser -> AST -> interpreter
 
 ## 扫描器的工作
 
-鉴于此来源：
+给定这段源码：
 ```text
 var language = "lox";
 print language + 1;
 ```
-扫描器将字符流转换为 token 流：
+扫描器会把字符流转换成 token 流：
 ```text
 VAR
 IDENTIFIER(language)
@@ -49,7 +49,7 @@ NUMBER(1)
 SEMICOLON
 EOF
 ```
-解析器不必关心原始字符。它需要语言单位。
+解析器不必关心原始字符。它需要的是语言单元。
 
 ## 什么是 token？
 
@@ -72,7 +72,7 @@ type = STRING
 lexeme = "\"hello\""
 literal = "hello"
 ```
-`lexeme` 和 `literal` 之间的区别很有用。来源包含引号；运行时字符串值则不然。
+`lexeme` 和 `literal` 的区别很有用。源码里有引号；运行时字符串值里没有。
 
 ## 扫描器循环
 
@@ -90,7 +90,7 @@ reads enough characters to classify it
 emits a token
 moves on
 ```
-本章的大部分内容都是关于“足够的字符”的含义。
+本章的大部分内容，都在回答什么才算“足够多的字符”。
 
 ## 单字符 token
 
@@ -107,7 +107,7 @@ case '+':
  addToken(PLUS);
  break;
 ```
-这些都是简单的情况，因为一个字符可以提供完整的信息。
+这些情况很简单，因为一个字符就提供了完整信息。
 
 ## 前瞻
 
@@ -128,7 +128,7 @@ case '!':
  addToken(match('=') ? BANG_EQUAL : BANG);
  break;
 ```
-这是第一个重要的扫描器模式：
+这是第一个需要记住的扫描器模式：
 ```text
 consume the current character
 peek at the next character
@@ -147,7 +147,7 @@ while (peek() != '"' && !isAtEnd()) {
  advance();
 }
 ```
-有两个细节很重要：
+这里有两个细节：
 
 - Lox 允许多行字符串，因此必须在字符串扫描器内更新行号。
 - 未终止的字符串应报告错误并尽可能继续扫描。
@@ -164,7 +164,7 @@ while (peek() != '"' && !isAtEnd()) {
 ```
 扫描器应该把 `123.456` 视为一个数字，但把 `123.` 视为 `NUMBER(123)` 后跟 `DOT`。
 
-所以处理小数点时，既要看当前点号，也要看下一个字符：
+所以处理小数点时，既要看当前字符，也要看下一个字符：
 ```java
 if (peek() == '.' && isDigit(peekNext())) {
  advance();
@@ -204,7 +204,7 @@ static {
  keywords.put("for", FOR);
 }
 ```
-因此，`class` 变为 `CLASS`，而 `breakfast` 仍为 `IDENTIFIER`。
+这样，`class` 会变成 `CLASS`，而 `breakfast` 仍然是 `IDENTIFIER`。
 
 ## 为什么不立即解析？
 
@@ -238,7 +238,7 @@ current at " -> scan string -> emit STRING("hello")
 current at ; -> emit SEMICOLON
 end of file -> emit EOF
 ```
-这个流程是本章的真正教训。解释器通过逐步添加结构来处理程序。
+这个流程才是本章真正要抓住的东西：解释器通过逐步添加结构来处理程序。
 
 ## 最终检查点
 
@@ -255,5 +255,5 @@ raw text -> token stream
 | lexeme | token 对应的精确源码片段 |
 | literal | token 表示的运行时值 |
 | lookahead | 在做决定前查看后面的字符 |
-|关键词 |标识符扫描后识别的保留字 |
+| 关键词 | 标识符扫描后识别出的保留字 |
 | EOF |显式文件结束 token |

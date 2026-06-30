@@ -1,8 +1,8 @@
 ---
 title: Crafting Interpreters：第 3 章 Lox 语言
 date: '2026-05-25'
-overview: TLDR：Lox 是本书后面要实现的小语言：它有类、闭包和控制流，表达力够用，同时又足够小，可以完整实现两遍。
-description: TLDR：Lox 是本书后面要实现的小语言：它有类、闭包和控制流，表达力够用，同时又足够小，可以完整实现两遍。
+overview: TLDR：Lox 是本书后面要实现的小语言：它有类、闭包和控制流，表达力够用，又足够小，可以在书里完整实现两遍。
+description: TLDR：Lox 是本书后面要实现的小语言：它有类、闭包和控制流，表达力够用，又足够小，可以在书里完整实现两遍。
 math: true
 toc: true
 relatedPosts: true
@@ -28,9 +28,9 @@ canonicalSlug: crafting-interpreters-chapter-3-lox
 
 第 3 章是在介绍本书后面要实现的语言：**Lox**。
 
-Lox 是一门小型、高层、动态类型、自动内存管理的脚本语言。
+Lox 是一门小型、高层、动态类型、自动管理内存的脚本语言。
 
-它故意设计得不大，目的是让我们能在一本书里完整实现两遍：一次用 Java，一次用 C。
+它被故意设计得不大，因为作者要在一本书里完整实现两遍：一次用 Java，一次用 C。
 
 本章可以理解为：
 
@@ -56,7 +56,7 @@ print "Hello, world!";
 
 - `print` 是内置语句，不是函数
 
-Lox 选择 C-like syntax，不是因为它最优雅，而是因为熟悉。
+Lox 选择类 C 语法，不是因为它最优雅，而是因为它足够熟悉。
 
 Java、C、JavaScript 用户读起来都不会太陌生。
 
@@ -66,7 +66,7 @@ Java、C、JavaScript 用户读起来都不会太陌生。
 
 Lox 借鉴了 JavaScript、Scheme、Lua 等小型高层语言。
 
-它有两个重要特点：
+它有两个特点：
 
 ### Dynamic Typing
 
@@ -105,7 +105,7 @@ free(ptr);
 
 ### 记忆点
 
-Lox 的设计目标不是工业级完整语言，而是教学用完整语言：
+Lox 的目标不是做一门工业级完整语言，而是做一门教学上完整的语言：
 
 足够小，但包含真实语言的重要机制。
 
@@ -177,7 +177,7 @@ nil;
 ```
 a + b;
 a - b;
-a b;
+a * b;
 a / b;
 -a;
 ```
@@ -224,7 +224,7 @@ true and false;
 nil or "default";
 ```
 
-`and` 和 `or` 会 short-circuit：
+`and` 和 `or` 会短路：
 
 ```
 false and expensiveCall();
@@ -416,7 +416,7 @@ add(1, 2);
 
 ---
 
-## 10. First-class Functions
+## 10. First-class functions
 
 Lox 的函数是一等值。
 
@@ -471,11 +471,11 @@ fn();
 
 即使 `returnFunction()` 已经结束，`inner()` 仍然能记住这个变量。
 
-这就是 closure。
+这就是闭包。
 
 ### 记忆点
 
-closure 的核心是：
+闭包的核心是：
 
 > 函数不仅保存自己的代码，也保存它需要的外部变量环境。
 
@@ -513,7 +513,7 @@ closure 的核心是：
 
 Lox 既有函数式语言特征，也有面向对象特征。
 
-本章最值得重点关注的是 class。
+本章最值得关注的是 class。
 
 ---
 
@@ -614,7 +614,7 @@ class Breakfast {
 
 ---
 
-## 12.4 Class 是 first-class value
+## 12.4 Class 也是一等值
 
 Lox 中 class 也是一等值。
 
@@ -630,7 +630,7 @@ var SomeClass = Breakfast;
 someFunction(Breakfast);
 ```
 
-这和函数是一等值类似。
+这和函数是一等值是同一个思路。
 
 ### 记忆点
 
@@ -761,7 +761,7 @@ breakfast.serve("reader");
 
 ## 12.9 init：初始化方法
 
-Lox 用特殊方法 `init()` 作为 initializer。
+Lox 用特殊方法 `init()` 做 initializer。
 
 ```
 class Breakfast {
@@ -795,7 +795,7 @@ baconAndToast.serve("Dear Reader");
 
 ### 记忆点
 
-`init()` 不是普通函数意义上的 constructor，但承担初始化对象状态的作用。
+`init()` 不是普通函数意义上的 constructor，但负责初始化对象状态。
 
 ---
 
@@ -927,7 +927,7 @@ clock()
 
 `clock()` 用于后面做性能测试。
 
-作者没有加入复杂标准库，因为本书重点是语言实现，不是库设计。
+作者没有加入庞大的标准库，因为本书重点是语言实现，不是库设计。
 
 缺少的东西包括：
 
@@ -1019,7 +1019,7 @@ clock()
 
 Lox 有动态类型、自动内存管理、基本数据类型、表达式、语句、变量、控制流、函数和闭包。
 
-其中 class 是本章最重要的高级结构：它让 Lox 支持面向对象编程。
+其中 class 是本章最重要的高级结构。它让 Lox 支持面向对象编程。
 
 Lox 的 class 系统比较简洁：
 
@@ -1035,4 +1035,4 @@ super 调用父类方法
 
 最后要记住：
 
-**Lox 不是为了功能完整，而是为了教学完整。它足够小，但覆盖了解释器实现中最重要的语言机制。**
+**Lox 追求的不是功能完整，而是教学完整。它足够小，同时覆盖了解释器实现中最重要的语言机制。**

@@ -27,7 +27,7 @@ canonicalSlug: crafting-interpreters-chapter-2
 
 第 2 章是在给语言实现画地图：
 
-**源代码不是直接运行的，而是会被一步步转换成更结构化、更接近机器执行的形式。**
+**源代码不会直接运行。它会一步步变成更结构化、更接近机器执行的形式。**
 
 常见路线是：
 
@@ -45,7 +45,7 @@ Source Code
 → Virtual Machine / Runtime
 ```
 
-不是每种语言都会走完整路线，但这张图是理解解释器和编译器的总框架。
+不是每种语言都会走完整路线，但这张图能帮我们理解解释器和编译器的大框架。
 
 ![Notion image](/assets/img/notion/crafting-interpreters-chapter-2-01.webp)
 
@@ -91,7 +91,7 @@ print "hello";
 
 ## 2. Scanning：把字符变成 Token
 
-Scanning 也叫 lexing / lexical analysis。
+Scanning 也叫 lexing 或 lexical analysis。
 
 它把源代码字符切成有意义的小块，也就是 **token**。
 
@@ -127,7 +127,7 @@ SEMICOLON
 
 ### 记忆点
 
-扫描器像“分词器”。
+可以把扫描器理解成“分词器”。
 
 它不理解整个句子的意思，只负责把字符切成语言里的“词”。
 
@@ -144,10 +144,10 @@ parser 要把它们组织成有层次的结构，也就是 **syntax tree / AST**
 例如：
 
 ```
-1 + 2 3
+1 + 2 * 3
 ```
 
-不是简单从左到右理解，而是：
+不能简单从左到右理解，而要先处理乘法：
 
 ```
 +
@@ -171,7 +171,7 @@ AST 表示代码的嵌套结构。
 
 Parsing 只能知道代码的结构。
 
-Static analysis 要进一步理解代码的含义。
+Static analysis 会进一步理解代码的含义。
 
 例如：
 
@@ -255,7 +255,7 @@ pennyArea = 0.4417860938;
 
 ### 记忆点
 
-优化不是改程序意思，而是改执行方式。
+优化不改变程序含义，只改变执行方式。
 
 ---
 
@@ -279,7 +279,7 @@ Code generation 是把程序转换成机器能执行的形式。
 
 ## 8. Bytecode 和 Virtual Machine
 
-Bytecode 是给“虚拟机器”看的指令，不是直接给真实 CPU 的。
+Bytecode 是给“虚拟机”看的指令，不是直接给真实 CPU 的指令。
 
 如果编译器生成 bytecode，就还需要 VM 来运行它。
 
@@ -319,7 +319,7 @@ Runtime 是程序运行时语言实现提供的基础设施。
 
 - VM 执行环境
 
-例如 Java、Python、JavaScript 这类语言，运行时系统非常重要。
+对 Java、Python、JavaScript 这类语言来说，运行时系统非常重要。
 
 ### 记忆点
 
@@ -431,7 +431,7 @@ Python source
 → Python VM executes bytecode
 ```
 
-所以 CPython 从用户角度看是 interpreter，内部又包含 compiler。
+所以 CPython 从用户角度看是 interpreter，但内部也包含 compiler。
 
 ### 记忆点
 
@@ -521,7 +521,7 @@ Virtual Machine，执行 bytecode 的程序。
 
 第 2 章给的是一张地图。
 
-源代码会从字符开始，先被扫描成 token，再被解析成 AST。
+源代码从字符开始，先被扫描成 token，再被解析成 AST。
 
 之后语言实现可能做静态分析、生成 IR、优化、生成 bytecode 或机器码。
 
