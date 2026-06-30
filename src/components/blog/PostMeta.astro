@@ -1,5 +1,5 @@
 ---
-import { site } from '@config/site';
+import { formatDate, getLocaleFromPath, labelsFor, localizedPath } from '@utils/i18n';
 
 interface Props {
   date: Date | string;
@@ -9,13 +9,11 @@ interface Props {
 }
 
 const { date, tags = [], categories = [], readingTime } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 
 const d = date instanceof Date ? date : new Date(date);
-const formattedDate = d.toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const formattedDate = formatDate(d, locale);
 const isoDate = d.toISOString();
 ---
 
@@ -29,7 +27,9 @@ const isoDate = d.toISOString();
     readingTime && (
       <>
         <span aria-hidden="true">·</span>
-        <span>{readingTime} min read</span>
+        <span>
+          {readingTime} {t.blog.minRead}
+        </span>
       </>
     )
   }
@@ -41,7 +41,7 @@ const isoDate = d.toISOString();
         <div class="flex flex-wrap gap-1">
           {categories.map((cat) => (
             <a
-              href={`${site.base}/blog/category/${cat}/`}
+              href={localizedPath(`/blog/category/${cat}/`, locale)}
               class="badge-abbr text-xs"
               style="background-color: var(--global-text-color-light); color: var(--global-hover-text-color);"
             >
@@ -60,7 +60,7 @@ const isoDate = d.toISOString();
         <div class="flex flex-wrap gap-1">
           {tags.map((tag) => (
             <a
-              href={`${site.base}/blog/tag/${tag}/`}
+              href={localizedPath(`/blog/tag/${tag}/`, locale)}
               class="badge-abbr text-xs"
               style="background-color: var(--global-theme-color); color: var(--global-hover-text-color);"
             >

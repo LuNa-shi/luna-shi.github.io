@@ -4,6 +4,9 @@ subtitle: "How characters acquire boundaries, hierarchy, and evaluation order."
 series: "Crafting Interpreters: Following Lox from Source to Heap"
 episode: 1
 language: en
+lang: en
+translationKey: crafting-interpreters-1-when-source-text-becomes-structure
+canonicalSlug: crafting-interpreters-1-when-source-text-becomes-structure
 book_scope: "Chapters 2, 4, 5, and 6"
 figures: 4
 date: 2026-06-24

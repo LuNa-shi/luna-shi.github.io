@@ -1,4 +1,5 @@
 ---
+import { formatMessage, getLocaleFromPath, labelsFor } from '@utils/i18n';
 import { Icon } from 'astro-icon/components';
 
 interface Props {
@@ -8,6 +9,8 @@ interface Props {
 }
 
 const { title, url, description = '' } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 
 const enc = {
   url: encodeURIComponent(url),
@@ -32,7 +35,7 @@ const shareLinks = [
     icon: 'fa-brands:facebook',
   },
   {
-    name: 'Email',
+    name: t.share.email,
     href: `mailto:?subject=${enc.title}&body=${enc.description}%0A%0A${enc.url}`,
     icon: 'fa-solid:envelope',
   },
@@ -40,7 +43,7 @@ const shareLinks = [
 ---
 
 <div class="social-share">
-  <p class="share-label">Share</p>
+  <p class="share-label">{t.share.label}</p>
   <div class="share-icons">
     {
       shareLinks.map(({ name, href, icon }) => (
@@ -48,8 +51,8 @@ const shareLinks = [
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Share on ${name}`}
-          title={`Share on ${name}`}
+          aria-label={formatMessage(t.share.on, { name })}
+          title={formatMessage(t.share.on, { name })}
           class="share-link"
         >
           <Icon name={icon} aria-hidden="true" />
@@ -58,8 +61,8 @@ const shareLinks = [
     }
     <button
       id="native-share-btn"
-      aria-label="Share via device"
-      title="Share via device"
+      aria-label={t.share.device}
+      title={t.share.device}
       class="share-link share-native"
       hidden
     >

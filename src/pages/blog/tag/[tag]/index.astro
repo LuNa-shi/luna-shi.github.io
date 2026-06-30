@@ -3,16 +3,24 @@ import PostCard from '@components/blog/PostCard.astro';
 import Pagination from '@components/Pagination.astro';
 import { site } from '@config/site';
 import Page from '@layouts/Page.astro';
+import {
+  formatMessage,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('posts');
   const perPage = site.blog.postsPerPage;
-  const postTags = allPosts.flatMap((p) => p.data.tags);
+  const localePosts = allPosts.filter((p) => isEntryInLocale(p, 'en'));
+  const postTags = localePosts.flatMap((p) => p.data.tags);
   const allTags = [...new Set([...postTags, ...site.blog.displayTags])];
 
   return allTags.map((tag) => {
-    const tagPosts = allPosts
+    const tagPosts = localePosts
       .filter((p) => !p.data.hidden && !p.data.draft && p.data.tags.includes(tag))
       .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
     const totalPages = Math.max(1, Math.ceil(tagPosts.length / perPage));
@@ -29,25 +37,29 @@ export async function getStaticPaths() {
 
 const { tag } = Astro.params;
 const { posts, currentPage, totalPages } = Astro.props;
-const base = site.base;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 ---
 
-<Page title={`Tag: ${tag}`} description={`Posts tagged "${tag}"`}>
+<Page
+  title={formatMessage(t.blog.tagTitle, { tag })}
+  description={formatMessage(t.blog.tagDescription, { tag })}
+>
   <div class="mb-6 flex flex-wrap items-center gap-3">
     <a
-      href={`${base}/blog/`}
+      href={localizedPath('/blog/', locale)}
       class="text-sm"
       style="color: var(--global-theme-color); text-decoration: none;"
     >
-      &larr; All posts
+      &larr; {t.blog.allPosts}
     </a>
     <span style="color: var(--global-divider-color);">&middot;</span>
     <a
-      href={`${base}/blog/tags/`}
+      href={localizedPath('/blog/tags/', locale)}
       class="text-sm"
       style="color: var(--global-theme-color); text-decoration: none;"
     >
-      Tag cloud
+      {t.blog.tagCloud}
     </a>
   </div>
 
@@ -55,7 +67,7 @@ const base = site.base;
     class="mb-6 text-3xl font-bold"
     style="color: var(--global-text-color); font-family: var(--font-sans);"
   >
-    Posts tagged
+    {t.blog.postsTagged}
     <span
       class="badge-abbr ml-2"
       style="background-color: var(--global-theme-color); color: var(--global-hover-text-color);"
@@ -66,7 +78,7 @@ const base = site.base;
 
   {
     posts.length === 0 ? (
-      <p style="color: var(--global-text-color-light);">No posts found for this tag.</p>
+      <p style="color: var(--global-text-color-light);">{t.blog.noPostsForTag}</p>
     ) : (
       <ul class="post-list">
         {posts.map((post) => (
@@ -82,7 +94,7 @@ const base = site.base;
     currentPage={currentPage}
     totalPages={totalPages}
     prevUrl={undefined}
-    nextUrl={totalPages > 1 ? `${base}/blog/tag/${tag}/page/2/` : undefined}
-    basePath={`${base}/blog/tag/${tag}/`}
+    nextUrl={totalPages > 1 ? localizedPath(`/blog/tag/${tag}/page/2/`, locale) : undefined}
+    basePath={localizedPath(`/blog/tag/${tag}/`, locale)}
   />
 </Page>

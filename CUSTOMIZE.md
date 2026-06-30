@@ -10,25 +10,26 @@ This guide walks through every aspect of personalizing your as-folio site.
 2. [Profile photo](#2-profile-photo)
 3. [Social links](#3-social-links)
 4. [About page content](#4-about-page-content)
-5. [Blog posts](#5-blog-posts)
-6. [Publications (BibTeX)](#6-publications-bibtex) — BibTeX fields, co-author links, citation badges
-7. [Projects](#7-projects)
-8. [CV](#8-cv)
-9. [Books](#9-books)
-10. [Teaching](#10-teaching)
-11. [People / Lab members](#11-people--lab-members)
-12. [Repositories page](#12-repositories-page)
-13. [Announcements](#13-announcements)
-14. [Dark mode](#14-dark-mode)
-15. [Comments (Giscus / Disqus)](#15-comments-giscus--disqus)
-16. [Analytics](#16-analytics)
-17. [Newsletter](#17-newsletter)
-18. [Cookie consent](#18-cookie-consent)
-19. [Search](#19-search)
-20. [Deployment base path](#20-deployment-base-path)
-21. [Enabling / disabling features](#21-enabling--disabling-features)
-22. [Custom styles](#22-custom-styles)
-23. [Footer position](#23-footer-position)
+5. [Bilingual site](#5-bilingual-site)
+6. [Blog posts](#6-blog-posts)
+7. [Publications (BibTeX)](#7-publications-bibtex) — BibTeX fields, co-author links, citation badges
+8. [Projects](#8-projects)
+9. [CV](#9-cv)
+10. [Books](#10-books)
+11. [Teaching](#11-teaching)
+12. [People / Lab members](#12-people--lab-members)
+13. [Repositories page](#13-repositories-page)
+14. [Announcements](#14-announcements)
+15. [Dark mode](#15-dark-mode)
+16. [Comments (Giscus / Disqus)](#16-comments-giscus--disqus)
+17. [Analytics](#17-analytics)
+18. [Newsletter](#18-newsletter)
+19. [Cookie consent](#19-cookie-consent)
+20. [Search](#20-search)
+21. [Deployment base path](#21-deployment-base-path)
+22. [Enabling / disabling features](#22-enabling--disabling-features)
+23. [Custom styles](#23-custom-styles)
+24. [Footer position](#24-footer-position)
 
 ---
 
@@ -116,7 +117,42 @@ All three sections can be disabled in `site.ts`.
 
 ---
 
-## 5. Blog posts
+## 5. Bilingual site
+
+The site can generate English root pages and Chinese pages under `/zh/`. Configure locale labels and all translated UI copy in `src/config/site.ts`:
+
+```typescript
+i18n: {
+  enabled: true,
+  defaultLocale: 'en',
+  locales: [
+    { code: 'en', label: 'EN', name: 'English', prefix: '' },
+    { code: 'zh', label: '中', name: '中文', prefix: '/zh' },
+  ],
+  labels: {
+    en: { /* navigation, search, blog, projects, footer labels */ },
+    zh: { /* Chinese labels */ },
+  },
+}
+```
+
+Add translated content as separate entries with `lang`, `translationKey`, and optional `canonicalSlug`:
+
+```yaml
+---
+title: "中文标题"
+date: 2026-06-01
+lang: zh
+translationKey: original-post-key
+canonicalSlug: original-post-key
+---
+```
+
+`canonicalSlug` controls the generated URL. If it is omitted, the site falls back to `translationKey`, then a title-derived slug when the title can produce a readable Latin slug, then the filename. The language switch is shown beside search and uses the current path to jump between English and Chinese.
+
+---
+
+## 6. Blog posts
 
 Create `.md` or `.mdx` files in `src/content/posts/`:
 
@@ -197,7 +233,7 @@ Enable in frontmatter:
 
 ---
 
-## 6. Publications (BibTeX)
+## 7. Publications (BibTeX)
 
 Edit `src/data/papers.bib`. Standard BibTeX format with extra as-folio fields:
 
@@ -328,7 +364,7 @@ This calls the [OpenAlex API](https://openalex.org) (free, no auth) to fetch cur
 
 ---
 
-## 7. Projects
+## 8. Projects
 
 Create `.md` files in `src/content/projects/`:
 
@@ -364,7 +400,7 @@ pages: {
 
 ---
 
-## 8. CV
+## 9. CV
 
 The CV page supports two formats — switch with `site.cv.format`.
 
@@ -408,7 +444,7 @@ cv: {
 
 ---
 
-## 9. Books
+## 10. Books
 
 Create `.md` files in `src/content/books/`:
 
@@ -436,7 +472,7 @@ Books are grouped by year read (most recent first). Books without dates go in a 
 
 ---
 
-## 10. Teaching
+## 11. Teaching
 
 Create `.md` files in `src/content/teaching/`:
 
@@ -466,7 +502,7 @@ pages: {
 
 ---
 
-## 11. People / Lab members
+## 12. People / Lab members
 
 Create `.md` files in `src/content/people/`:
 
@@ -487,7 +523,7 @@ group: current # 'current' or 'alumni'
 
 ---
 
-## 12. Repositories page
+## 13. Repositories page
 
 Edit `src/data/repositories.yml`:
 
@@ -521,7 +557,7 @@ Browse available themes at [github-readme-stats themes](https://github.com/anura
 
 ---
 
-## 13. Announcements
+## 14. Announcements
 
 Create `.md` files in `src/content/announcements/`:
 
@@ -538,7 +574,7 @@ Announcements appear on the About page (if `site.announcements.enabled: true`) a
 
 ---
 
-## 14. Dark mode
+## 15. Dark mode
 
 Dark mode is enabled by default (`site.features.darkmode: true`). The initial theme follows the OS preference.
 
@@ -611,7 +647,7 @@ fonts, shadows and motion are CSS custom properties at the top of
 
 ---
 
-## 15. Comments (Giscus / Disqus)
+## 16. Comments (Giscus / Disqus)
 
 ### Giscus (GitHub Discussions — recommended)
 
@@ -651,7 +687,7 @@ Find your shortname in your Disqus admin dashboard → Settings → General → 
 
 ---
 
-## 16. Analytics
+## 17. Analytics
 
 Set any analytics provider in `site.ts` (leave others as empty string `''`):
 
@@ -670,7 +706,7 @@ All analytics scripts are loaded via Partytown (web worker) to avoid blocking th
 
 ---
 
-## 17. Newsletter
+## 18. Newsletter
 
 Integration with [Loops.so](https://loops.so):
 
@@ -690,7 +726,7 @@ The newsletter form appears in the footer.
 
 ---
 
-## 18. Cookie consent
+## 19. Cookie consent
 
 Enable GDPR-compliant cookie consent:
 
@@ -704,7 +740,7 @@ The dialog uses [vanilla-cookieconsent](https://github.com/orestbida/cookieconse
 
 ---
 
-## 19. Search
+## 20. Search
 
 Search is enabled by default. It's powered by [Pagefind](https://pagefind.app) (build-time index) with [ninja-keys](https://github.com/ssleptsov/ninja-keys) for the ⌘K command palette UI.
 
@@ -720,7 +756,7 @@ The search index is rebuilt on every `yarn build` run.
 
 ---
 
-## 20. Deployment base path
+## 21. Deployment base path
 
 **User/org pages** (`username.github.io`):
 
@@ -740,7 +776,7 @@ Also update `astro.config.mjs` if the base changes (it reads from `site.ts` by d
 
 ---
 
-## 21. Enabling / disabling features
+## 22. Enabling / disabling features
 
 All feature flags live in the `features` block of `site.ts`:
 
@@ -760,7 +796,7 @@ features: {
 
 ---
 
-## 22. Custom styles
+## 23. Custom styles
 
 All theming is done through CSS custom properties defined in `src/styles/_colors.css`. Override them to change colors, fonts, and spacing site-wide:
 
@@ -783,7 +819,7 @@ The easiest way to change the accent color is via `site.ts` (see §14 — Dark m
 
 ---
 
-## 23. Footer position
+## 24. Footer position
 
 Control where and whether the footer appears with `site.footer.position`:
 

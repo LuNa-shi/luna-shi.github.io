@@ -1,6 +1,6 @@
 ---
-import { site } from '@config/site';
 import { withBase } from '@utils/base';
+import { contentHref, contentSlug, getLocaleFromPath, labelsFor } from '@utils/i18n';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -8,7 +8,12 @@ interface Props {
 }
 
 const { project } = Astro.props;
-const href = project.data.redirect ?? project.data.url ?? `${site.base}/projects/${project.id}/`;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+const href =
+  project.data.redirect ??
+  project.data.url ??
+  contentHref('projects', contentSlug(project), locale);
 const isExternal = !!project.data.redirect;
 ---
 
@@ -46,12 +51,16 @@ const isExternal = !!project.data.redirect;
         project.data.github && (
           <div class="row-icons">
             <div class="github-icon">
-              <div class="icon" title="Code Repository" data-tooltip="Code Repository">
+              <div
+                class="icon"
+                title={t.projects.codeRepository}
+                data-tooltip={t.projects.codeRepository}
+              >
                 <a
                   href={`https://github.com/${project.data.github}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`${project.data.title} on GitHub`}
+                  aria-label={`${project.data.title} GitHub`}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -65,7 +74,11 @@ const isExternal = !!project.data.redirect;
                 </a>
               </div>
               {project.data.github_stars && (
-                <span class="stars" title="GitHub Stars" data-tooltip="GitHub Stars">
+                <span
+                  class="stars"
+                  title={t.projects.githubStars}
+                  data-tooltip={t.projects.githubStars}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"

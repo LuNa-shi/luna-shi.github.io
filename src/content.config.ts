@@ -11,6 +11,14 @@ const posts = defineCollection({
     /** Short human-readable preview used in blog cards. */
     overview: z.string().optional(),
     description: z.string().optional(),
+    /** Language of this content entry. Defaults to English for legacy content. */
+    lang: z.enum(['en', 'zh']).optional().default('en'),
+    /** Legacy language field from imported posts. Prefer `lang` for new content. */
+    language: z.enum(['en', 'zh']).optional(),
+    /** Stable key shared by translated versions of the same post. */
+    translationKey: z.string().optional(),
+    /** URL slug used for localized routes when the filename carries a language suffix. */
+    canonicalSlug: z.string().optional(),
     /** Hashtag-style series or topic labels, e.g. 'codex-source-dive' or 'sutton-rl'. */
     tags: z.array(z.string()).optional().default([]),
     /** Broad blog shelves, e.g. 'agents', 'systems', 'learning', 'reading', or 'research'. */
@@ -71,6 +79,12 @@ const projects = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
+    /** Language of this content entry. Defaults to English for legacy content. */
+    lang: z.enum(['en', 'zh']).optional().default('en'),
+    /** Stable key shared by translated versions of the same project. */
+    translationKey: z.string().optional(),
+    /** URL slug used for localized routes when the filename carries a language suffix. */
+    canonicalSlug: z.string().optional(),
     /** Thumbnail image path. */
     img: z.string().optional(),
     /** Alt text for image. */
@@ -102,6 +116,10 @@ const announcements = defineCollection({
     date: z.coerce.date(),
     /** Pin this announcement to the top. */
     pinned: z.boolean().optional().default(false),
+    /** Language of this content entry. Defaults to English for legacy content. */
+    lang: z.enum(['en', 'zh']).optional().default('en'),
+    /** Stable key shared by translated versions of the same announcement. */
+    translationKey: z.string().optional(),
     /** Hide from the announcements list. */
     hidden: z.boolean().optional().default(false),
   }),

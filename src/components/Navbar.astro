@@ -1,6 +1,15 @@
 ---
 import type { NavDropdown, NavItem, NavLeaf } from '@config/site';
 import { site } from '@config/site';
+import {
+  getLocaleFromPath,
+  labelsFor,
+  localeMeta,
+  localizedCurrentPath,
+  localizedNavItems,
+  localizedPath,
+  otherLocale,
+} from '@utils/i18n';
 
 // ── Type helpers ───────────────────────────────────────────────────────────
 function isLeaf(item: NavItem): item is NavLeaf {
@@ -12,10 +21,17 @@ function isDropdown(item: NavItem): item is NavDropdown {
 
 // ── Active-state helpers ───────────────────────────────────────────────────
 const pathname = Astro.url.pathname;
+const locale = getLocaleFromPath(pathname);
+const t = labelsFor(locale);
+const targetLocale = otherLocale(locale);
+const targetLanguage = localeMeta(targetLocale);
+const languageHref = localizedCurrentPath(pathname, targetLocale);
+const rootHref = localizedPath('/', locale).replace(site.base, '') || '/';
 
 function isActive(href: string): boolean {
   const full = `${site.base}${href}`;
-  if (href === '/') return pathname === full || pathname === site.base;
+  if (href === rootHref)
+    return pathname === full || pathname === full.replace(/\/$/, '') || pathname === site.base;
   return pathname.startsWith(full);
 }
 
@@ -23,7 +39,7 @@ function hasActiveChild(item: NavDropdown): boolean {
   return item.children.some((c) => isActive(c.href));
 }
 
-const items = site.navbar.items;
+const items = localizedNavItems(locale);
 ---
 
 <nav
@@ -122,8 +138,8 @@ const items = site.navbar.items;
       <button
         id="search-toggle"
         class="search-pill"
-        aria-label="Search"
-        title="Search"
+        aria-label={t.search.label}
+        title={t.search.label}
         type="button"
       >
         <svg
@@ -142,16 +158,26 @@ const items = site.navbar.items;
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <span class="search-pill-text">Search…</span>
+        <span class="search-pill-text">{t.search.pill}</span>
         <kbd class="search-kbd">⌘K</kbd>
       </button>
+
+      <a
+        class="language-toggle"
+        href={languageHref}
+        aria-label={t.language.switchTo}
+        title={t.language.switchTo}
+      >
+        {targetLanguage.label}
+      </a>
     </div>
 
     <!-- Mobile controls (icon-only search + hamburger) -->
     <div class="flex items-center gap-2 md:hidden">
       <button
         id="search-toggle"
-        aria-label="Search"
+        aria-label={t.search.label}
+        title={t.search.label}
         type="button"
         style="padding: 0; border: 0; background: inherit; color: var(--global-text-color); cursor: pointer;"
       >
@@ -171,10 +197,18 @@ const items = site.navbar.items;
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
       </button>
+      <a
+        class="language-toggle language-toggle--mobile"
+        href={languageHref}
+        aria-label={t.language.switchTo}
+        title={t.language.switchTo}
+      >
+        {targetLanguage.label}
+      </a>
       <button
         id="navbar-toggler"
         class="navbar-toggler collapsed"
-        aria-label="Toggle navigation"
+        aria-label={t.base.toggleNavigation}
         aria-expanded="false"
         type="button"
         style="padding: 0.25rem; border: 0; background: inherit; cursor: pointer;"
@@ -421,6 +455,39 @@ const items = site.navbar.items;
     color: var(--global-text-color-light);
     font-family: var(--font-mono, monospace);
     white-space: nowrap;
+  }
+
+  .language-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 1.75rem;
+    padding: 0 0.55rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    color: var(--global-text-color);
+    font-size: 0.78rem;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    transition:
+      border-color 0.15s,
+      color 0.15s,
+      background-color 0.15s;
+  }
+
+  .language-toggle:hover {
+    border-color: var(--global-theme-color);
+    color: var(--global-theme-color);
+    text-decoration: none;
+  }
+
+  .language-toggle--mobile {
+    height: 1.65rem;
+    min-width: 1.9rem;
+    padding: 0 0.45rem;
+    font-size: 0.72rem;
   }
 </style>
 

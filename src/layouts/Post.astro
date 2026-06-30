@@ -7,6 +7,13 @@ import Newsletter from '@components/Newsletter.astro';
 import ReadingProgress from '@components/ReadingProgress.astro';
 import TOC from '@components/TOC.astro';
 import { site } from '@config/site';
+import {
+  contentSlug,
+  formatDate,
+  getLocaleFromPath,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
 import { relatedPosts } from '@utils/posts';
 import { readingTime as calcReadingTime } from '@utils/reading-time';
 import type { MarkdownHeading } from 'astro';
@@ -21,6 +28,9 @@ interface Props {
 }
 
 const { post, headings = [] } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+const postSlug = contentSlug(post);
 const {
   title, description, date, lastmod, tags = [], categories = [],
   robots, draft = false,
@@ -32,17 +42,19 @@ const {
 const effectiveRobots = draft ? 'noindex, nofollow' : robots;
 
 const lastmodFormatted = lastmod
-  ? lastmod.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  ? formatDate(lastmod, locale)
   : null;
 
 const rt = post.body ? calcReadingTime(post.body, site.blog.wordsPerMinute) : 1;
 
 // Related posts (if post has tags)
 const allPosts = await getCollection('posts');
-const related = post.data.relatedPosts ? relatedPosts(post, allPosts) : [];
+const related = post.data.relatedPosts
+  ? relatedPosts(post, allPosts.filter((item) => item.data.lang === post.data.lang))
+  : [];
 
 // JSON-LD BlogPosting schema
-const canonicalURL = new URL(`${site.base}/blog/${post.id}/`, site.url).toString();
+const canonicalURL = new URL(localizedPath(`/blog/${postSlug}/`, locale), site.url).toString();
 
 // Generated OG image (falls back to static og.image if post has its own cover)
 const ogImagePath = post.data.image
@@ -78,8 +90,8 @@ const jsonLd = {
           {
             '@type': 'ListItem',
             position: 1,
-            name: 'Blog',
-            item: new URL(`${site.base}/blog/`, site.url).toString(),
+            name: t.blog.breadcrumb,
+            item: new URL(localizedPath('/blog/', locale), site.url).toString(),
           },
           { '@type': 'ListItem', position: 2, name: title, item: canonicalURL },
         ],
@@ -140,7 +152,7 @@ const jsonLd = {
       <article class="flex-1 min-w-0">
         <!-- Breadcrumb -->
         <nav aria-label="Breadcrumb" class="breadcrumb-nav">
-          <a href={`${site.base}/blog/`} class="breadcrumb-link">← Blog</a>
+          <a href={localizedPath('/blog/', locale)} class="breadcrumb-link">← {t.blog.breadcrumb}</a>
         </nav>
 
         <!-- Header -->
@@ -152,7 +164,7 @@ const jsonLd = {
           <PostMeta date={date} tags={tags} categories={categories} readingTime={rt} />
           {lastmodFormatted && (
             <p class="post-lastmod" style="font-size: 0.8rem; color: var(--global-text-color-light); margin-top: 0.25rem;">
-              Updated <time datetime={lastmod!.toISOString()}>{lastmodFormatted}</time>
+              {t.blog.updated} <time datetime={lastmod!.toISOString()}>{lastmodFormatted}</time>
             </p>
           )}
         </header>
@@ -185,22 +197,22 @@ const jsonLd = {
 </Base>
 
 <!-- Code copy button (text-label approach, no innerHTML) -->
-<script>
+<script define:vars={{ copyCodeLabel: t.blog.copyCode, copyLabel: t.blog.copy, copiedLabel: t.blog.copied }}>
   function addCopyButtons() {
     const blocks = document.querySelectorAll('#post-content pre');
     blocks.forEach((pre) => {
       if (pre.querySelector('.copy-btn')) return;
       const btn = document.createElement('button');
       btn.className = 'copy-btn';
-      btn.setAttribute('aria-label', 'Copy code');
-      btn.textContent = 'copy';
+      btn.setAttribute('aria-label', copyCodeLabel);
+      btn.textContent = copyLabel;
       btn.addEventListener('click', async () => {
         const code = pre.querySelector('code');
         if (!code) return;
         await navigator.clipboard.writeText(code.innerText);
-        btn.textContent = 'copied!';
+        btn.textContent = copiedLabel;
         setTimeout(() => {
-          btn.textContent = 'copy';
+          btn.textContent = copyLabel;
         }, 2000);
       });
       (pre as HTMLElement).style.position = 'relative';

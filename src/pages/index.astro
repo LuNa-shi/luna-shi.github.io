@@ -4,17 +4,30 @@ import SocialLinks from '@components/SocialLinks.astro';
 import { site } from '@config/site';
 import Base from '@layouts/Base.astro';
 import { getAuthors, getBoolField, getTitle, getVenue, getYear, parseBibtex } from '@utils/bibtex';
+import {
+  contentHref,
+  contentSlug,
+  formatDate,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
 import { getCollection, render } from 'astro:content';
 
-import AboutContent from '../data/about.mdx';
+import AboutContentEn from '../data/about.mdx';
+import AboutContentZh from '../data/about.zh.mdx';
 import bibRaw from '../data/papers.bib?raw';
 
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 const hero = site.home.hero;
+const AboutContent = locale === 'zh' ? AboutContentZh : AboutContentEn;
 
 // Announcements
 const allAnnouncements = site.announcements.enabled
   ? (await getCollection('announcements'))
-      .filter((e) => !e.data.hidden)
+      .filter((e) => !e.data.hidden && isEntryInLocale(e, locale))
       .sort((a, b) => {
         if (a.data.pinned !== b.data.pinned) return a.data.pinned ? -1 : 1;
         return b.data.date.getTime() - a.data.date.getTime();
@@ -25,13 +38,10 @@ const allAnnouncements = site.announcements.enabled
 // Latest posts
 const allPosts = site.latestPosts.enabled
   ? (await getCollection('posts'))
-      .filter((p) => !p.data.hidden && !p.data.draft)
+      .filter((p) => !p.data.hidden && !p.data.draft && isEntryInLocale(p, locale))
       .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
       .slice(0, site.latestPosts.limit)
   : [];
-
-const formatDate = (d: Date) =>
-  d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
 // Selected publications
 const selectedPapers = site.selectedPapers.enabled
@@ -43,8 +53,8 @@ const renderedAnnouncements = await Promise.all(
   allAnnouncements.map(async (item) => ({ item, rendered: await render(item) })),
 );
 
-const blogHref = `${site.base}/blog/`;
-const projectsHref = `${site.base}/projects/`;
+const blogHref = localizedPath('/blog/', locale);
+const projectsHref = localizedPath('/projects/', locale);
 const hasNews = site.announcements.enabled && allAnnouncements.length > 0;
 const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
 ---
@@ -65,15 +75,15 @@ const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
       </aside>
 
       <div class="hero-main" data-reveal>
-        {hero.eyebrow && <p class="eyebrow">{hero.eyebrow}</p>}
-        <h1 class="hero-title">{hero.headline}</h1>
+        {hero.eyebrow && <p class="eyebrow">{t.home.heroEyebrow}</p>}
+        <h1 class="hero-title">{t.home.heroHeadline}</h1>
         {hero.lead && <p class="hero-lead">{hero.lead}</p>}
         <div class="hero-bio prose">
           <AboutContent />
         </div>
         <div class="hero-cta">
           <a class="btn-clay" href={blogHref}>
-            Read the notes
+            {t.home.readNotes}
             <svg
               width="15"
               height="15"
@@ -88,7 +98,7 @@ const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
               <path d="M5 12h14M13 6l6 6-6 6"></path>
             </svg>
           </a>
-          <a class="btn-ghost" href={projectsHref}>See projects</a>
+          <a class="btn-ghost" href={projectsHref}>{t.home.seeProjects}</a>
         </div>
       </div>
     </section>
@@ -100,9 +110,9 @@ const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
           {hasNews && (
             <section class="index-block" data-reveal>
               <div class="index-head">
-                <h2 class="index-title-h">News</h2>
-                <a class="index-more u-underline" href={`${site.base}/news/`}>
-                  All news
+                <h2 class="index-title-h">{t.home.news}</h2>
+                <a class="index-more u-underline" href={localizedPath('/news/', locale)}>
+                  {t.home.allNews}
                 </a>
               </div>
               <ul class="index-list">
@@ -112,7 +122,13 @@ const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
                     data-reveal
                     style={`--reveal-delay:${i * 55}ms`}
                   >
-                    <span class="index-date">{formatDate(item.data.date)}</span>
+                    <span class="index-date">
+                      {formatDate(item.data.date, locale, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
                     <span class="index-row-body">
                       <Content />
                     </span>
@@ -125,16 +141,22 @@ const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
           {hasPosts && (
             <section class="index-block" data-reveal style="--reveal-delay: 90ms;">
               <div class="index-head">
-                <h2 class="index-title-h">Latest writing</h2>
+                <h2 class="index-title-h">{t.home.latestWriting}</h2>
                 <a class="index-more u-underline" href={blogHref}>
-                  All posts
+                  {t.home.allPosts}
                 </a>
               </div>
               <ul class="index-list">
                 {allPosts.map((post, i) => (
                   <li class="index-row" data-reveal style={`--reveal-delay:${i * 55}ms`}>
-                    <a class="index-link" href={`${site.base}/blog/${post.id}/`}>
-                      <span class="index-date">{formatDate(post.data.date)}</span>
+                    <a class="index-link" href={contentHref('blog', contentSlug(post), locale)}>
+                      <span class="index-date">
+                        {formatDate(post.data.date, locale, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
                       <span class="index-link-title">{post.data.title}</span>
                       <span class="index-arrow" aria-hidden="true">
                         →
@@ -154,9 +176,9 @@ const hasPosts = site.latestPosts.enabled && allPosts.length > 0;
       site.selectedPapers.enabled && selectedPapers.length > 0 && (
         <section class="index-block" data-reveal>
           <div class="index-head">
-            <h2 class="index-title-h">Selected publications</h2>
-            <a class="index-more u-underline" href={`${site.base}/publications/`}>
-              Full list
+            <h2 class="index-title-h">{t.home.selectedPublications}</h2>
+            <a class="index-more u-underline" href={localizedPath('/publications/', locale)}>
+              {t.home.fullList}
             </a>
           </div>
           <ol class="pub-list">

@@ -1,12 +1,11 @@
 ---
 import { site } from '@config/site';
+import { formatDate, getLocaleFromPath, labelsFor } from '@utils/i18n';
 
 const year = new Date().getFullYear();
-const lastUpdated = new Date().toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+const lastUpdated = formatDate(new Date(), locale);
 
 const isSticky = site.footer.position === 'sticky';
 const footerStyle = [
@@ -22,8 +21,14 @@ const footerStyle = [
     <p>
       &copy; {year}
       {site.author.name}.
-      {site.footer.text && <span set:html={site.footer.text} />}
-      {site.footer.lastUpdated && <span class="ml-2">Last updated: {lastUpdated}.</span>}
+      {t.footer.text && <span set:html={t.footer.text} />}
+      {
+        site.footer.lastUpdated && (
+          <span class="ml-2">
+            {t.footer.lastUpdated}: {lastUpdated}.
+          </span>
+        )
+      }
     </p>
     {
       site.footer.impressum && (
@@ -32,7 +37,7 @@ const footerStyle = [
             href={site.footer.impressum}
             style="color: var(--global-footer-link-color); text-decoration: none;"
           >
-            Legal Notice
+            {t.footer.legalNotice}
           </a>
         </p>
       )

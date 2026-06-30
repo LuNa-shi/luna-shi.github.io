@@ -5,6 +5,7 @@ import Page from '@layouts/Page.astro';
 import type { CoauthorMap } from '@utils/authors';
 import { withBase } from '@utils/base';
 import { getAuthors, getTitle, getVenue, parseBibtex } from '@utils/bibtex';
+import { getLocaleFromPath, labelsFor, localizedPath } from '@utils/i18n';
 import yaml from 'js-yaml';
 
 import citationsRaw from '../../data/citations.yml?raw';
@@ -25,14 +26,20 @@ const showDimensions = site.publications.badges.dimensions;
 const maxAuthorLimit = site.publications.maxAuthorLimit;
 const showThumbnails = site.publications.thumbnails;
 const authorLastName = site.publications.authorLastName ?? site.author.name.split(' ').pop() ?? '';
-const { labels } = site.publications;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+const labels = {
+  ...site.publications.labels,
+  ...t.publications,
+  searchPlaceholder: t.search.publications,
+};
 const previewDir = withBase(site.publications.previewDir);
 const pdfDir = withBase(site.publications.pdfDir);
 const scholarUserId = site.socials.scholar_userid ?? '';
 const badges = site.publications.badges;
 ---
 
-<Page title="Records" description={`Records by ${site.author.name}`} noindex>
+<Page title={t.publications.title} description={t.publications.description} noindex>
   <!-- Highwire Press citation meta tags — required for Google Scholar indexing -->
   <Fragment slot="head">
     {
@@ -67,7 +74,7 @@ const badges = site.publications.badges;
   </Fragment>
   <div class="post">
     <header class="post-header">
-      <h1 class="post-title">records</h1>
+      <h1 class="post-title">{t.publications.heading}</h1>
     </header>
 
     <article>
@@ -80,7 +87,7 @@ const badges = site.publications.badges;
         previewDir={previewDir}
         pdfDir={pdfDir}
         labels={labels}
-        detailBase={site.base}
+        detailBase={localizedPath('/', locale).replace(/\/$/, '')}
         coauthors={coauthors}
         citations={citations}
         scholarUserId={scholarUserId}

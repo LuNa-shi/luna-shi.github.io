@@ -15,14 +15,14 @@
 import { spawnSync } from 'node:child_process';
 
 import { site } from '@config/site';
+import { contentSlug, isEntryInLocale, type Locale, localizedPath } from '@utils/i18n';
 import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
 
 const siteUrl = site.url.replace(/\/$/, '');
-const base = (site.base ?? '').replace(/\/$/, '');
 
-function loc(path: string): string {
-  return `${siteUrl}${base}${path}`;
+function loc(path: string, locale: Locale): string {
+  return `${siteUrl}${localizedPath(path, locale)}`;
 }
 
 /**
@@ -73,53 +73,78 @@ export async function GET(_ctx: APIContext): Promise<Response> {
   // Static pages: git date of their source file.
   // Homepage falls back to today (it aggregates live content so build-date is legitimate).
   // Other static pages omit <lastmod> when git is unavailable.
-  const staticUrls: UrlEntry[] = [
+  const staticPages = [
     {
-      url: loc('/'),
+      path: '/',
       lastmod: gitLastmod('src/pages/index.astro') ?? today,
       changefreq: 'weekly',
       priority: 1.0,
     },
     {
-      url: loc('/blog/'),
+      path: '/blog/',
       lastmod: gitLastmod('src/pages/blog/index.astro'),
       changefreq: 'weekly',
       priority: 0.9,
     },
     {
-      url: loc('/projects/'),
+      path: '/projects/',
       lastmod: gitLastmod('src/pages/projects/index.astro'),
       changefreq: 'monthly',
       priority: 0.8,
     },
     {
-      url: loc('/research/'),
+      path: '/research/',
       lastmod: gitLastmod('src/pages/research.astro'),
       changefreq: 'monthly',
       priority: 0.8,
     },
+    {
+      path: '/news/',
+      lastmod: gitLastmod('src/pages/news.astro'),
+      changefreq: 'monthly',
+      priority: 0.6,
+    },
+    {
+      path: '/publications/',
+      lastmod: gitLastmod('src/pages/publications/index.astro'),
+      changefreq: 'monthly',
+      priority: 0.6,
+    },
   ];
+
+  const staticUrls: UrlEntry[] = (['en', 'zh'] as Locale[]).flatMap((locale) =>
+    staticPages.map(({ path, ...entry }) => ({
+      ...entry,
+      url: loc(path, locale),
+    })),
+  );
 
   const postUrls: UrlEntry[] = posts
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
-    .map((p) => ({
-      url: loc(`/blog/${p.id}/`),
-      // Priority: explicit lastmod frontmatter → git commit date → publish date
-      lastmod:
-        p.data.lastmod?.toISOString().split('T')[0] ??
-        (p.filePath ? gitLastmod(p.filePath) : undefined) ??
-        p.data.date.toISOString().split('T')[0],
+    .map((p) => {
+      const locale = isEntryInLocale(p, 'zh') ? 'zh' : 'en';
+      return {
+        url: loc(`/blog/${contentSlug(p)}/`, locale),
+        // Priority: explicit lastmod frontmatter → git commit date → publish date
+        lastmod:
+          p.data.lastmod?.toISOString().split('T')[0] ??
+          (p.filePath ? gitLastmod(p.filePath) : undefined) ??
+          p.data.date.toISOString().split('T')[0],
+        changefreq: 'monthly',
+        priority: 0.7,
+      };
+    });
+
+  const projectUrls: UrlEntry[] = projects.map((p) => {
+    const locale = isEntryInLocale(p, 'zh') ? 'zh' : 'en';
+    return {
+      url: loc(`/projects/${contentSlug(p)}/`, locale),
+      // Only emit lastmod when git can provide a real date; omit otherwise
+      lastmod: p.filePath ? gitLastmod(p.filePath) : undefined,
       changefreq: 'monthly',
       priority: 0.7,
-    }));
-
-  const projectUrls: UrlEntry[] = projects.map((p) => ({
-    url: loc(`/projects/${p.id}/`),
-    // Only emit lastmod when git can provide a real date; omit otherwise
-    lastmod: p.filePath ? gitLastmod(p.filePath) : undefined,
-    changefreq: 'monthly',
-    priority: 0.7,
-  }));
+    };
+  });
 
   const allUrls = [...staticUrls, ...postUrls, ...projectUrls];
 

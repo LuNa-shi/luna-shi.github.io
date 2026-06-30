@@ -1,0 +1,95 @@
+---
+import PostCard from '@components/blog/PostCard.astro';
+import Pagination from '@components/Pagination.astro';
+import { site } from '@config/site';
+import PageLayout from '@layouts/Page.astro';
+import {
+  formatMessage,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('posts');
+  const perPage = site.blog.postsPerPage;
+  const localePosts = allPosts.filter((p) => isEntryInLocale(p, 'zh'));
+  const postCategories = localePosts.flatMap((p) => p.data.categories);
+  const allCategories = [...new Set([...postCategories, ...site.blog.displayCategories])];
+
+  return allCategories.flatMap((category) => {
+    const catPosts = localePosts
+      .filter((p) => !p.data.hidden && !p.data.draft && p.data.categories.includes(category))
+      .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+    const totalPages = Math.ceil(catPosts.length / perPage);
+    return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => {
+      const page = i + 2;
+      return {
+        params: { category, page: String(page) },
+        props: {
+          posts: catPosts.slice((page - 1) * perPage, page * perPage),
+          currentPage: page,
+          totalPages,
+        },
+      };
+    });
+  });
+}
+
+const { category } = Astro.params;
+const { posts, currentPage, totalPages } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+---
+
+<PageLayout
+  title={formatMessage(t.blog.categoryPageTitle, { category, page: currentPage })}
+  description={formatMessage(t.blog.categoryPageDescription, { category, page: currentPage })}
+>
+  <div class="mb-6">
+    <a
+      href={localizedPath('/blog/', locale)}
+      class="text-sm"
+      style="color: var(--global-theme-color); text-decoration: none;"
+    >
+      &larr; {t.blog.allPosts}
+    </a>
+  </div>
+
+  <h1
+    class="mb-6 text-3xl font-bold"
+    style="color: var(--global-text-color); font-family: var(--font-sans);"
+  >
+    {t.blog.category}
+    <span
+      class="badge-abbr ml-2"
+      style="background-color: var(--global-text-color-light); color: var(--global-hover-text-color);"
+    >
+      {category}
+    </span>
+  </h1>
+
+  <ul class="post-list">
+    {
+      posts.map((post) => (
+        <li>
+          <PostCard post={post} />
+        </li>
+      ))
+    }
+  </ul>
+
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    prevUrl={currentPage === 2
+      ? localizedPath(`/blog/category/${category}/`, locale)
+      : localizedPath(`/blog/category/${category}/page/${currentPage - 1}/`, locale)}
+    nextUrl={currentPage < totalPages
+      ? localizedPath(`/blog/category/${category}/page/${currentPage + 1}/`, locale)
+      : undefined}
+    basePath={localizedPath(`/blog/category/${category}/`, locale)}
+  />
+</PageLayout>

@@ -1,16 +1,35 @@
 ---
 import PostLayout from '@layouts/Post.astro';
+import { contentSlug, isEntryInLocale, legacyContentSlug, localizedPath } from '@utils/i18n';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts');
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+  return posts
+    .filter((post) => isEntryInLocale(post, 'en'))
+    .flatMap((post) => {
+      const canonical = contentSlug(post);
+      const legacy = legacyContentSlug(post);
+      const paths = [
+        {
+          params: { slug: canonical },
+          props: { post },
+        },
+      ];
+      if (legacy !== canonical) {
+        paths.push({
+          params: { slug: legacy },
+          props: { post, redirectTo: localizedPath(`/blog/${canonical}/`, 'en') },
+        });
+      }
+      return paths;
+    });
 }
 
-const { post } = Astro.props;
+const { post, redirectTo } = Astro.props;
+if (redirectTo) {
+  return Astro.redirect(redirectTo);
+}
 const { Content, headings } = await render(post);
 ---
 

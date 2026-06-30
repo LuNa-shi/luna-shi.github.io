@@ -1,9 +1,19 @@
 ---
 import type { NavItem } from '@config/site';
 import { site } from '@config/site';
+import {
+  contentHref,
+  contentSlug,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedNavItems,
+} from '@utils/i18n';
 import { getCollection } from 'astro:content';
 
 const base = site.base || '';
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 
 // ── Navigation items — derived from site.navbar.items (single source of truth) ─
 function flattenNav(items: NavItem[]) {
@@ -13,7 +23,7 @@ function flattenNav(items: NavItem[]) {
         {
           id: `nav-${item.label}`,
           title: item.label.charAt(0).toUpperCase() + item.label.slice(1),
-          section: 'Navigation',
+          section: t.search.navigation,
           href: `${base}${item.href}`,
         },
       ];
@@ -22,38 +32,40 @@ function flattenNav(items: NavItem[]) {
     return item.children.map((child) => ({
       id: `nav-${child.label}`,
       title: child.label.charAt(0).toUpperCase() + child.label.slice(1),
-      section: 'Navigation',
+      section: t.search.navigation,
       href: `${base}${child.href}`,
     }));
   });
 }
 
-const navItems = flattenNav(site.navbar.items);
+const navItems = flattenNav(localizedNavItems(locale));
 
 // ── Content items (indexed at build time for dev-mode title search) ───────────
 type SearchItem = { id: string; title: string; section: string; href: string; keywords: string };
 
 const posts = (await getCollection('posts'))
-  .filter((p) => !p.data.hidden && !p.data.draft)
+  .filter((p) => !p.data.hidden && !p.data.draft && isEntryInLocale(p, locale))
   .map(
     (p): SearchItem => ({
       id: `post-${p.id}`,
       title: p.data.title,
-      section: 'Blog Posts',
-      href: `${base}/blog/${p.id}/`,
+      section: t.search.blogPosts,
+      href: contentHref('blog', contentSlug(p), locale),
       keywords: [...(p.data.tags ?? []), ...(p.data.categories ?? [])].join(' '),
     }),
   );
 
-const projects = (await getCollection('projects')).map(
-  (p): SearchItem => ({
-    id: `project-${p.id}`,
-    title: p.data.title,
-    section: 'Projects',
-    href: `${base}/projects/${p.id}/`,
-    keywords: p.data.category ?? '',
-  }),
-);
+const projects = (await getCollection('projects'))
+  .filter((p) => isEntryInLocale(p, locale))
+  .map(
+    (p): SearchItem => ({
+      id: `project-${p.id}`,
+      title: p.data.title,
+      section: t.search.projects,
+      href: contentHref('projects', contentSlug(p), locale),
+      keywords: p.data.category ?? '',
+    }),
+  );
 
 const allItems: SearchItem[] = [...posts, ...projects];
 ---
@@ -61,11 +73,14 @@ const allItems: SearchItem[] = [...posts, ...projects];
 <!-- ninja-keys web component -->
 <ninja-keys
   id="ninja-search"
-  placeholder="Search or jump to…"
+  placeholder={t.search.placeholder}
   hideBreadcrumbs
   data-nav-items={JSON.stringify(navItems)}
   data-content-items={JSON.stringify(allItems)}
-  data-pagefind-base={base}></ninja-keys>
+  data-pagefind-base={base}
+  data-locale={locale}
+  data-zh-prefix={`${base}/zh/`}
+  data-results-label={t.search.results}></ninja-keys>
 
 <script>
   import 'ninja-keys';
@@ -93,6 +108,8 @@ const allItems: SearchItem[] = [...posts, ...projects];
     const navItems: RawItem[] = JSON.parse(el.dataset.navItems ?? '[]');
     const contentItems: RawItem[] = JSON.parse(el.dataset.contentItems ?? '[]');
     const pagefindBase = el.dataset.pagefindBase ?? '';
+    const locale = el.dataset.locale ?? 'en';
+    const zhPrefix = el.dataset.zhPrefix ?? '/zh/';
 
     const navData = navItems.map(buildAction);
     const contentData = contentItems.map(buildAction);
@@ -141,12 +158,20 @@ const allItems: SearchItem[] = [...posts, ...projects];
       const pf = await loadPagefind();
       if (pf) {
         const response = await pf.search(query);
-        const results = await Promise.all(response.results.slice(0, 10).map((r: any) => r.data()));
+        const rawResults = await Promise.all(
+          response.results.slice(0, 20).map((r: any) => r.data()),
+        );
+        const results = rawResults
+          .filter((item: any) => {
+            const url = item.url ?? '';
+            return locale === 'zh' ? url.startsWith(zhPrefix) : !url.startsWith(zhPrefix);
+          })
+          .slice(0, 10);
         if (results.length > 0) {
           nk.data = results.map((item: any) => ({
             id: item.url,
             title: item.meta?.title || item.url,
-            section: 'Search Results',
+            section: el.dataset.resultsLabel ?? 'Search Results',
             description: item.excerpt?.replace(/<[^>]*>/g, '') ?? '',
             handler: () => {
               window.location.href = item.url;

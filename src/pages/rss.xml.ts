@@ -1,11 +1,12 @@
 import rss from '@astrojs/rss';
 import { site } from '@config/site';
+import { contentHref, contentSlug, isEntryInLocale } from '@utils/i18n';
 import type { APIContext } from 'astro';
 import { getCollection } from 'astro:content';
 
 export async function GET(context: APIContext) {
   const posts = (await getCollection('posts'))
-    .filter((p) => !p.data.hidden && !p.data.draft)
+    .filter((p) => !p.data.hidden && !p.data.draft && isEntryInLocale(p, 'en'))
     .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
   return rss({
@@ -16,7 +17,7 @@ export async function GET(context: APIContext) {
       title: post.data.title,
       description: post.data.description ?? '',
       pubDate: post.data.date,
-      link: `${site.base}/blog/${post.id}/`,
+      link: contentHref('blog', contentSlug(post), 'en'),
       categories: [...(post.data.tags ?? []), ...(post.data.categories ?? [])],
       author: site.author.email ? `${site.author.email} (${site.author.name})` : site.author.name,
     })),

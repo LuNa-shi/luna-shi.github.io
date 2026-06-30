@@ -13,6 +13,7 @@ import {
   getYear,
   parseBibtex,
 } from '@utils/bibtex';
+import { getLocaleFromPath, labelsFor, localizedPath } from '@utils/i18n';
 import yaml from 'js-yaml';
 
 import citationsRaw from '../../data/citations.yml?raw';
@@ -28,6 +29,8 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 
 const title = getTitle(entry);
 const authorsRaw = getAuthors(entry);
@@ -134,8 +137,8 @@ const breadcrumbLd = {
     {
       '@type': 'ListItem',
       position: 1,
-      name: 'Publications',
-      item: new URL(`${site.base}/publications/`, site.url).toString(),
+      name: t.publications.breadcrumb,
+      item: new URL(localizedPath('/publications/', locale), site.url).toString(),
     },
     { '@type': 'ListItem', position: 2, name: title, item: canonicalURL },
   ],
@@ -171,7 +174,9 @@ const breadcrumbLd = {
 
   <div class="post">
     <nav aria-label="Breadcrumb" class="breadcrumb-nav">
-      <a href={`${site.base}/publications/`} class="breadcrumb-link">← Publications</a>
+      <a href={localizedPath('/publications/', locale)} class="breadcrumb-link"
+        >← {t.publications.breadcrumb}</a
+      >
     </nav>
 
     <header class="post-header">
@@ -275,49 +280,49 @@ const breadcrumbLd = {
         {
           suppHref && (
             <a href={suppHref} target="_blank" rel="noopener noreferrer" class="btn">
-              Supp
+              {t.publications.supp}
             </a>
           )
         }
         {
           slidesHref && (
             <a href={slidesHref} target="_blank" rel="noopener noreferrer" class="btn">
-              Slides
+              {t.publications.slides}
             </a>
           )
         }
         {
           posterHref && (
             <a href={posterHref} target="_blank" rel="noopener noreferrer" class="btn">
-              Poster
+              {t.publications.poster}
             </a>
           )
         }
         {
           video && (
             <a href={video} target="_blank" rel="noopener noreferrer" class="btn">
-              Video
+              {t.publications.video}
             </a>
           )
         }
         {
           code && (
             <a href={code} target="_blank" rel="noopener noreferrer" class="btn">
-              Code
+              {t.publications.code}
             </a>
           )
         }
         {
           blog && (
             <a href={blog} target="_blank" rel="noopener noreferrer" class="btn">
-              Blog
+              {t.publications.blog}
             </a>
           )
         }
         {
           website && (
             <a href={website} target="_blank" rel="noopener noreferrer" class="btn">
-              Website
+              {t.publications.website}
             </a>
           )
         }
@@ -402,14 +407,14 @@ const breadcrumbLd = {
       {
         abstract && (
           <section class="pub-section">
-            <h2>Abstract</h2>
+            <h2>{t.publications.abstract}</h2>
             <p>{abstract}</p>
           </section>
         )
       }
 
       <section class="pub-section">
-        <h2>Citation</h2>
+        <h2>{t.publications.citation}</h2>
         <pre class="bibtex-block"><code>{bibtexBlock}</code></pre>
       </section>
     </article>

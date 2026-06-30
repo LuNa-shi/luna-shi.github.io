@@ -1,0 +1,100 @@
+---
+import PostCard from '@components/blog/PostCard.astro';
+import Pagination from '@components/Pagination.astro';
+import { site } from '@config/site';
+import Page from '@layouts/Page.astro';
+import {
+  formatMessage,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('posts');
+  const perPage = site.blog.postsPerPage;
+  const localePosts = allPosts.filter((p) => isEntryInLocale(p, 'zh'));
+  const postTags = localePosts.flatMap((p) => p.data.tags);
+  const allTags = [...new Set([...postTags, ...site.blog.displayTags])];
+
+  return allTags.map((tag) => {
+    const tagPosts = localePosts
+      .filter((p) => !p.data.hidden && !p.data.draft && p.data.tags.includes(tag))
+      .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+    const totalPages = Math.max(1, Math.ceil(tagPosts.length / perPage));
+    return {
+      params: { tag },
+      props: {
+        posts: tagPosts.slice(0, perPage),
+        currentPage: 1,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { tag } = Astro.params;
+const { posts, currentPage, totalPages } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+---
+
+<Page
+  title={formatMessage(t.blog.tagTitle, { tag })}
+  description={formatMessage(t.blog.tagDescription, { tag })}
+>
+  <div class="mb-6 flex flex-wrap items-center gap-3">
+    <a
+      href={localizedPath('/blog/', locale)}
+      class="text-sm"
+      style="color: var(--global-theme-color); text-decoration: none;"
+    >
+      &larr; {t.blog.allPosts}
+    </a>
+    <span style="color: var(--global-divider-color);">&middot;</span>
+    <a
+      href={localizedPath('/blog/tags/', locale)}
+      class="text-sm"
+      style="color: var(--global-theme-color); text-decoration: none;"
+    >
+      {t.blog.tagCloud}
+    </a>
+  </div>
+
+  <h1
+    class="mb-6 text-3xl font-bold"
+    style="color: var(--global-text-color); font-family: var(--font-sans);"
+  >
+    {t.blog.postsTagged}
+    <span
+      class="badge-abbr ml-2"
+      style="background-color: var(--global-theme-color); color: var(--global-hover-text-color);"
+    >
+      {tag}
+    </span>
+  </h1>
+
+  {
+    posts.length === 0 ? (
+      <p style="color: var(--global-text-color-light);">{t.blog.noPostsForTag}</p>
+    ) : (
+      <ul class="post-list">
+        {posts.map((post) => (
+          <li>
+            <PostCard post={post} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <Pagination
+    currentPage={currentPage}
+    totalPages={totalPages}
+    prevUrl={undefined}
+    nextUrl={totalPages > 1 ? localizedPath(`/blog/tag/${tag}/page/2/`, locale) : undefined}
+    basePath={localizedPath(`/blog/tag/${tag}/`, locale)}
+  />
+</Page>

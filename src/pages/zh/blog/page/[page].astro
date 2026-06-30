@@ -1,0 +1,155 @@
+---
+import BlogFilterFooter from '@components/blog/BlogFilterFooter.astro';
+import PostCard from '@components/blog/PostCard.astro';
+import Pagination from '@components/Pagination.astro';
+import { site } from '@config/site';
+import PageLayout from '@layouts/Page.astro';
+import {
+  contentHref,
+  contentSlug,
+  formatMessage,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
+import { readingTime } from '@utils/reading-time';
+import { getCollection } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+
+export async function getStaticPaths() {
+  const perPage = site.blog.postsPerPage;
+  const entries = await getCollection('posts');
+  const allPosts = entries
+    .filter((p) => !p.data.hidden && !p.data.draft && isEntryInLocale(p, 'zh'))
+    .sort((a, b) => {
+      if (a.data.pinned !== b.data.pinned) return a.data.pinned ? -1 : 1;
+      return b.data.date.getTime() - a.data.date.getTime();
+    });
+
+  const totalPages = Math.ceil(allPosts.length / perPage);
+  return Array.from({ length: totalPages - 1 }, (_, i) => {
+    const page = i + 2; // pages 2, 3, ...
+    return {
+      params: { page: String(page) },
+      props: {
+        posts: allPosts.slice((page - 1) * perPage, page * perPage),
+        pinnedPosts: allPosts.filter((p) => p.data.pinned),
+        currentPage: page,
+        totalPages,
+      },
+    };
+  });
+}
+
+const { posts, pinnedPosts, currentPage, totalPages } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+
+// Grid column count for featured cards
+const featuredCols = pinnedPosts.length >= 3 ? '3' : '2';
+
+// Group posts by year
+const postsByYear = new Map<number, typeof posts>();
+for (const post of posts) {
+  const year = post.data.date.getFullYear();
+  if (!postsByYear.has(year)) postsByYear.set(year, []);
+  postsByYear.get(year)!.push(post);
+}
+const postYears = [...postsByYear.keys()].sort((a, b) => b - a);
+---
+
+<PageLayout
+  title={formatMessage(t.blog.pageTitle, { page: currentPage })}
+  description={t.blog.description}
+>
+  <div class="blog-index-page">
+    <!-- Header bar -->
+    <div class="header-bar header-bar--compact">
+      <h1>{t.blog.name}</h1>
+    </div>
+
+    <!-- Featured / Pinned posts card grid -->
+    {
+      pinnedPosts.length > 0 && (
+        <>
+          <div class="featured-posts container">
+            <div class={`row row-cols-${featuredCols}`}>
+              {pinnedPosts.map((post) => {
+                const mins = post.body ? readingTime(post.body, site.blog.wordsPerMinute) : 1;
+                const year = post.data.date.getFullYear();
+                return (
+                  <div class="col mb-4">
+                    <a href={contentHref('blog', contentSlug(post), locale)}>
+                      <div class="card hoverable">
+                        <div class="row g-0">
+                          <div class="col-md-12">
+                            <div class="card-body">
+                              <div class="float-right">
+                                <Icon name="fa-solid:thumbtack" style="font-size:0.75rem;" />
+                              </div>
+                              <h3 class="card-title text-lowercase">{post.data.title}</h3>
+                              {(post.data.overview ?? post.data.description) && (
+                                <p class="card-text">
+                                  {post.data.overview ?? post.data.description}
+                                </p>
+                              )}
+                              <p class="post-meta">
+                                {mins} {t.blog.minRead} &nbsp;&middot;&nbsp;
+                                <span>
+                                  <Icon name="fa-solid:calendar" style="font-size:0.75rem;" />{' '}
+                                  {year}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <hr style="margin-bottom: 2rem;" />
+        </>
+      )
+    }
+
+    {
+      postYears.map((year) => (
+        <>
+          <h2 class="year">
+            <a
+              href={localizedPath(`/blog/year/${year}/`, locale)}
+              style="color: inherit; text-decoration: none;"
+            >
+              {year}
+            </a>
+          </h2>
+          <ul class="post-list">
+            {postsByYear.get(year)!.map((post) => (
+              <li>
+                <PostCard post={post} />
+              </li>
+            ))}
+          </ul>
+        </>
+      ))
+    }
+
+    <Pagination
+      currentPage={currentPage}
+      totalPages={totalPages}
+      prevUrl={currentPage === 2
+        ? localizedPath('/blog/', locale)
+        : localizedPath(`/blog/page/${currentPage - 1}/`, locale)}
+      nextUrl={currentPage < totalPages
+        ? localizedPath(`/blog/page/${currentPage + 1}/`, locale)
+        : undefined}
+      basePath={localizedPath('/blog/', locale)}
+    />
+
+    <BlogFilterFooter />
+  </div>
+</PageLayout>

@@ -1,24 +1,27 @@
 ---
 import { site } from '@config/site';
+import { getLocaleFromPath, labelsFor } from '@utils/i18n';
 
 if (!site.features.newsletter || !site.newsletter.endpoint) return;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 ---
 
 <section class="newsletter-section">
   <div class="page-container">
     <form action={site.newsletter.endpoint} method="POST" class="newsletter-form">
-      <h3 class="newsletter-title">Subscribe to updates</h3>
-      <p class="newsletter-desc">Get notified about new posts and announcements.</p>
+      <h3 class="newsletter-title">{t.newsletter.title}</h3>
+      <p class="newsletter-desc">{t.newsletter.description}</p>
       <div class="newsletter-fields">
         <input
           type="email"
           name="email"
-          placeholder="your@email.com"
+          placeholder={t.newsletter.emailPlaceholder}
           required
           class="newsletter-input"
-          aria-label="Email address"
+          aria-label={t.newsletter.emailPlaceholder}
         />
-        <button type="submit" class="newsletter-btn">Subscribe</button>
+        <button type="submit" class="newsletter-btn">{t.newsletter.submit}</button>
       </div>
     </form>
   </div>

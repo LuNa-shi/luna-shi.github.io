@@ -1,5 +1,12 @@
 ---
-import { site } from '@config/site';
+import {
+  contentHref,
+  contentSlug,
+  formatDate,
+  getLocaleFromPath,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
 import type { CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
 
@@ -9,23 +16,21 @@ interface Props {
 
 const { posts } = Astro.props;
 if (posts.length === 0) return;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 ---
 
 <section class="related-posts">
-  <h3>Enjoy Reading This Article?</h3>
-  <p class="related-subtitle">Here are some more articles you might like to read next:</p>
+  <h3>{t.blog.relatedTitle}</h3>
+  <p class="related-subtitle">{t.blog.relatedSubtitle}</p>
 
   <ul class="related-list">
     {
       posts.map((post) => {
-        const date = post.data.date.toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        });
+        const date = formatDate(post.data.date, locale);
         return (
           <li class="related-item">
-            <a href={`${site.base}/blog/${post.id}/`} class="related-title">
+            <a href={contentHref('blog', contentSlug(post), locale)} class="related-title">
               {post.data.title}
             </a>
             <div class="related-meta">
@@ -35,7 +40,7 @@ if (posts.length === 0) return;
                 <>
                   <span aria-hidden="true">&middot;</span>
                   {post.data.tags.map((tag) => (
-                    <a href={`${site.base}/blog/tag/${tag}/`} class="related-tag">
+                    <a href={localizedPath(`/blog/tag/${tag}/`, locale)} class="related-tag">
                       #{tag}
                     </a>
                   ))}

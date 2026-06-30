@@ -19,8 +19,18 @@ interface Labels {
   abstract?: string;
   bibtex?: string;
   supp?: string;
+  slides?: string;
+  poster?: string;
+  video?: string;
+  code?: string;
+  blog?: string;
+  website?: string;
+  details?: string;
+  awarded?: string;
   searchPlaceholder?: string;
   noResults?: string;
+  showing?: string;
+  moreAuthors?: string;
 }
 
 interface BadgeConfig {
@@ -58,6 +68,10 @@ function entryUrl(entry: BibEntry): string {
   if (entry.fields.html) return entry.fields.html;
   if (entry.fields.doi) return `https://doi.org/${entry.fields.doi}`;
   return '';
+}
+
+function formatLabel(template: string, values: Record<string, string | number>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? `{${key}}`));
 }
 
 function PublicationEntry({
@@ -208,7 +222,13 @@ function PublicationEntry({
               })}
               {hiddenCount > 0 && (
                 <span>
-                  , and {hiddenCount} more author{hiddenCount > 1 ? 's' : ''}
+                  ,{' '}
+                  {labels.moreAuthors
+                    ? formatLabel(labels.moreAuthors, {
+                        count: hiddenCount,
+                        plural: hiddenCount > 1 ? 's' : '',
+                      })
+                    : `and ${hiddenCount} more author${hiddenCount > 1 ? 's' : ''}`}
                 </span>
               )}
               {/* Annotation tooltip — info icon with hover text */}
@@ -243,7 +263,7 @@ function PublicationEntry({
                 onClick={() => setAwardOpen(!awardOpen)}
                 style={{ cursor: 'pointer', background: 'none' }}
               >
-                {awardName || 'Awarded'}
+                {awardName || labels.awarded || 'Awarded'}
               </button>
             )}
             {abstract && (
@@ -331,7 +351,7 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                Slides
+                {labels.slides ?? 'Slides'}
               </a>
             )}
             {poster && (
@@ -341,7 +361,7 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                Poster
+                {labels.poster ?? 'Poster'}
               </a>
             )}
             {video && (
@@ -351,7 +371,7 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                Video
+                {labels.video ?? 'Video'}
               </a>
             )}
             {codeUrl && (
@@ -361,7 +381,7 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                Code
+                {labels.code ?? 'Code'}
               </a>
             )}
             {blog && (
@@ -371,7 +391,7 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                Blog
+                {labels.blog ?? 'Blog'}
               </a>
             )}
             {website && (
@@ -381,12 +401,12 @@ function PublicationEntry({
                 rel="noopener noreferrer"
                 className="btn btn-sm z-depth-0"
               >
-                Website
+                {labels.website ?? 'Website'}
               </a>
             )}
             {detailBase !== undefined && (
               <a href={`${detailBase}/publications/${entry.key}/`} className="btn btn-sm z-depth-0">
-                Details
+                {labels.details ?? 'Details'}
               </a>
             )}
           </div>
@@ -514,7 +534,13 @@ export function BibSearch({
             color: 'var(--global-text-color-light)',
           }}
         >
-          Showing {filtered.length} of {entries.length} publication{entries.length !== 1 ? 's' : ''}
+          {labels.showing
+            ? formatLabel(labels.showing, {
+                shown: filtered.length,
+                total: entries.length,
+                plural: entries.length !== 1 ? 's' : '',
+              })
+            : `Showing ${filtered.length} of ${entries.length} publication${entries.length !== 1 ? 's' : ''}`}
         </p>
       </div>
 

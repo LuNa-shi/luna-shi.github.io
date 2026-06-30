@@ -1,9 +1,12 @@
 ---
-import { site } from '@config/site';
 import Base from '@layouts/Base.astro';
+import { getLocaleFromPath, labelsFor, localizedPath } from '@utils/i18n';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 ---
 
-<Base title="404 — Page Not Found" noindex>
+<Base title={t.notFound.title} noindex>
   <div class="page-container py-16 text-center" style="min-height: calc(100vh - 57px - 4rem);">
     <h1
       class="mb-4 text-8xl font-bold"
@@ -11,15 +14,15 @@ import Base from '@layouts/Base.astro';
     >
       404
     </h1>
-    <p class="mb-2 text-xl" style="color: var(--global-text-color);">Page not found</p>
+    <p class="mb-2 text-xl" style="color: var(--global-text-color);">{t.notFound.heading}</p>
     <p class="mb-8 text-sm" style="color: var(--global-text-color-light);">
-      The page you were looking for doesn't exist or has been moved.
+      {t.notFound.body}
     </p>
     <a
-      href={`${site.base}/`}
+      href={localizedPath('/', locale)}
       style="color: var(--global-theme-color); text-decoration: none; font-weight: 500;"
     >
-      &larr; Go back home
+      &larr; {t.notFound.home}
     </a>
   </div>
 </Base>

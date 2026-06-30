@@ -3,10 +3,20 @@ import PostCard from '@components/blog/PostCard.astro';
 import Pagination from '@components/Pagination.astro';
 import { site } from '@config/site';
 import PageLayout from '@layouts/Page.astro';
+import {
+  formatMessage,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('posts', (p) => !p.data.hidden && !p.data.draft);
+  const allPosts = await getCollection(
+    'posts',
+    (p) => !p.data.hidden && !p.data.draft && isEntryInLocale(p, 'en'),
+  );
   const perPage = site.blog.postsPerPage;
   const years = [...new Set(allPosts.map((p) => p.data.date.getFullYear()))];
 
@@ -31,18 +41,21 @@ export async function getStaticPaths() {
 }
 
 const { year, posts, currentPage, totalPages } = Astro.props;
-const base = site.base;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 ---
 
 <PageLayout
-  title={`Blog — ${year} — Page ${currentPage}`}
-  description={`Posts from ${year}, page ${currentPage}`}
+  title={formatMessage(t.blog.yearPageTitle, { year, page: currentPage })}
+  description={formatMessage(t.blog.yearPageDescription, { year, page: currentPage })}
 >
   <div class="post">
     <header class="post-header">
       <h1 class="post-title">{year}</h1>
       <p>
-        <a href={`${base}/blog/`} style="color: var(--global-theme-color);">← Back to blog</a>
+        <a href={localizedPath('/blog/', locale)} style="color: var(--global-theme-color);"
+          >← {t.blog.backToBlog}</a
+        >
       </p>
     </header>
     <ul class="post-list">
@@ -58,12 +71,12 @@ const base = site.base;
       currentPage={currentPage}
       totalPages={totalPages}
       prevUrl={currentPage === 2
-        ? `${base}/blog/year/${year}/`
-        : `${base}/blog/year/${year}/page/${currentPage - 1}/`}
+        ? localizedPath(`/blog/year/${year}/`, locale)
+        : localizedPath(`/blog/year/${year}/page/${currentPage - 1}/`, locale)}
       nextUrl={currentPage < totalPages
-        ? `${base}/blog/year/${year}/page/${currentPage + 1}/`
+        ? localizedPath(`/blog/year/${year}/page/${currentPage + 1}/`, locale)
         : undefined}
-      basePath={`${base}/blog/year/${year}/`}
+      basePath={localizedPath(`/blog/year/${year}/`, locale)}
     />
   </div>
 </PageLayout>

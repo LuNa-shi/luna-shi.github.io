@@ -4,20 +4,31 @@ import { site } from '@config/site';
 import Page from '@layouts/Page.astro';
 import { withBase } from '@utils/base';
 import { getAuthors, getTitle, getVenue, getYear, parseBibtex } from '@utils/bibtex';
+import {
+  contentSlug,
+  getLocaleFromPath,
+  isEntryInLocale,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
 import { getCollection, render } from 'astro:content';
 
 import bibRaw from '../../data/papers.bib?raw';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
-  return projects.map((project) => ({
-    params: { slug: project.id },
-    props: { project },
-  }));
+  return projects
+    .filter((project) => isEntryInLocale(project, 'en'))
+    .map((project) => ({
+      params: { slug: contentSlug(project) },
+      props: { project },
+    }));
 }
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 
 const {
   title,
@@ -55,7 +66,9 @@ const relatedEntries =
   <div class="post">
     <!-- Breadcrumb -->
     <nav aria-label="Breadcrumb" class="breadcrumb-nav">
-      <a href={`${site.base}/projects/`} class="breadcrumb-link">← Projects</a>
+      <a href={localizedPath('/projects/', locale)} class="breadcrumb-link"
+        >← {t.projects.breadcrumb}</a
+      >
     </nav>
 
     <!-- Page header -->
@@ -110,7 +123,7 @@ const relatedEntries =
                   <polyline points="15 3 21 3 21 9" />
                   <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
-                Website
+                {t.projects.website}
               </a>
             )}
           </div>
@@ -143,7 +156,7 @@ const relatedEntries =
     {
       relatedEntries.length > 0 && (
         <div class="references-section">
-          <h2>References</h2>
+          <h2>{t.projects.references}</h2>
           <div class="publications">
             <ol class="bibliography">
               {relatedEntries.map(

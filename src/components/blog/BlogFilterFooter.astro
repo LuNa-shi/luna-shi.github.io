@@ -1,21 +1,24 @@
 ---
 import { site } from '@config/site';
+import { getLocaleFromPath, labelsFor, localizedPath } from '@utils/i18n';
 import { Icon } from 'astro-icon/components';
 
 const displayTags = site.blog.displayTags;
 const displayCategories = site.blog.displayCategories;
-const base = site.base;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
 ---
 
-<section class="blog-filter-footer" aria-label="Blog filters">
-  <p class="blog-filter-note">{site.blog.description}</p>
+<section class="blog-filter-footer" aria-label={t.blog.filtersLabel}>
+  <p class="blog-filter-note">{t.blog.description}</p>
   <div class="tag-category-list tag-category-list--footer">
     <ul class="m-0 p-0">
       {
         displayTags.map((tag, i) => (
           <>
             <li>
-              <Icon name="fa-solid:hashtag" /> <a href={`${base}/blog/tag/${tag}/`}>{tag}</a>
+              <Icon name="fa-solid:hashtag" />{' '}
+              <a href={localizedPath(`/blog/tag/${tag}/`, locale)}>{tag}</a>
             </li>
             {i < displayTags.length - 1 && <p>&bull;</p>}
           </>
@@ -26,7 +29,8 @@ const base = site.base;
         displayCategories.map((cat, i) => (
           <>
             <li>
-              <Icon name="fa-solid:folder" /> <a href={`${base}/blog/category/${cat}/`}>{cat}</a>
+              <Icon name="fa-solid:folder" />{' '}
+              <a href={localizedPath(`/blog/category/${cat}/`, locale)}>{cat}</a>
             </li>
             {i < displayCategories.length - 1 && <p>&bull;</p>}
           </>
@@ -35,7 +39,7 @@ const base = site.base;
       {(displayTags.length > 0 || displayCategories.length > 0) && <p>&bull;</p>}
       <li>
         <Icon name="fa-solid:tags" />
-        <a href={`${base}/blog/tags/`}>all tags</a>
+        <a href={localizedPath('/blog/tags/', locale)}>{t.blog.allTags}</a>
       </li>
     </ul>
   </div>
