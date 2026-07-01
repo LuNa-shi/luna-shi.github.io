@@ -12,6 +12,7 @@ import { resolve } from 'node:path';
 
 import { site } from '@config/site';
 import { Resvg } from '@resvg/resvg-js';
+import { toExactArrayBuffer } from '@utils/array-buffer';
 import type { APIContext, GetStaticPathsResult } from 'astro';
 import { getCollection } from 'astro:content';
 import React from 'react';
@@ -25,13 +26,13 @@ const fontBold = readFileSync(resolve(fontRoot, 'roboto-latin-700-normal.woff'))
 const FONTS = [
   {
     name: 'Roboto',
-    data: fontRegular.buffer as ArrayBuffer,
+    data: toExactArrayBuffer(fontRegular),
     weight: 400 as const,
     style: 'normal' as const,
   },
   {
     name: 'Roboto',
-    data: fontBold.buffer as ArrayBuffer,
+    data: toExactArrayBuffer(fontBold),
     weight: 700 as const,
     style: 'normal' as const,
   },
