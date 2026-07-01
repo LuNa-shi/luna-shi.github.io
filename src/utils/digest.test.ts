@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -25,7 +25,14 @@ describe('digest generation', () => {
             createdAtISO: '2026-06-30T16:04:04+00:00',
             createdAtLocal: '2026-07-01 00:04',
             text: 'Loop engineering connects agentic coding, developer feedback, and external feedback.',
-            metrics: { likes: 5140, retweets: 955, replies: 194, quotes: 90, views: 287327, bookmarks: 6472 },
+            metrics: {
+              likes: 5140,
+              retweets: 955,
+              replies: 194,
+              quotes: 90,
+              views: 287327,
+              bookmarks: 6472,
+            },
             topics: ['ai_agents'],
             watched_priority_base: 'core',
             source_file: 'runs/x-recent-2026-07-01/AndrewYNg.json',
@@ -38,7 +45,14 @@ describe('digest generation', () => {
             createdAtISO: '2026-06-30T17:07:49+00:00',
             createdAtLocal: '2026-07-01 01:07',
             text: 'ASPIRE gives robots a self-evolving skills library.',
-            metrics: { likes: 958, retweets: 130, replies: 42, quotes: 16, views: 75004, bookmarks: 676 },
+            metrics: {
+              likes: 958,
+              retweets: 130,
+              replies: 42,
+              quotes: 16,
+              views: 75004,
+              bookmarks: 676,
+            },
             topics: ['ai_agents', 'robotics_spatial'],
             watched_priority_base: 'core',
             source_file: 'runs/x-recent-2026-07-01/DrJimFan.json',

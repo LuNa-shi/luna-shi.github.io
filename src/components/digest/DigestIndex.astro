@@ -1,7 +1,7 @@
 ---
 import DigestCard from '@components/digest/DigestCard.astro';
 import Page from '@layouts/Page.astro';
-import { getLocaleFromPath, labelsFor, isEntryInLocale } from '@utils/i18n';
+import { getLocaleFromPath, isEntryInLocale, labelsFor } from '@utils/i18n';
 import { getCollection } from 'astro:content';
 
 const locale = getLocaleFromPath(Astro.url.pathname);

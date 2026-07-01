@@ -192,7 +192,9 @@ async function buildHighlights(
         source: `@${item.author_handle.replace(/^@/, '')}`,
         channel: 'x' as const,
         url: tweetUrl(item.author_handle, item.id),
-        ...(image ? { image, imageAlt: `${item.author_name ?? item.author_handle} X post image` } : {}),
+        ...(image
+          ? { image, imageAlt: `${item.author_name ?? item.author_handle} X post image` }
+          : {}),
         priority: item.watched_priority_base,
         note: summarizeNote(item.text),
       };
@@ -305,11 +307,7 @@ function removeOperationalSections(markdown: string): string {
 }
 
 function isOperationalSectionTitle(title: string): boolean {
-  const normalized = title
-    .replace(/[`*_]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
+  const normalized = title.replace(/[`*_]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
 
   return [
     '覆盖情况',
@@ -328,7 +326,9 @@ function isOperationalSectionTitle(title: string): boolean {
 
 function fallbackDigestBody(lang: DigestLang, highlights: DigestHighlightItem[]): string {
   const title = lang === 'zh' ? '## 核心更新' : '## Core Updates';
-  const bullets = highlights.map((item) => `- [${item.source}](${item.url}) ${item.note}`).join('\n');
+  const bullets = highlights
+    .map((item) => `- [${item.source}](${item.url}) ${item.note}`)
+    .join('\n');
   return `${title}\n\n${bullets || (lang === 'zh' ? '暂无可发布条目。' : 'No publishable items yet.')}`;
 }
 

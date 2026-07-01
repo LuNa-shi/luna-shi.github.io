@@ -1,13 +1,7 @@
 ---
-import Base from '@layouts/Base.astro';
 import { site } from '@config/site';
-import {
-  contentSlug,
-  formatDate,
-  getLocaleFromPath,
-  labelsFor,
-  localizedPath,
-} from '@utils/i18n';
+import Base from '@layouts/Base.astro';
+import { contentSlug, formatDate, getLocaleFromPath, labelsFor, localizedPath } from '@utils/i18n';
 import type { CollectionEntry } from 'astro:content';
 
 interface Props {
@@ -18,8 +12,10 @@ const { digest } = Astro.props;
 const locale = getLocaleFromPath(Astro.url.pathname);
 const t = labelsFor(locale);
 const { title, summary, dateRange, channels, highlightItems } = digest.data;
-const canonicalURL = new URL(localizedPath(`/digest/${contentSlug(digest)}/`, locale), site.url)
-  .toString();
+const canonicalURL = new URL(
+  localizedPath(`/digest/${contentSlug(digest)}/`, locale),
+  site.url,
+).toString();
 const heroImage = highlightItems.find((item) => item.image)?.image;
 const rangeLabel = `${formatDate(dateRange.start, locale)} - ${formatDate(dateRange.end, locale)}`;
 const formatChannel = (channel: string) => (channel === 'x' ? 'X' : channel);
@@ -66,7 +62,9 @@ const formatChannel = (channel: string) => (channel === 'x' ? 'X' : channel);
           <h2 id="digest-highlights-title">{t.digest.highlights}</h2>
           <div class="digest-highlight-grid">
             {highlightItems.map((item) => (
-              <article class={`digest-highlight ${item.image ? 'digest-highlight--media' : 'digest-highlight--text'}`}>
+              <article
+                class={`digest-highlight ${item.image ? 'digest-highlight--media' : 'digest-highlight--text'}`}
+              >
                 {item.image && (
                   <a href={item.url} target="_blank" rel="noopener noreferrer">
                     <img
@@ -79,7 +77,9 @@ const formatChannel = (channel: string) => (channel === 'x' ? 'X' : channel);
                   </a>
                 )}
                 <div class="digest-highlight-body">
-                  <p class="digest-highlight-source">{item.source} · {formatChannel(item.channel)}</p>
+                  <p class="digest-highlight-source">
+                    {item.source} · {formatChannel(item.channel)}
+                  </p>
                   <h3>
                     <a href={item.url} target="_blank" rel="noopener noreferrer">
                       {item.title}
