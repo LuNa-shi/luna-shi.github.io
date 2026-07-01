@@ -1,0 +1,243 @@
+---
+import Base from '@layouts/Base.astro';
+import { site } from '@config/site';
+import {
+  contentSlug,
+  formatDate,
+  getLocaleFromPath,
+  labelsFor,
+  localizedPath,
+} from '@utils/i18n';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  digest: CollectionEntry<'digests'>;
+}
+
+const { digest } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+const { title, summary, dateRange, channels, highlightItems } = digest.data;
+const canonicalURL = new URL(localizedPath(`/digest/${contentSlug(digest)}/`, locale), site.url)
+  .toString();
+const heroImage = highlightItems.find((item) => item.image)?.image;
+const rangeLabel = `${formatDate(dateRange.start, locale)} - ${formatDate(dateRange.end, locale)}`;
+const formatChannel = (channel: string) => (channel === 'x' ? 'X' : channel);
+---
+
+<Base title={title} description={summary} image={heroImage}>
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: title,
+        description: summary,
+        datePublished: digest.data.date.toISOString(),
+        url: canonicalURL,
+        author: {
+          '@type': 'Person',
+          name: site.author.name,
+          url: site.url,
+        },
+        ...(heroImage ? { image: heroImage } : {}),
+      })}
+    />
+  </Fragment>
+
+  <div class="page-container digest-page py-8">
+    <nav aria-label="Breadcrumb" class="digest-breadcrumb">
+      <a href={localizedPath('/digest/', locale)}>← {t.digest.backToDigest}</a>
+    </nav>
+
+    <header class="digest-header">
+      <p class="digest-eyebrow">{t.digest.sourceWindow}: {rangeLabel}</p>
+      <h1>{title}</h1>
+      <p class="digest-summary">{summary}</p>
+      <div class="digest-meta">
+        <span>{t.digest.channels}: {channels.map(formatChannel).join(', ')}</span>
+      </div>
+    </header>
+
+    {
+      highlightItems.length > 0 && (
+        <section class="digest-highlights" aria-labelledby="digest-highlights-title">
+          <h2 id="digest-highlights-title">{t.digest.highlights}</h2>
+          <div class="digest-highlight-grid">
+            {highlightItems.map((item) => (
+              <article class={`digest-highlight ${item.image ? 'digest-highlight--media' : 'digest-highlight--text'}`}>
+                {item.image && (
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">
+                    <img
+                      src={item.image}
+                      alt={item.imageAlt ?? ''}
+                      loading="lazy"
+                      width="360"
+                      height="202"
+                    />
+                  </a>
+                )}
+                <div class="digest-highlight-body">
+                  <p class="digest-highlight-source">{item.source} · {formatChannel(item.channel)}</p>
+                  <h3>
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      {item.title}
+                    </a>
+                  </h3>
+                  <p>{item.note}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    <article class="prose digest-body" id="post-content">
+      <slot />
+    </article>
+  </div>
+</Base>
+
+<style>
+  .digest-page {
+    display: grid;
+    gap: 1.75rem;
+  }
+
+  .digest-breadcrumb a {
+    color: var(--global-text-color-light);
+    font-size: 0.88rem;
+    text-decoration: none;
+  }
+
+  .digest-breadcrumb a:hover {
+    color: var(--global-theme-color);
+  }
+
+  .digest-header {
+    max-width: 48rem;
+  }
+
+  .digest-eyebrow {
+    margin: 0 0 0.65rem;
+    color: var(--global-text-color-light);
+    font-size: 0.86rem;
+  }
+
+  .digest-header h1 {
+    margin: 0;
+    color: var(--global-text-color);
+    font-family: var(--font-sans);
+    font-size: clamp(2rem, 5vw, 3.15rem);
+    line-height: 1.04;
+  }
+
+  .digest-summary {
+    margin: 1rem 0 0;
+    color: var(--global-text-color);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .digest-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: var(--global-text-color-light);
+    font-size: 0.85rem;
+  }
+
+  .digest-meta span {
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+  }
+
+  .digest-highlights {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .digest-highlights h2 {
+    margin: 0;
+    color: var(--global-text-color);
+    font-family: var(--font-sans);
+    font-size: 1.2rem;
+  }
+
+  .digest-highlight-grid {
+    column-count: 2;
+    column-gap: 0.95rem;
+  }
+
+  .digest-highlight {
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 0.95rem;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--global-bg-color);
+    break-inside: avoid;
+  }
+
+  .digest-highlight--text {
+    border-top: 3px solid var(--global-theme-color);
+  }
+
+  .digest-highlight img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    border-bottom: 1px solid var(--global-divider-color);
+    background: var(--global-bg-color);
+  }
+
+  .digest-highlight-body {
+    padding: 1rem;
+  }
+
+  .digest-highlight-source {
+    margin: 0 0 0.4rem;
+    color: var(--global-text-color-light);
+    font-size: 0.78rem;
+  }
+
+  .digest-highlight h3 {
+    margin: 0 0 0.55rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.32;
+    overflow-wrap: anywhere;
+  }
+
+  .digest-highlight h3 a {
+    color: var(--global-text-color);
+    text-decoration: none;
+  }
+
+  .digest-highlight h3 a:hover {
+    color: var(--global-theme-color);
+  }
+
+  .digest-highlight p:last-child {
+    margin: 0;
+    color: var(--global-text-color-light);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .digest-body {
+    max-width: 46rem;
+  }
+
+  @media (max-width: 760px) {
+    .digest-highlight-grid {
+      column-count: 1;
+    }
+  }
+</style>

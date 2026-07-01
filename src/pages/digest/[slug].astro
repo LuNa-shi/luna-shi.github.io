@@ -1,0 +1,41 @@
+---
+import DigestLayout from '@layouts/Digest.astro';
+import { contentSlug, isEntryInLocale, legacyContentSlug, localizedPath } from '@utils/i18n';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const digests = await getCollection('digests');
+  return digests
+    .filter((digest) => isEntryInLocale(digest, 'en'))
+    .flatMap((digest) => {
+      const canonical = contentSlug(digest);
+      const legacy = legacyContentSlug(digest);
+      const paths: Array<{
+        params: { slug: string };
+        props: { digest: typeof digest; redirectTo?: string };
+      }> = [
+        {
+          params: { slug: canonical },
+          props: { digest },
+        },
+      ];
+      if (legacy !== canonical) {
+        paths.push({
+          params: { slug: legacy },
+          props: { digest, redirectTo: localizedPath(`/digest/${canonical}/`, 'en') },
+        });
+      }
+      return paths;
+    });
+}
+
+const { digest, redirectTo } = Astro.props;
+if (redirectTo) {
+  return Astro.redirect(redirectTo);
+}
+const { Content } = await render(digest);
+---
+
+<DigestLayout digest={digest}>
+  <Content />
+</DigestLayout>

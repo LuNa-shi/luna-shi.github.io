@@ -125,4 +125,53 @@ const announcements = defineCollection({
   }),
 });
 
-export const collections = { posts, projects, announcements };
+// ─── Digests ───────────────────────────────────────────────────────────────
+
+const digests = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/digests' }),
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    summary: z.string(),
+    lang: z.enum(['en', 'zh']).optional().default('en'),
+    translationKey: z.string().optional(),
+    canonicalSlug: z.string().optional(),
+    dateRange: z.object({
+      start: z.coerce.date(),
+      end: z.coerce.date(),
+    }),
+    channels: z
+      .array(z.enum(['x', 'youtube', 'blog', 'rss', 'manual']))
+      .optional()
+      .default([]),
+    tags: z.array(z.string()).optional().default([]),
+    coverage: z
+      .object({
+        accountsTotal: z.number().optional().default(0),
+        accountsChecked: z.number().optional().default(0),
+        posts: z.number().optional().default(0),
+        likes: z.number().optional().default(0),
+      })
+      .optional()
+      .default({ accountsTotal: 0, accountsChecked: 0, posts: 0, likes: 0 }),
+    highlightItems: z
+      .array(
+        z.object({
+          title: z.string(),
+          source: z.string(),
+          channel: z.enum(['x', 'youtube', 'blog', 'rss', 'manual']),
+          url: z.string().url(),
+          image: z.string().optional(),
+          imageAlt: z.string().optional(),
+          priority: z.string().optional(),
+          note: z.string(),
+        }),
+      )
+      .optional()
+      .default([]),
+    hidden: z.boolean().optional().default(false),
+    draft: z.boolean().optional().default(false),
+  }),
+});
+
+export const collections = { posts, projects, announcements, digests };

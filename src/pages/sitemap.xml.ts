@@ -63,9 +63,10 @@ function urlEntry({ url, lastmod, changefreq, priority }: UrlEntry): string {
 }
 
 export async function GET(_ctx: APIContext): Promise<Response> {
-  const [posts, projects] = await Promise.all([
+  const [posts, projects, digests] = await Promise.all([
     getCollection('posts', (p) => !p.data.draft && !p.data.hidden),
     getCollection('projects', (p) => !p.data.redirect),
+    getCollection('digests', (d) => !d.data.draft && !d.data.hidden),
   ]);
 
   const today = new Date().toISOString().split('T')[0];
@@ -85,6 +86,12 @@ export async function GET(_ctx: APIContext): Promise<Response> {
       lastmod: gitLastmod('src/pages/blog/index.astro'),
       changefreq: 'weekly',
       priority: 0.9,
+    },
+    {
+      path: '/digest/',
+      lastmod: gitLastmod('src/pages/digest/index.astro'),
+      changefreq: 'weekly',
+      priority: 0.8,
     },
     {
       path: '/projects/',
@@ -146,7 +153,19 @@ export async function GET(_ctx: APIContext): Promise<Response> {
     };
   });
 
-  const allUrls = [...staticUrls, ...postUrls, ...projectUrls];
+  const digestUrls: UrlEntry[] = digests
+    .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+    .map((d) => {
+      const locale = isEntryInLocale(d, 'zh') ? 'zh' : 'en';
+      return {
+        url: loc(`/digest/${contentSlug(d)}/`, locale),
+        lastmod: d.filePath ? gitLastmod(d.filePath) : d.data.date.toISOString().split('T')[0],
+        changefreq: 'weekly',
+        priority: 0.7,
+      };
+    });
+
+  const allUrls = [...staticUrls, ...postUrls, ...projectUrls, ...digestUrls];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
