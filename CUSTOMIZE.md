@@ -30,6 +30,7 @@ This guide walks through every aspect of personalizing your as-folio site.
 22. [Enabling / disabling features](#22-enabling--disabling-features)
 23. [Custom styles](#23-custom-styles)
 24. [Footer position](#24-footer-position)
+25. [Digest briefings](#25-digest-briefings)
 
 ---
 
@@ -839,3 +840,28 @@ footer: {
 | `'hidden'` | Footer is not rendered at all                                                             |
 
 When `'sticky'`, the body automatically gains `padding-bottom` to prevent page content from being obscured by the footer. The back-to-top button is also repositioned to sit above it.
+
+---
+
+## 25. Digest briefings
+
+Digest briefings are separate from `News`:
+
+- `src/pages/news.astro` and `/news/` are for personal status updates and announcements.
+- `src/pages/digest/` and `/digest/` are for recurring high-signal source briefings.
+- Digest content lives in `src/content/digests/`.
+- The workflow package lives in `digest-skills/`.
+
+Generate a Chinese X-based draft from the private news workspace:
+
+```bash
+yarn digest:generate -- --date 2026-07-01 --lang zh
+```
+
+By default the script reads `/Users/luna-mac/Projects/news`. Override it with:
+
+```bash
+NEWS_WORKSPACE=/path/to/news yarn digest:generate -- --date 2026-07-01 --lang zh
+```
+
+Before publishing, edit the generated MDX so the overview is scannable, core posts get detailed explanation, unverified claims are labeled, and public media cards support the text.

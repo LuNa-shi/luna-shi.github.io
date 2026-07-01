@@ -1,0 +1,120 @@
+---
+import { contentSlug, formatDate, getLocaleFromPath, localizedPath } from '@utils/i18n';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  digest: CollectionEntry<'digests'>;
+}
+
+const { digest } = Astro.props;
+const locale = getLocaleFromPath(Astro.url.pathname);
+const href = localizedPath(`/digest/${contentSlug(digest)}/`, locale);
+const firstImage = digest.data.highlightItems.find((item) => item.image)?.image;
+const rangeStart = formatDate(digest.data.dateRange.start, locale, {
+  month: 'short',
+  day: 'numeric',
+});
+const rangeEnd = formatDate(digest.data.dateRange.end, locale, {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<article class="digest-card">
+  <a class="digest-card-link" href={href}>
+    {
+      firstImage && (
+        <img
+          class="digest-card-image"
+          src={firstImage}
+          alt=""
+          loading="lazy"
+          width="240"
+          height="135"
+        />
+      )
+    }
+    <div class="digest-card-body">
+      <p class="digest-card-meta">{rangeStart} - {rangeEnd}</p>
+      <h2>{digest.data.title}</h2>
+      <p>{digest.data.summary}</p>
+      <div class="digest-card-tags" aria-label="Digest tags">
+        {digest.data.tags.slice(0, 4).map((tag) => <span>{tag}</span>)}
+      </div>
+    </div>
+  </a>
+</article>
+
+<style>
+  .digest-card {
+    border: 1px solid var(--global-divider-color);
+    border-radius: 8px;
+    background: var(--global-card-bg, var(--global-bg-color));
+    overflow: hidden;
+  }
+
+  .digest-card-link {
+    display: grid;
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 0.58fr);
+    min-height: 13rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .digest-card-image {
+    width: 100%;
+    height: 100%;
+    min-height: 13rem;
+    object-fit: contain;
+    background: var(--global-code-bg);
+  }
+
+  .digest-card-body {
+    padding: 1.25rem;
+  }
+
+  .digest-card-meta {
+    margin: 0 0 0.45rem;
+    color: var(--global-text-color-light);
+    font-size: 0.82rem;
+  }
+
+  .digest-card h2 {
+    margin: 0 0 0.55rem;
+    color: var(--global-text-color);
+    font-family: var(--font-sans);
+    font-size: 1.25rem;
+    line-height: 1.25;
+  }
+
+  .digest-card p {
+    margin: 0;
+  }
+
+  .digest-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.9rem;
+  }
+
+  .digest-card-tags span {
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    color: var(--global-text-color-light);
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 700px) {
+    .digest-card-link {
+      grid-template-columns: 1fr;
+    }
+
+    .digest-card-image {
+      aspect-ratio: 16 / 9;
+      min-height: 0;
+    }
+  }
+</style>

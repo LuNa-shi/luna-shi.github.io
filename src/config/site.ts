@@ -36,6 +36,7 @@ export const site = {
         nav: {
           '/': 'About',
           '/blog/': 'Blog',
+          '/digest/': 'Digest',
           '/projects/': 'Projects',
           '/research/': 'Research',
         },
@@ -156,6 +157,18 @@ export const site = {
           heading: 'news',
           empty: 'No announcements yet.',
         },
+        digest: {
+          title: 'Digest',
+          description: 'A rolling briefing of high-signal AI updates from watched sources.',
+          heading: 'Digest',
+          empty: 'No digests yet.',
+          backToDigest: 'Back to digest',
+          latest: 'Latest briefings',
+          coverage: 'Coverage',
+          highlights: 'Core updates',
+          sourceWindow: 'Source window',
+          channels: 'Channels',
+        },
         publications: {
           title: 'Records',
           heading: 'records',
@@ -224,6 +237,7 @@ export const site = {
         nav: {
           '/': '关于',
           '/blog/': '博客',
+          '/digest/': '简报',
           '/projects/': '项目',
           '/research/': '研究',
         },
@@ -342,6 +356,18 @@ export const site = {
           description: '师文翔的动态与公告',
           heading: '动态',
           empty: '暂时还没有动态。',
+        },
+        digest: {
+          title: '简报',
+          description: '从关注源中滚动整理的高信号 AI 热点简报。',
+          heading: '简报',
+          empty: '暂时还没有简报。',
+          backToDigest: '返回简报',
+          latest: '最新简报',
+          coverage: '覆盖情况',
+          highlights: '核心更新',
+          sourceWindow: '信息窗口',
+          channels: '来源渠道',
         },
         publications: {
           title: '记录',
@@ -462,6 +488,7 @@ export const site = {
     items: [
       { label: 'About', href: '/' },
       { label: 'Blog', href: '/blog/' },
+      { label: 'Digest', href: '/digest/' },
       { label: 'Projects', href: '/projects/' },
       { label: 'Research', href: '/research/' },
     ] as NavItem[],

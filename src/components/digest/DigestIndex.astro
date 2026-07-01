@@ -1,0 +1,62 @@
+---
+import DigestCard from '@components/digest/DigestCard.astro';
+import Page from '@layouts/Page.astro';
+import { getLocaleFromPath, labelsFor, isEntryInLocale } from '@utils/i18n';
+import { getCollection } from 'astro:content';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = labelsFor(locale);
+const digests = (await getCollection('digests'))
+  .filter((entry) => !entry.data.hidden && !entry.data.draft && isEntryInLocale(entry, locale))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<Page title={t.digest.title} description={t.digest.description}>
+  <section class="digest-index">
+    <header class="digest-index-header">
+      <h1>{t.digest.heading}</h1>
+      <p>{t.digest.description}</p>
+    </header>
+
+    {
+      digests.length === 0 ? (
+        <p class="digest-empty">{t.digest.empty}</p>
+      ) : (
+        <div class="digest-list">
+          {digests.map((digest) => (
+            <DigestCard digest={digest} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Page>
+
+<style>
+  .digest-index {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .digest-index-header {
+    max-width: 46rem;
+  }
+
+  .digest-index-header h1 {
+    margin: 0 0 0.65rem;
+    color: var(--global-text-color);
+    font-family: var(--font-sans);
+    font-size: 2.15rem;
+    line-height: 1.1;
+  }
+
+  .digest-index-header p,
+  .digest-empty {
+    color: var(--global-text-color-light);
+  }
+
+  .digest-list {
+    display: grid;
+    gap: 1rem;
+  }
+</style>

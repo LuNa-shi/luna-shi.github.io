@@ -72,7 +72,9 @@
     "notion:sync:internal": "node scripts/sync-notion-posts.mjs --source=internal && npm run posts:overview && npm run posts:images",
     "notion:sync:cache": "node scripts/sync-notion-posts.mjs --source=cache && npm run posts:overview && npm run posts:images",
     "posts:overview": "node scripts/update-post-overviews.mjs",
-    "posts:images": "node scripts/localize-post-images.mjs"
+    "posts:images": "node scripts/localize-post-images.mjs",
+    "digest:generate": "node --strip-types digest-skills/scripts/generate-digest.ts",
+    "digest:generate:dry-run": "node --strip-types digest-skills/scripts/generate-digest.ts --dry-run"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.2",
