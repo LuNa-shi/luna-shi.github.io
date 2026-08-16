@@ -92,7 +92,7 @@ This boundary gives us enough vocabulary to examine DeepSeek Harness without tou
 
 DeepSeek Harness summarizes its architecture with the phrase "everything is a plugin." It means more than tool plugins. Model access, tool registration, task records, and even the Agent Loop can enter the runtime through plugins.
 
-The next article will examine Cordis, the framework that manages those plugins. For now, the useful question is how this choice changes one failing-test task.
+First follow where those plugin contributions appear during one failing-test task. Once the four paths meet, we can return to the plugin system itself.
 
 ### What enters the next model call?
 
@@ -142,27 +142,43 @@ These controls do not prevent the model from choosing a bad action. They prevent
 
 The four paths now meet. Context assembly prepares the step. The Agent Loop asks the model what to do. Tool execution connects its choice to the environment. The Session records the outcome. Safety controls decide which choices may cross the boundary. DeepSeek Harness makes these parts work together without fixing all of them inside one implementation.
 
-## 4. Does pluggability remove complexity?
+## 4. What does the plugin system actually do?
 
-Making the model client, tools, task record, and Agent Loop pluggable creates useful freedom. A team can change model providers, expose a different tool set, or move file and shell operations into an isolated environment without rewriting the rest of the task flow.
+The word "plugin" often suggests an optional feature added to an otherwise fixed application. A browser extension adds a capability; an editor plugin adds a command or a language. That picture is too narrow for DeepSeek Harness.
 
-The interfaces may be replaceable, but the system's promises are not.
+The distinction starts with their roles. A tool is an action the model may request. A plugin is a component that participates in the runtime. It may register tools, but it can also contribute context, provide model access, maintain task records, listen for events, or change how one step of execution is handled. Some plugins never expose a tool to the model.
+
+The plugin system gives these components a common way to enter and leave the runtime. When a plugin loads, its contributions become available wherever that plugin is active. It may also rely on services supplied by other plugins. When it unloads, the runtime has to withdraw everything it added. If one of its dependencies changes, the system must decide what happens to the plugin that was using it.
+
+Without that system, the main program would create the model client, build the tool list, open the Session store, install permission checks, and connect every piece to the Agent Loop itself. Each replacement would require another branch in the core runtime. With plugins, the core coordinates a set of current contributions instead of naming every implementation in advance.
+
+Cordis provides the environment in which DeepSeek Harness manages those plugins. The next article will examine its dependency and lifecycle rules. For this article, one compact model is enough:
+
+```text
+load a plugin -> expose its contributions -> use them during a task -> remove them when it leaves
+```
+
+This explains why "everything is a plugin" matters. The phrase does not mean that every part of the Harness turns into a model-callable tool. It means that major runtime responsibilities can join the system through the same extension mechanism and remain replaceable.
+
+### Where does the complexity go?
+
+The plugin system lets a team change model providers, expose a different tool set, or move file and shell operations into an isolated environment without rewriting the whole task flow. It does not make the connections between those parts disappear. It turns them into rules that the runtime has to preserve.
 
 Take the execution environment. If file tools point at a remote sandbox while the shell still runs on the local machine, the Agent now inhabits two file systems. It may inspect one copy of the project and test another. Matching function signatures does not solve that problem. Related tools must share the same view of files and processes.
 
-Unloading introduces a different kind of risk. A plugin may register tools, subscribe to events, start background work, and depend on another service. Removing its tool name is easy. Removing every listener, stopping every task, and releasing every dependent resource is the real lifecycle problem.
+Unloading exposes another rule. A plugin may register tools, subscribe to events, start background work, and depend on another service. Removing its name is easy. The runtime must also remove its listeners, stop its tasks, and release resources that should no longer exist.
 
-Dependency replacement raises the same question in motion. When a service changes, does its consumer restart, become unavailable, or continue holding a stale object? Each answer can be valid, but the runtime needs one explicit answer. Otherwise, behavior depends on which plugin happened to load first and which references survived.
+Dependency replacement raises the same question while the system is running. When a service changes, does its consumer restart, become unavailable, or continue holding a stale object? Each answer can work in a particular design, but the runtime needs an explicit rule. Load order and surviving references should not decide by accident.
 
-Pluggability also expands the debugging surface. A failed test run may originate in the model's choice, the assembled context, plugin order, a tool provider, a permission decision, or the persistence layer. Well-drawn boundaries help isolate failures. More boundaries still create more places to inspect.
+Pluggability also expands the debugging surface. A failed test run may originate in the model's choice, the assembled context, plugin order, a tool provider, a permission decision, or the persistence layer. Clear boundaries help isolate failures. More boundaries still create more places to inspect.
 
-Compatibility becomes architectural rather than administrative. DeepSeek Harness is in developer preview and warns that breaking changes will occur. Once the Agent Loop and task record are replaceable, event order, cancellation behavior, and record formats cannot depend on convention alone. An implementation can change; the rules that its neighbors rely on must remain legible.
+Compatibility becomes part of the architecture. DeepSeek Harness is in developer preview and warns that breaking changes will occur. Once the Agent Loop and task record are replaceable, event order, cancellation behavior, and record formats cannot depend on convention alone. An implementation can change; the rules that its neighbors rely on must remain legible.
 
-Security makes the trade-off sharper. A plugin that adds a read-only search tool has limited authority. A plugin that can alter tool policy or task persistence sits much closer to the runtime's trust boundary. Extension points need enough power to be useful and enough structure to keep one component from quietly widening another component's authority.
+Security makes the trade-off sharper. A plugin that adds a read-only search tool has limited authority. A plugin that can alter tool policy or task persistence sits much closer to the runtime's trust boundary. An extension point needs enough authority to do its job, while the runtime still prevents one component from quietly widening another component's authority.
 
-"Everything is a plugin" therefore describes a distribution of responsibility, not a count of plugins. DeepSeek Harness moves decisions that are often fixed around the Agent Loop into replaceable parts. The reward is control. The price is lifecycle management, dependency discipline, compatibility work, a wider debugging surface, and a larger security review surface.
+The plugin system therefore moves complexity. Connections that once lived as fixed code in the main program become lifecycle, dependency, compatibility, debugging, and security rules shared by the runtime.
 
-Codex and Claude Code face the same underlying jobs: assemble context, execute tools, retain progress, and constrain actions. The useful comparison is not whether each product "has a Harness." It is which boundaries remain internal and which boundaries users can configure or extend. Any stronger comparison needs a fixed version and a specific engineering problem.
+Codex and Claude Code face the same underlying jobs: assemble context, execute tools, retain progress, and constrain actions. The useful comparison is which boundaries remain internal and which boundaries users can configure or extend. Any stronger comparison needs a fixed version and a specific engineering problem.
 
 ## 5. Why does the next article begin with plugin lifecycle?
 
