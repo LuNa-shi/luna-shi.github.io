@@ -1,0 +1,39 @@
+flowchart LR
+  user["用户输入"] --> context
+
+  subgraph harness["Harness（逻辑边界）"]
+    direction LR
+
+    context["上下文准备<br/>系统指令 · 历史记录 · 可用工具"]
+    loop["Agent Loop<br/>请求模型 · 选择下一步"]
+    safety["安全限制<br/>审批 · 执行前检查 · 沙箱"]
+    tools["工具执行<br/>解析调用 · 运行工具 · 整理结果"]
+    state["任务状态<br/>只追加的事件日志 · 恢复与分支"]
+
+    context -->|"这一轮看到的内容"| loop
+    loop -->|"工具请求"| safety
+    safety -->|"允许执行"| tools
+    tools -->|"真实结果"| state
+    loop -->|"消息与步骤事件"| state
+    state -->|"重建下一轮上下文"| context
+  end
+
+  tools <-->|"真实操作"| world["文件系统 · Shell · 外部服务"]
+  note["分析图：表示职责关系，不表示真实进程或部署结构"]
+  note -.-> harness
+
+  classDef core fill:#172033,color:#ffffff,stroke:#172033,stroke-width:2px;
+  classDef contextStyle fill:#e7f0ff,color:#1a2a44,stroke:#7aa2d6,stroke-width:2px;
+  classDef safetyStyle fill:#fff0e8,color:#4d2a1c,stroke:#d38b65,stroke-width:2px;
+  classDef toolStyle fill:#e8f5ee,color:#173b29,stroke:#6ea887,stroke-width:2px;
+  classDef stateStyle fill:#f1ecff,color:#30245a,stroke:#9582cc,stroke-width:2px;
+  classDef outside fill:#f7f7f5,color:#333333,stroke:#b7b7b0,stroke-width:1.5px;
+  classDef noteStyle fill:#fffdf5,color:#5d5542,stroke:#c9bd91,stroke-dasharray:4 3;
+
+  class loop core;
+  class context contextStyle;
+  class safety safetyStyle;
+  class tools toolStyle;
+  class state stateStyle;
+  class user,world outside;
+  class note noteStyle;
