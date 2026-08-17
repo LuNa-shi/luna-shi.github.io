@@ -2,7 +2,7 @@
 title: "Why Is the Agent Loop a Plugin? Inside DeepSeek Harness's Plugin System"
 date: '2026-08-17'
 overview: >-
-  TL;DR: Cordis is the same-process plugin framework underneath DeepSeek Harness. It loads TypeScript modules into a Context, connects providers and consumers through named Services, waits for dependencies through inject, and cleans up each Plugin's Effects when it leaves. A Tool is only one model-facing definition that a Plugin may register. DeepSeek Harness applies the same lifecycle model to the Tool Registry, Session, and even the Agent Loop.
+  TL;DR: In DeepSeek Harness, a Plugin is not an optional attachment to an otherwise complete application. It is a TypeScript module that Cordis mounts inside the same Node.js process with explicit dependencies and a managed lifetime. DSH uses Cordis to create the Context; Cordis then waits for Services, activates the Plugin, and withdraws its Effects when it leaves. The most common activation entry point is apply(ctx). A Tool is only one model-facing action a Plugin may register; the Tool Registry, Session, and even the Agent Loop are themselves Plugins.
 lang: en
 translationKey: deepseek-harness-02-plugin-system
 canonicalSlug: deepseek-harness-02-plugin-system
@@ -17,49 +17,54 @@ categories:
 toc: true
 ---
 
-**Cordis feels a little like a microservice architecture collapsed into one process.**
+**In DeepSeek Harness, even the Agent Loop is a Plugin.**
 
-TL;DR: Cordis is the same-process plugin framework underneath DeepSeek Harness. It loads TypeScript modules into a Context, connects providers and consumers through named Services, waits for dependencies through inject, and cleans up each Plugin's Effects when it leaves. A Tool is only one model-facing definition that a Plugin may register. DeepSeek Harness applies the same lifecycle model to the Tool Registry, Session, and even the Agent Loop.
+TL;DR: In DSH, a Plugin is not an optional attachment to an otherwise complete application. It is a TypeScript module that Cordis mounts inside the same Node.js process with explicit dependencies and a managed lifetime. DSH uses Cordis to create the Context; Cordis then waits for Services, activates the Plugin, and withdraws its Effects when it leaves. The most common activation entry point is `apply(ctx)`. A Tool is only one model-facing action a Plugin may register; the Tool Registry, Session, and even the Agent Loop are themselves Plugins.
 
 > Version note: This article was checked against DeepSeek Harness commit [`47f94385`](https://github.com/deepseek-ai/deepseek-harness/commit/47f943859bef60e4160492346772ded9b24f765a) on August 16, 2026. That commit corresponds to `dsh@0.1.0-rc.5`. The project is still in developer preview, so later releases may change the design described here.
 
-The microservice comparison gives us a useful starting picture. One component provides a capability under a stable name. Another component declares that it needs that capability. The framework waits until the provider exists, then lets the consumer run. Replace the provider, and the consumer can keep using the same capability contract.
+The word "plugin" usually assumes a host that can already run by itself. A browser can open pages before an ad blocker is installed. An editor can edit text before a theme or language extension arrives. Plugins add something around the edges.
 
-But Cordis does not turn every component into a server. Its Plugins are trusted modules mounted inside the same Node.js process. They usually communicate through method calls and in-process events, not RPC. Cordis is responsible for composition, dependency readiness, and cleanup, not network routing or distributed failure recovery.
+That intuition fails immediately in DeepSeek Harness. The Tool Registry is a Plugin. Session is a Plugin. The Agent Loop that calls the model, receives Tool Calls, and advances the next turn is also a Plugin. These are not optional decorations. Remove any one of them and the Agent cannot do its ordinary work.
 
-Cordis is therefore not a Plugin inside DeepSeek Harness. It is the framework that loads and manages DeepSeek Harness Plugins.
+The real question is therefore not "Which plugins does DSH support?" It is: **if the Agent's core parts are all Plugins, what assembles them into a running system?**
 
-Once that point is clear, the surprising sentence "the Agent Loop is a Plugin" becomes much less mysterious. In Cordis, Plugin does not mean optional decoration. It means a module with a managed place in the running application's dependency graph and lifecycle.
+The answer is Cordis.
 
-## 1. Cordis resembles service architecture, without the network boundary
+Cordis is the same-process Plugin framework underneath DSH. At startup, DSH establishes a Cordis Context, and the Cordis Loader imports configured TypeScript modules into it. A module declares the Services it requires, and Cordis activates it only after those dependencies are ready. The common entry point is `apply(ctx)`; a Plugin that provides a Service may instead be a class. Through `ctx`, the Plugin consumes or provides Services and registers Tools or listeners. Those changes consequently belong to its lifetime.
 
-The official [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) calls Cordis "the vendored plugin framework underneath DeepSeek Harness." The word "underneath" matters. Cordis supplies the container and lifecycle rules; DSH supplies the concrete components mounted into it.
+This is the Cordis this article explains. It is not one more Plugin inside DSH, and it is not the context sent to a model. It is the framework that lets all DSH Plugins enter the application, cooperate, and leave cleanly.
 
-The resemblance to microservices lies in the relationship between providers and consumers, not in deployment.
+The sections below explain Cordis itself first, then use one minimal Tool and Agent Loop to show how DSH uses it. The complete DSH assembly belongs in a later article.
 
-| Question                                   | Microservice architecture                            | Cordis                                            |
-| ------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------- |
-| What is composed?                          | Independently running services                       | Modules inside one process                        |
-| How is a capability found?                 | A network endpoint or service-discovery name         | A Service name on `ctx`, such as `tools` or `llm` |
-| How does a consumer declare a requirement? | Deployment configuration, discovery, or client setup | `inject` on the Plugin                            |
-| How do components communicate?             | RPC, queues, or network protocols                    | Direct Service calls and in-process events        |
-| What does the platform manage?             | Deployment, health, routing, and distributed failure | Activation, scoped ownership, and cleanup         |
+## 1. DSH uses Cordis to create a Context, then mounts modules into it
 
-The shared idea is that a consumer depends on a capability contract rather than constructing one specific provider. The different failure boundary is equally important. A microservice may be alive but unreachable across the network. A Cordis Service either exists in the current Context or it does not. If it disappears, Cordis deactivates the Plugins that require it.
+The official [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) calls it "the vendored plugin framework underneath DeepSeek Harness." "Underneath" defines the relationship. Cordis supplies loading and lifecycle rules. DSH supplies the concrete Session, Tool Registry, Agent Loop, and other modules. Cordis does not itself call the model or execute Tools.
 
-This is closer to a service container with a live module lifecycle than to Kubernetes in miniature. The framework knows which Plugin provided a capability, which consumers require it, and which registrations belong to each active Plugin.
+The [DSH boot implementation](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/packages/boot/app-boot/src/index.ts) at the fixed commit makes the relationship concrete:
 
-Those three jobs explain the main Cordis terms:
+```ts
+const ctx = new Context();
+await ctx.plugin(Loader);
+await mountRootInclude(ctx, absoluteConfigPath, patches);
+```
 
-- A **Context** is the capability container and lifecycle scope visible to a Plugin.
-- A **Plugin** is a module Cordis mounts into that Context.
-- A **Service** is a named capability one Plugin exposes to other Plugins.
-- **inject** declares which Services must exist before a Plugin can activate.
-- An **Effect** is a change owned by an active Plugin and reversed when that Plugin leaves.
+`Context` and `ctx.plugin()` come from Cordis. `Loader` comes from the Cordis Loader package and first enters the root Context as a bootstrap Plugin. The third line asks that Loader to mount the full Plugin tree in DSH configuration. DSH's boot layer selects the configuration and starts the process; Cordis turns those configured modules into a running system with dependencies and lifetimes.
 
-These terms become easier to remember when we follow one Plugin through its life.
+The full path can be separated into six steps:
 
-## 2. A Plugin begins when Cordis calls `apply(ctx)`
+1. DSH's boot layer calls Cordis's `new Context()` to establish the root Context.
+2. The boot layer mounts the Cordis Loader into that Context.
+3. The Loader reads a module entry from configuration and imports the corresponding TypeScript file.
+4. The module exposes a function, object, or `Service` subclass and may declare dependencies through inject.
+5. Once every required Service is ready, Cordis calls `apply(ctx)` or constructs the `Service` subclass.
+6. The Plugin joins the application through `ctx`; when it later deactivates, Effects recorded through Cordis helpers leave through the same scope.
+
+This Context is not an LLM context window. It is a Plugin's interface to the current application. `ctx.tools` refers to the Tool Registry currently in scope. `ctx.llm` refers to the current model capability. Other Services appear on the Context in the same way. Different scopes can see different Services, so Context determines both what a Plugin can use and where its changes belong.
+
+That distinction also explains why a core component can still be called a Plugin. Cordis does not define Plugin as optional. A module is a Plugin when Cordis mounts it into a Context, activates it according to dependencies, and manages the resulting lifetime. Agent Loop is central, but it still follows that runtime contract.
+
+## 2. Most Plugins enter the running system through `apply(ctx)`
 
 The smallest useful Harness Plugin is just a TypeScript module. The repository's official [first-Plugin tutorial](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/index.md) starts with this shape:
 
@@ -73,23 +78,27 @@ export function apply(ctx: Context) {
 }
 ```
 
-There is no Plugin base class in this example and no model interaction. The module exports a name and an `apply` function. A Cordis configuration row tells the Loader to mount that module. The Loader imports it, creates the Plugin's lifecycle scope, and calls `apply(ctx)`.
+There is no Plugin base class in this example and no model interaction. The module exports a name and an `apply` function. A configuration row tells the Loader to mount that module. The Loader imports it and creates the Plugin's lifecycle scope. If the module has no other dependencies, Cordis then calls `apply(ctx)`.
+
+That is the common function-style form, but Cordis accepts three shapes:
+
+| Plugin shape | What the module exports                             | Where execution begins    | Typical use                                       |
+| ------------ | --------------------------------------------------- | ------------------------- | ------------------------------------------------- |
+| Function     | Separate `name`, `inject`, and `apply(ctx)` exports | `apply(ctx)`              | Registering Tools, listeners, or a small behavior |
+| Object       | A default object containing those fields            | The object's `apply(ctx)` | Keeping Plugin metadata in one object             |
+| Class        | A default class extending Cordis `Service`          | The class constructor     | Providing a named Service to other Plugins        |
+
+"A Plugin is a TypeScript module" describes the loadable unit seen by a DSH developer. More precisely, Cordis mounts the function, object, or `Service` subclass exposed by that module. The later `greet-tool` example uses the first form. Agent Loop uses the third. Both enter the same Context and lifecycle.
 
 The `ctx` argument is the Plugin's doorway into the running application. The Plugin can use Services that already exist on the Context, provide a new Service, register an event listener, add a Tool, or start some owned work. Because those changes go through the current Context, Cordis can associate them with the Plugin that created them.
 
-The important relationships all remain inside one process:
+Importing a module and activating a Plugin are separate events. A Plugin does not necessarily run when its file has loaded. If the module declares required Services, Cordis keeps it waiting until they all exist. Only then does `apply(ctx)` run.
 
-![Cordis Context connecting same-process Plugins through a Service, inject, Effects, and cleanup](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
+The other important transition is from active to disposed. Suppose the Plugin uses Cordis helpers to register a Tool and an event listener. They become Effects owned by the current lifecycle scope and are withdrawn automatically when the Plugin unloads. A connection or native timer created directly does not gain that behavior by magic. The Plugin must place it inside `ctx.effect()` and return an explicit cleanup function.
 
-_Figure 1. Plugins meet through one Cordis Context inside a single process: providers contribute named Services, consumers declare them through inject, and Plugin-owned Effects converge on cleanup._
+So Context is more than a global object full of useful fields. It is also an ownership boundary. The same `ctx` that lets a Plugin change the application tells Cordis which changes must be taken back later. A Plugin is therefore not merely an importable file. It is a module activated by Cordis inside a scope whose lifetime Cordis manages.
 
-Cordis applies a lifecycle to this picture. Importing the module does not make the Plugin active. If the module declares required Services, Cordis keeps it waiting until those Services exist. Only then does `apply(ctx)` run.
-
-The other important transition is from active to disposed. Suppose the Plugin registers a Tool and an event listener. Those registrations must disappear when the Plugin unloads. Cordis helpers record them as Effects owned by the current lifecycle scope. For an external resource such as a connection or timer, the Plugin can use `ctx.effect()` and return an explicit cleanup function.
-
-So Context is more than a global object full of useful fields. It is also an ownership boundary. The same `ctx` that lets a Plugin change the application tells Cordis which changes must be taken back later.
-
-## 3. Service, inject, and Effect define how Plugins cooperate
+## 3. Service, inject, and Effect connect multiple Plugins
 
 A Plugin often needs another Plugin before it can do useful work. Cordis represents that relationship through a named Service.
 
@@ -112,7 +121,15 @@ This is the part that most resembles service orchestration. The consumer declare
 
 Effect completes the relationship. Service describes what a Plugin can offer. inject describes what a Plugin must receive. Effect records what the Plugin changes while it is active.
 
-Imagine a Tool provider that injects `tools`, then registers two Tool definitions and one listener. Those three registrations belong to the provider's lifecycle. If the Tool Registry disappears, Cordis deactivates the provider and withdraws all three. If the registry returns, the provider activates and registers them again. The consumer never calls a global cleanup routine and never keeps using a registry that no longer exists.
+Imagine a Plugin that injects `tools`, then uses Cordis helpers to register two Tool definitions and one listener. It provides Tool definitions, but it is a consumer of the `tools` Service. Those three registrations belong to its lifecycle. If the Tool Registry disappears, Cordis deactivates the Plugin and withdraws all three. If the registry returns, the Plugin activates and registers them again. It never calls a global cleanup routine and never keeps using a registry that no longer exists.
+
+Every part of this relationship remains inside one Node.js process:
+
+![Cordis Context connecting same-process Plugins through a Service, inject, Effects, and cleanup](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
+
+_Figure 1. Plugins meet through one Cordis Context. Providers contribute named Services, consumers declare them through inject, and Plugin-owned Effects converge on cleanup._
+
+Only now does the microservice analogy become useful. Both designs encourage consumers to depend on a stable capability contract instead of constructing one concrete provider, and both separate the provider from its consumers. Cordis Plugins, however, are not independent servers. They are not deployed separately and do not communicate through RPC. They usually call Services directly or exchange in-process events. Cordis manages activation, scope, ownership, and cleanup rather than routing, health checks, or distributed failure recovery. More precisely, it is a same-process Service container with a dynamic module lifecycle.
 
 This also explains replaceability more precisely than “Plugins are flexible.” A replacement provider can claim the same Service name. Consumers keep their dependency on that name, but Cordis restarts them against the provider now present in their Context. Whether the replacement is truly compatible still depends on the Service contract, event order, cancellation behavior, and result formats.
 

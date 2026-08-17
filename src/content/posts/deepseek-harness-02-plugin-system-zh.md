@@ -2,7 +2,7 @@
 title: '为什么 Agent Loop 也是插件？DeepSeek Harness 的插件系统'
 date: '2026-08-17'
 overview: >-
-  TLDR：Cordis 是 DeepSeek Harness 底下的同进程插件框架。它把 TypeScript 模块装入 Context，用具名 Service 连接提供方与使用方，通过 inject 等待依赖就绪，并在 Plugin 离开时撤回它拥有的 Effect。Tool 只是 Plugin 可能注册的一份模型可见动作定义。DeepSeek Harness 把同一套生命周期规则用于 Tool Registry、Session，甚至 Agent Loop。
+  TLDR：在 DeepSeek Harness 里，Plugin 不是完整程序之外的可选附件，而是由 Cordis 装入同一 Node.js 进程、拥有明确依赖和生命周期的 TypeScript 模块。DSH 先用 Cordis 建立 Context；Cordis 再等待 Service、激活 Plugin，并在它离开时撤回它创建的 Effect。最常见的激活入口是 apply(ctx)；Tool 只是 Plugin 可能注册的一项模型可见动作。Tool Registry、Session，甚至 Agent Loop 本身也都是 Plugin。
 lang: zh
 translationKey: deepseek-harness-02-plugin-system
 canonicalSlug: deepseek-harness-02-plugin-system
@@ -17,49 +17,54 @@ categories:
 toc: true
 ---
 
-**如果熟悉微服务，可以先把 Cordis 想成一种被压进单进程的“微服务式组件架构”。**
+**在 DeepSeek Harness 里，连 Agent Loop 都是 Plugin。**
 
-TLDR：Cordis 是 DeepSeek Harness 底下的同进程插件框架。它把 TypeScript 模块装入 Context，用具名 Service 连接提供方与使用方，通过 inject 等待依赖就绪，并在 Plugin 离开时撤回它拥有的 Effect。Tool 只是 Plugin 可能注册的一份模型可见动作定义。DeepSeek Harness 把同一套生命周期规则用于 Tool Registry、Session，甚至 Agent Loop。
+TLDR：在 DSH 里，Plugin 不是完整程序之外的可选附件，而是由 Cordis 装入同一 Node.js 进程、拥有明确依赖和生命周期的 TypeScript 模块。DSH 先用 Cordis 建立 Context；Cordis 再等待 Service、激活 Plugin，并在它离开时撤回它创建的 Effect。最常见的激活入口是 `apply(ctx)`；Tool 只是 Plugin 可能注册的一项模型可见动作。Tool Registry、Session，甚至 Agent Loop 本身也都是 Plugin。
 
 > 版本说明：本文依据 DeepSeek Harness commit [`47f94385`](https://github.com/deepseek-ai/deepseek-harness/commit/47f943859bef60e4160492346772ded9b24f765a) 核验，时间为 2026 年 8 月 16 日。该版本对应 `dsh@0.1.0-rc.5`。项目仍处于开发者预览阶段，后续版本可能改变本文介绍的设计。
 
-“像微服务”是一个有用的起点。一个组件用稳定名字提供某项能力，另一个组件声明自己需要它。框架等到提供方就绪，再让使用方运行。以后即使换掉提供方，使用方仍可依赖原来的能力约定。
+通常说“插件”，我们默认已经有一个能独立运行的主体。浏览器先能打开网页，编辑器先能编辑代码；Plugin 只是在旁边增加广告拦截、主题或语言支持。
 
-但 Cordis 不会把每个组件变成一台服务器。它的 Plugin 是装在同一个 Node.js 进程里的可信模块，通常通过方法调用和进程内事件通信，不走 RPC。Cordis 管的是组件组合、依赖是否就绪以及退出时怎样清理，不是网络路由、独立部署或分布式故障恢复。
+这个直觉放进 DeepSeek Harness 会立刻失效。Tool Registry 是 Plugin，Session 是 Plugin，负责调用模型、接收 Tool Call 并推进下一轮的 Agent Loop 也是 Plugin。它们不是锦上添花的扩展。少了其中任何一个，Agent 都无法完成正常工作。
 
-有了这条边界，Cordis 是什么就清楚多了：它不是 DeepSeek Harness 里的某一个 Plugin，而是负责装入和管理所有 DSH Plugin 的底层框架。
+于是，真正的问题不是“DSH 支持哪些插件”，而是：**如果组成 Agent 的核心部分全是 Plugin，究竟是谁把它们装成一个可以运行的系统？**
 
-因此，“Agent Loop 也是 Plugin”并不是说 Agent Loop 可有可无。Cordis 里的 Plugin 也不是给完整软件增加功能的外围附件。它指的是一个在运行系统中拥有明确依赖、作用范围和生命周期的模块。
+答案是 Cordis。
 
-## 1. Cordis 像服务化架构，但没有网络边界
+Cordis 是 DSH 底下的 Plugin 框架，运行在同一个 Node.js 进程里。DSH 启动时先建立一个 Cordis Context，再由 Cordis Loader 按配置导入一个个 TypeScript 模块。模块声明自己需要哪些 Service；依赖就绪以后，Cordis 才激活它。最常见的入口是 `apply(ctx)`，提供 Service 的 Plugin 也可以写成 class。Plugin 通过 `ctx` 使用或提供 Service、注册 Tool 和监听器，而这些变化也因此归它的生命周期所有。
 
-官方 [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) 对它的定义是：DeepSeek Harness 底下内置的插件框架。“底下”说明了两者的关系。Cordis 提供容器和生命周期规则；DSH 提供被装入其中的具体组件。
+这才是本文要解释的 Cordis：它不是 DSH 里的某一个 Plugin，也不是发给模型的上下文，而是让所有 Plugin 得以装入、协作和退出的底层框架。
 
-它与微服务相似的是提供方和使用方的关系，而不是部署方式。
+下文先把 Cordis 自身讲清楚，再用一项最小 Tool 和 Agent Loop 说明 DSH 怎样使用它。至于完整的 DSH 组装过程，留给后续文章。
 
-| 问题             | 微服务架构                       | Cordis                                       |
-| ---------------- | -------------------------------- | -------------------------------------------- |
-| 组合的对象       | 各自运行的独立服务               | 同一进程里的模块                             |
-| 怎样找到能力     | 网络地址或服务发现名称           | `ctx` 上的 Service 名称，例如 `tools`、`llm` |
-| 怎样声明依赖     | 部署配置、服务发现或客户端配置   | Plugin 上的 inject                           |
-| 组件怎样通信     | RPC、消息队列或网络协议          | 直接调用 Service 和进程内事件                |
-| 平台主要管理什么 | 部署、健康检查、路由和分布式故障 | 激活、作用范围、所有权和清理                 |
+## 1. DSH 先用 Cordis 建立 Context，再把模块装进去
 
-两者共享的判断是：使用方应该依赖能力约定，而不是亲自构造某个具体提供方。它们的故障边界却完全不同。一个微服务可能仍在运行，只是网络不可达；Cordis Service 在当前 Context 里要么存在，要么不存在。Service 消失以后，Cordis 会停用所有把它列为必需依赖的 Plugin。
+官方 [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.zh.md) 称它为 DeepSeek Harness “底下”内置的 Plugin 框架。“底下”很重要：Cordis 提供装载机制和生命周期规则，DSH 则提供 Session、Tool Registry、Agent Loop 等具体模块。Cordis 本身不替 Agent 调模型，也不执行 Tool。
 
-所以，Cordis 更像一个带有动态生命周期的 Service 容器，而不是缩小版 Kubernetes。它知道哪一个 Plugin 提供了能力，哪些 Plugin 正在等待或使用这项能力，也知道当前注册内容属于谁。
+固定版本的 [DSH 启动代码](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/packages/boot/app-boot/src/index.ts) 把两者的关系写得很直接：
 
-Cordis 的几个主要概念分别对应这些工作：
+```ts
+const ctx = new Context();
+await ctx.plugin(Loader);
+await mountRootInclude(ctx, absoluteConfigPath, patches);
+```
 
-- **Context**：Plugin 当前能够看见的能力容器，也是它的生命周期作用范围。
-- **Plugin**：由 Cordis 装入 Context 的模块。
-- **Service**：一个 Plugin 用稳定名字提供给其他 Plugin 的运行时能力。
-- **inject**：Plugin 激活前必须存在的 Service 清单。
-- **Effect**：Plugin 激活期间造成、并在它离开时反向撤回的变化。
+`Context` 和 `ctx.plugin()` 来自 Cordis。`Loader` 来自 Cordis 的 Loader package，它先作为启动 Plugin 装进根 Context；第三行再让这个 Loader 挂载 DSH 配置中的整棵 Plugin 树。换句话说，DSH 的启动层负责选择配置并发起启动，Cordis 负责把配置中的模块变成有依赖和生命周期的运行系统。
 
-只背这些定义仍然很抽象。下面直接跟着一个 Plugin 从装入走到退出。
+完整过程可以拆成六步：
 
-## 2. Cordis 调用 `apply(ctx)` 时，一个 Plugin 才真正开始运行
+1. DSH 的启动层调用 Cordis 的 `new Context()`，建立根 Context。
+2. 启动层把 Cordis Loader 装进这个 Context。
+3. Loader 读取配置中的模块条目，并导入对应的 TypeScript 文件。
+4. 模块公开函数、对象或 `Service` 子类，还可以用 inject 声明依赖。
+5. 所需 Service 全部就绪后，Cordis 调用 `apply(ctx)`，或者构造这个 `Service` 子类。
+6. Plugin 通过 `ctx` 加入运行系统；以后停用时，经 Cordis 注册方法记录的 Effect 沿同一个作用范围撤回。
+
+这里的 Context 不是大模型的 context window。它是 Plugin 进入当前应用的接口：`ctx.tools` 表示当前 Tool Registry，`ctx.llm` 表示当前模型能力，其他 Service 也以同样方式出现在 Context 上。不同作用范围可以看见不同的 Service，因此 Context 同时决定“这个 Plugin 能用什么”和“它造成的变化属于哪里”。
+
+这也解释了为什么核心组件可以叫 Plugin。Cordis 对 Plugin 的定义不包含“可选”二字。只要一个模块由 Cordis 装入 Context，按依赖关系激活，并由同一套规则管理退出，它就是 Plugin。Agent Loop 很核心，但它仍然符合这份运行时约定。
+
+## 2. 最常见的 Plugin 从 `apply(ctx)` 进入运行系统
 
 最小的 Harness Plugin 只是一个 TypeScript 模块。仓库里的官方[第一个 Plugin 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/index.zh.md)从下面这个结构开始：
 
@@ -73,23 +78,27 @@ export function apply(ctx: Context) {
 }
 ```
 
-这里没有 Plugin 基类，也没有模型参与。这个文件只导出了名字和 `apply` 函数。Cordis 配置里的一行记录告诉 Loader 要装入哪个模块。Loader 导入文件，为它建立生命周期作用范围，然后调用 `apply(ctx)`。
+这里没有 Plugin 基类，也没有模型参与。这个文件只导出了名字和 `apply` 函数。配置里的一行记录告诉 Loader 要装入哪个模块。Loader 导入文件，为它建立生命周期作用范围；如果模块没有其他依赖，Cordis 随后就调用 `apply(ctx)`。
+
+上面是最常见的函数式写法，但不是 Cordis 允许的唯一形态。官方教程列出了三种：
+
+| Plugin 形态 | 模块怎样导出它                            | Cordis 从哪里开始运行 | 适合什么情况                         |
+| ----------- | ----------------------------------------- | --------------------- | ------------------------------------ |
+| 函数式      | 分别导出 `name`、`inject` 和 `apply(ctx)` | `apply(ctx)`          | 注册 Tool、监听器或较小的一组行为    |
+| 对象式      | 默认导出包含上述字段的对象                | 对象的 `apply(ctx)`   | 希望把 Plugin 元数据集中在一个对象里 |
+| 类式        | 默认导出继承 Cordis `Service` 的 class    | class 构造函数        | 需要向其他 Plugin 提供具名 Service   |
+
+因此，“Plugin 是 TypeScript 模块”是 DSH 开发者看到的装载单位；更精确地说，Cordis 挂载的是模块公开的函数、对象或 `Service` 子类。后文的 `greet-tool` 使用第一种，Agent Loop 使用第三种。两者写法不同，但都进入同一套 Context 和生命周期。
 
 `ctx` 是这个 Plugin 进入运行系统的入口。它可以从 Context 取得已经存在的 Service，也可以提供新的 Service、注册事件监听、加入 Tool，或者启动一项由自己负责的工作。因为这些变化都经过当前 Context，Cordis 能把它们记在创建者名下。
 
-这些关系始终留在同一个进程里：
+导入模块和激活 Plugin 是两件事。模块被导入以后，Plugin 仍不一定运行。如果它声明了必需 Service，Cordis 会让它等待；等依赖全部出现以后，`apply(ctx)` 才会执行。
 
-![Cordis Context 在单进程内通过 Service、inject、Effect 和 cleanup 连接多个 Plugin](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
+Plugin 停用时，它在运行期间登记的变化也要消失。假设它通过 Cordis 提供的注册方法加入一项 Tool 和一个事件监听，两项变化会成为当前 Plugin 拥有的 Effect，并在退出时自动撤回。自行打开的网络连接或原生定时器不会凭空获得这种能力；Plugin 必须把它们放进 `ctx.effect()`，并明确返回清理函数。
 
-_Figure 1（图 1）：多个 Plugin 在同一个进程里的 Cordis Context 上相遇。提供方贡献具名 Service，使用方通过 inject 声明依赖，Plugin 拥有的 Effect 最终沿 cleanup 路径撤回。_
+所以，Context 不只是一个装满常用字段的全局对象。它还是所有权边界。同一个 `ctx` 一方面允许 Plugin 改变运行系统，另一方面也告诉 Cordis：这些变化以后应该跟着谁一起撤回。Plugin 的完整含义因此不是“一个能被 import 的文件”，而是“一个被 Cordis 激活、并由 Cordis 管理其作用范围的模块”。
 
-Cordis 会在这张关系图之上管理生命周期。模块被导入以后，Plugin 仍不一定激活。如果它声明了必需 Service，Cordis 会让它等待。等依赖全部出现以后，`apply(ctx)` 才会执行。
-
-Plugin 停用时，它在运行期间造成的变化也要消失。假设它注册了一项 Tool 和一个事件监听，Cordis 的注册辅助方法会把两项变化记录成当前 Plugin 拥有的 Effect。如果 Plugin 打开了网络连接或定时器之类的外部资源，也可以用 `ctx.effect()` 明确返回清理函数。
-
-所以，Context 不只是一个装满常用字段的全局对象。它还是所有权边界。同一个 `ctx` 一方面允许 Plugin 改变运行系统，另一方面也告诉 Cordis：这些变化以后应该跟着谁一起撤回。
-
-## 3. Service、inject 和 Effect 决定 Plugin 怎样协作
+## 3. Service、inject 和 Effect 把多个 Plugin 连接起来
 
 一个 Plugin 往往要等另一个 Plugin 提供能力以后才能工作。Cordis 用具名 Service 表达这种关系。
 
@@ -112,7 +121,15 @@ export const inject = ['tools'];
 
 Effect 补上了最后一块。Service 描述 Plugin 能提供什么，inject 描述 Plugin 必须先拿到什么，Effect 则记录 Plugin 在激活期间改变了什么。
 
-例如，一个 Tool Provider Plugin 注入 `tools`，随后注册两项 Tool 和一个监听器。这三项注册都归它的生命周期所有。如果 Tool Registry 消失，Cordis 会停用提供方，同时撤掉三项注册。Registry 恢复以后，提供方重新激活，再重新注册。使用方不会继续调用已经消失的 Registry，也不需要某个全局清理函数猜测应该删掉哪些内容。
+例如，一个负责向 Tool Registry 注册 Tool 的 Plugin，通过 inject 声明自己需要 `tools`，随后注册两项 Tool 和一个监听器。它提供 Tool 定义，但相对于 `tools` Service，它是 consumer。这三项注册都归它的生命周期所有。如果 Tool Registry 消失，Cordis 会停用这个 Plugin，同时撤掉三项注册。Registry 恢复以后，Plugin 重新激活，再重新注册。它不会继续调用已经消失的 Registry，也不需要某个全局清理函数猜测应该删掉哪些内容。
+
+整套关系都发生在同一个 Node.js 进程里：
+
+![Cordis Context 在单进程内通过 Service、inject、Effect 和 cleanup 连接多个 Plugin](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
+
+_Figure 1（图 1）：多个 Plugin 在同一个 Cordis Context 上相遇。提供方贡献具名 Service，使用方通过 inject 声明依赖，Plugin 拥有的 Effect 最终沿 cleanup 路径撤回。_
+
+到这里再使用微服务类比，才不会把 Cordis 讲偏。两者都鼓励使用方依赖稳定的能力约定，而不是亲自构造某个具体提供方；也都把“谁提供能力”和“谁使用能力”分开。但 Cordis 的 Plugin 不是独立服务器，没有单独部署，也不走 RPC。它们通常直接调用 Service 或发送进程内事件。Cordis 管的是激活、作用范围、所有权和清理，不是网络路由、健康检查或分布式故障恢复。更准确地说，它是一个带有动态生命周期的同进程 Service 容器。
 
 这样也能更准确地理解“可替换”。新的提供方可以占据同一个 Service 名称，使用方继续依赖这个名字；Cordis 会让使用方在当前提供方就绪后重新运行。当然，名字相同并不自动保证兼容。事件顺序、取消方式、结果格式和退出行为仍然必须遵守同一份 Service 约定。
 
