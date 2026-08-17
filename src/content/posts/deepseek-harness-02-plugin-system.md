@@ -2,7 +2,7 @@
 title: "Why Is the Agent Loop a Plugin? Inside DeepSeek Harness's Plugin System"
 date: '2026-08-17'
 overview: >-
-  TL;DR: In DeepSeek Harness, a Plugin is not an add-on that merely gives the Agent another Tool. Plugins compose the runtime itself. Cordis mounts model adapters, the Session, Tool Registry, and Agent Loop through the same mechanism, while a Tool is only a model-facing action that some Plugins provide.
+  TL;DR: Cordis is the same-process plugin framework underneath DeepSeek Harness. It loads TypeScript modules into a Context, connects providers and consumers through named Services, waits for dependencies through inject, and cleans up each Plugin's Effects when it leaves. A Tool is only one model-facing definition that a Plugin may register. DeepSeek Harness applies the same lifecycle model to the Tool Registry, Session, and even the Agent Loop.
 lang: en
 translationKey: deepseek-harness-02-plugin-system
 canonicalSlug: deepseek-harness-02-plugin-system
@@ -15,167 +15,205 @@ categories:
   - agents
   - systems
 toc: true
-mermaid: true
 ---
 
-**If the Agent Loop itself is a Plugin, what is left at the center of the application?**
+**Cordis feels a little like a microservice architecture collapsed into one process.**
 
-TL;DR: In DeepSeek Harness, a Plugin is not an attachment that merely gives the Agent another Tool. Plugins compose the runtime itself. Cordis mounts model access, the Session, Tool Registry, and Agent Loop through the same mechanism. A Tool is only a model-facing action that some Plugins provide.
+TL;DR: Cordis is the same-process plugin framework underneath DeepSeek Harness. It loads TypeScript modules into a Context, connects providers and consumers through named Services, waits for dependencies through inject, and cleans up each Plugin's Effects when it leaves. A Tool is only one model-facing definition that a Plugin may register. DeepSeek Harness applies the same lifecycle model to the Tool Registry, Session, and even the Agent Loop.
 
 > Version note: This article was checked against DeepSeek Harness commit [`47f94385`](https://github.com/deepseek-ai/deepseek-harness/commit/47f943859bef60e4160492346772ded9b24f765a) on August 16, 2026. That commit corresponds to `dsh@0.1.0-rc.5`. The project is still in developer preview, so later releases may change the design described here.
 
-A search plugin is easy to picture. The application already exists, and the plugin adds a search command. Remove it, and the application loses search but remains the same application.
+The microservice comparison gives us a useful starting picture. One component provides a capability under a stable name. Another component declares that it needs that capability. The framework waits until the provider exists, then lets the consumer run. Replace the provider, and the consumer can keep using the same capability contract.
 
-DeepSeek Harness uses the word differently. Its model adapter is a Plugin. Its Session Log and Tool Registry are Plugins. Even the default Agent Loop is a Plugin. These are not optional decorations around an otherwise complete Agent runtime. They are the parts from which the runtime is assembled.
+But Cordis does not turn every component into a server. Its Plugins are trusted modules mounted inside the same Node.js process. They usually communicate through method calls and in-process events, not RPC. Cordis is responsible for composition, dependency readiness, and cleanup, not network routing or distributed failure recovery.
 
-That shift creates two questions. First, what does Plugin mean when the Plugin boundary reaches this far inward? Second, how is it different from a Tool, the action that a model can request?
+Cordis is therefore not a Plugin inside DeepSeek Harness. It is the framework that loads and manages DeepSeek Harness Plugins.
 
-Cordis answers the first question. A Bash example will make the second one concrete.
+Once that point is clear, the surprising sentence "the Agent Loop is a Plugin" becomes much less mysterious. In Cordis, Plugin does not mean optional decoration. It means a module with a managed place in the running application's dependency graph and lifecycle.
 
-## 1. Cordis moves the Plugin boundary inward
+## 1. Cordis resembles service architecture, without the network boundary
 
-The familiar plugin model begins with a host application. The host owns its main state and control flow, then exposes selected extension points around the edges. A plugin can add a command, a panel, or a file format, but the host remains a privileged center that plugins use rather than replace.
+The official [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) calls Cordis "the vendored plugin framework underneath DeepSeek Harness." The word "underneath" matters. Cordis supplies the container and lifecycle rules; DSH supplies the concrete components mounted into it.
 
-[Cordis](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) starts from another boundary. It treats the running application as a **Context** into which **Plugins** contribute capabilities and behavior. A Plugin does not need a special relationship with one central application object. It finds named capabilities in the Context, adds its own contributions, and lets the Context own their lifetime.
+The resemblance to microservices lies in the relationship between providers and consumers, not in deployment.
 
-This does not mean that there is literally no framework beneath the application. Cordis still supplies Context, dependency tracking, event dispatch, and lifecycle management. The narrower and more useful claim is that DeepSeek Harness does not keep its product-specific runtime responsibilities in a privileged core that every extension must patch. Its [architecture](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/architecture.md) puts model access, task records, Tool registration, and the default Agent Loop inside the Plugin boundary.
+| Question                                   | Microservice architecture                            | Cordis                                            |
+| ------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------- |
+| What is composed?                          | Independently running services                       | Modules inside one process                        |
+| How is a capability found?                 | A network endpoint or service-discovery name         | A Service name on `ctx`, such as `tools` or `llm` |
+| How does a consumer declare a requirement? | Deployment configuration, discovery, or client setup | `inject` on the Plugin                            |
+| How do components communicate?             | RPC, queues, or network protocols                    | Direct Service calls and in-process events        |
+| What does the platform manage?             | Deployment, health, routing, and distributed failure | Activation, scoped ownership, and cleanup         |
 
-This is why calling the Agent Loop a Plugin is meaningful. A running Agent still needs something to drive model requests and Tool calls. "Plugin" does not mean "unnecessary." It means the default driver enters the system under the same composition rules as the Services it consumes and the components that surround it. The runtime can mount another implementation without turning that replacement into a special case in a fixed main program.
+The shared idea is that a consumer depends on a capability contract rather than constructing one specific provider. The different failure boundary is equally important. A microservice may be alive but unreachable across the network. A Cordis Service either exists in the current Context or it does not. If it disappears, Cordis deactivates the Plugins that require it.
 
-Once the host is no longer the best mental model, a new problem appears. Plugins need to find one another, wait for required capabilities, and remove everything they added when they leave. Cordis handles those jobs through Service, inject, and Effect.
+This is closer to a service container with a live module lifecycle than to Kubernetes in miniature. The framework knows which Plugin provided a capability, which consumers require it, and which registrations belong to each active Plugin.
 
-## 2. Services and Effects make a Plugin reversible
+Those three jobs explain the main Cordis terms:
 
-A **Service** is a named runtime capability that one Plugin provides and other Plugins consume. DeepSeek Harness uses names such as `llm`, `tools`, and `agents`. A consumer asks the Context for the capability by name instead of importing one concrete provider and deciding how to construct it.
+- A **Context** is the capability container and lifecycle scope visible to a Plugin.
+- A **Plugin** is a module Cordis mounts into that Context.
+- A **Service** is a named capability one Plugin exposes to other Plugins.
+- **inject** declares which Services must exist before a Plugin can activate.
+- An **Effect** is a change owned by an active Plugin and reversed when that Plugin leaves.
 
-The name creates a seam. An Agent Loop needs model access, but it does not need to own the only possible model adapter. A Bash Tool provider needs shell execution, but it does not need to decide whether commands run through a local process, a sandboxed backend, or another implementation. The consumer depends on the Service contract; a provider supplies the current implementation.
+These terms become easier to remember when we follow one Plugin through its life.
 
-Cordis uses **inject** for required dependencies. When a Plugin declares `inject: ['tools']`, it is saying that the `tools` Service must exist before the Plugin activates. Cordis waits rather than relying on a lucky load order. The rule remains active after startup: if a required Service disappears, Cordis disposes the dependent Plugin; if the Service returns, Cordis activates the consumer again. The [Service guide](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.md) makes this behavior explicit.
+## 2. A Plugin begins when Cordis calls `apply(ctx)`
 
-Dependency tracking answers when a Plugin may run. **Effect** answers what must disappear when it stops.
+The smallest useful Harness Plugin is just a TypeScript module. The repository's official [first-Plugin tutorial](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/index.md) starts with this shape:
 
-Registering a Tool changes the running system. So does attaching an event listener, opening an external resource, or starting background work. Cordis treats these changes as Effects owned by the Plugin that created them. Each Effect has a way to undo the change. When the Plugin unloads, or when a required Service disappears, the Context can unwind its Effects instead of leaving stale registrations behind.
+```ts
+import type { Context } from '@deepseek-ai/cordis';
 
-The important relationship is not merely "Plugin A calls Plugin B." The provider owns a Service, the consumer declares that it needs the Service, and the consumer owns every Effect it creates while active.
+export const name = 'hello-plugin';
 
-```mermaid
-flowchart TB
-    subgraph CONTEXT["Cordis Context: the runtime composition boundary"]
-        PROVIDER["Capability provider Plugin"]
-        SERVICE["Service<br/>a named runtime capability"]
-        CONSUMER["Consumer Plugin"]
-        EFFECT["Effect<br/>owned by a Plugin and reversible"]
-        CONTRIBUTIONS["Tool · event listener<br/>background task · external resource"]
-
-        PROVIDER -->|"provides"| SERVICE
-        SERVICE -->|"inject: activate when the dependency exists"| CONSUMER
-        CONSUMER -->|"creates and owns"| EFFECT
-        EFFECT -->|"registers or starts"| CONTRIBUTIONS
-    end
-
-    LIFECYCLE["Cordis lifecycle"]
-    LIFECYCLE -->|"dependency disappears: deactivate<br/>dependency returns: reactivate"| CONSUMER
-    LIFECYCLE -->|"Plugin unloads: unwind in reverse"| EFFECT
+export function apply(ctx: Context) {
+  console.log('[hello-plugin] plugin loaded!');
+}
 ```
 
-_Figure 1. A Cordis Plugin contributes named capabilities and owns the changes that must disappear with it._
+There is no Plugin base class in this example and no model interaction. The module exports a name and an `apply` function. A Cordis configuration row tells the Loader to mount that module. The Loader imports it, creates the Plugin's lifecycle scope, and calls `apply(ctx)`.
 
-Read the diagram from the Service in both directions. To the left is replaceability: another provider can supply the same named capability. To the right is lifecycle: the consumer may activate only while its dependency exists, and its registrations live no longer than their owner. Cordis turns dependency and cleanup from conventions into runtime rules.
+The `ctx` argument is the Plugin's doorway into the running application. The Plugin can use Services that already exist on the Context, provide a new Service, register an event listener, add a Tool, or start some owned work. Because those changes go through the current Context, Cordis can associate them with the Plugin that created them.
 
-This is also why Plugin unloading is not just deleting one entry from a list. The useful unit of removal is the whole set of Effects created by that Plugin. A clean teardown can withdraw a Tool schema, detach listeners, stop work, and release resources together. The system then exposes only capabilities that still have a live owner.
+The important relationships all remain inside one process:
 
-We can now separate two words that are easy to collapse. Plugin describes who participates in the runtime and owns these Effects. Tool describes one action that the runtime may expose to the model.
+![Cordis Context connecting same-process Plugins through a Service, inject, Effects, and cleanup](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
 
-## 3. A Bash Tool makes the boundary concrete
+_Figure 1. Plugins meet through one Cordis Context inside a single process: providers contribute named Services, consumers declare them through inject, and Plugin-owned Effects converge on cleanup._
 
-Suppose the model can call a Bash Tool. What does the model actually receive? It sees a Tool name, a description, and an argument schema that says how to provide a command. When it needs shell execution, it emits a Tool Call using that interface. This model-facing contract is the **Tool**.
+Cordis applies a lifecycle to this picture. Importing the module does not make the Plugin active. If the module declares required Services, Cordis keeps it waiting until those Services exist. Only then does `apply(ctx)` run.
 
-The Tool does not load itself, find a shell, install permission checks, or clean up its registration. Plugins do that work.
+The other important transition is from active to disposed. Suppose the Plugin registers a Tool and an event listener. Those registrations must disappear when the Plugin unloads. Cordis helpers record them as Effects owned by the current lifecycle scope. For an external resource such as a connection or timer, the Plugin can use `ctx.effect()` and return an explicit cleanup function.
 
-In the logical split used by DeepSeek Harness, a Bash Tool provider Plugin registers the Bash definition with Tool Runtime. That Plugin can consume a `shell` Service supplied by another Plugin. Tool Runtime stores the current Tool definition and handles execution. Policy Plugins can inspect the call before execution. The Agent Loop asks Tool Runtime for the current schemas, sends them to the model, and later dispatches the model's Tool Call back through the registry.
+So Context is more than a global object full of useful fields. It is also an ownership boundary. The same `ctx` that lets a Plugin change the application tells Cordis which changes must be taken back later.
 
-The [basic Tool tutorial](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.md) shows the smallest version of this relationship: the Tool is a definition registered inside a Plugin, and the Plugin uses inject to wait for Tool Runtime. The Tool is one contribution made by the Plugin, not another name for the Plugin itself.
+## 3. Service, inject, and Effect define how Plugins cooperate
 
-Three small changes make the distinction obvious.
+A Plugin often needs another Plugin before it can do useful work. Cordis represents that relationship through a named Service.
 
-If the shell Service provider changes, the Bash Tool may keep the same model-facing name and schema while commands reach another execution backend. If the Bash Tool provider Plugin unloads, its registration Effect is withdrawn, so the Tool disappears from the current registry and from a later model request. If a policy Plugin changes, the visible Bash Tool may stay the same while the runtime changes how it checks a call before execution.
+DeepSeek Harness has Services named `tools`, `llm`, `sessions`, and `agents`. A provider claims one of those stable names on the Context. A consumer uses the name without importing or constructing that provider's concrete implementation.
 
-The Tool boundary is therefore narrow: it describes an action the model may request. The Plugin boundary is wider: it covers the code that joins the runtime, consumes Services, registers behavior, and remains active until its Context disposes it. One Plugin may register several Tools, one Tool, or no Tool at all.
+Consider a Plugin that wants to register a Tool. Its dependency declaration can be only one line:
 
-There is also a difference in time. A Tool waits until the model calls it. A Plugin begins participating when Cordis loads and activates it. It may provide a Service, attach listeners, or start work before the model asks for any Tool. That difference will matter again when we discuss trust.
-
-## 4. DeepSeek Harness turns runtime responsibilities into Plugins
-
-With Plugin and Tool separated, DeepSeek Harness's architecture becomes easier to read. The system does not organize Plugins only by which Tools they add. It uses Plugins for several kinds of runtime responsibility.
-
-Some Plugins **provide foundational capabilities**. A model adapter provides model access through the `llm` Service. Session support provides the durable facts from which model history and interface state can be derived. File-system, shell, and subprocess providers connect the runtime to an execution world.
-
-Other Plugins **coordinate work**. Tool Registry holds the current model-facing actions and their guarded execution path. The default Agent Loop drives model requests, Tool Calls, and continuations. These coordinators are important, but importance does not move them outside the Plugin system. They consume Services and publish behavior through the same Context as other components.
-
-A third group **changes an existing path**. Policy, telemetry, prompt, and context contributors can attach to documented events or registries. They do not need to become the Agent Loop to inspect a Tool Call or add input to the next model request. Cordis events provide the interception point; Effects give those registrations an owner.
-
-Plugins can also **connect the runtime to the outside world**. A user interface can drive live Agents and render Session events. A persistence provider can store the same Session contract somewhere else. These components participate in the application without becoming model-callable Tools.
-
-The next diagram uses Bash to place these roles in one view. It is a logical model, not a package graph, startup order, or deployment diagram.
-
-```mermaid
-flowchart TB
-    MODEL["Model"]
-
-    subgraph HARNESS["DeepSeek Harness: Cordis Context"]
-        LOOP["Agent Loop<br/>Plugin"]
-        ADAPTER["Model adapter<br/>Plugin"]
-        SESSION["Session<br/>Plugin"]
-        REGISTRY["Tool Registry<br/>Plugin"]
-        BASH_PLUGIN["Bash Tool provider<br/>Plugin"]
-        BASH_TOOL["Bash Tool<br/>model-facing action"]
-        SHELL["Shell Service provider<br/>Plugin"]
-        POLICY["Permission policy<br/>Plugin"]
-
-        ADAPTER <-->|"llm Service → Loop<br/>model request → adapter"| LOOP
-        SESSION <-->|"history / state → Loop<br/>append → Session"| LOOP
-
-        BASH_PLUGIN -->|"registers"| BASH_TOOL
-        BASH_TOOL -->|"store / execute"| REGISTRY
-        SHELL -->|"shell Service"| BASH_PLUGIN
-        POLICY -->|"pre-execute check"| REGISTRY
-
-        REGISTRY <-->|"Tool schemas → Loop<br/>Tool Call → Registry"| LOOP
-        REGISTRY -->|"invoke"| BASH_PLUGIN
-    end
-
-    ADAPTER -->|"request / response"| MODEL
-    BASH_TOOL -.->|"only the Tool name,<br/>description, and parameters<br/>are model-visible"| MODEL
+```ts
+export const inject = ['tools'];
 ```
 
-_Figure 2. The model sees a Bash Tool, while the runtime coordinates the Plugins that register, check, and execute it._
+This line is not a JavaScript import. It is a runtime readiness condition: "Do not activate this Plugin until the current Context contains the `tools` Service." When `apply(ctx)` eventually runs, `ctx.tools` is ready.
 
-The dotted line is the boundary to notice. The model does not receive the Plugin graph. It receives the current Tool schemas, then returns a Tool Call. Inside the Harness, the Agent Loop, Tool Registry, policy, Tool provider, and shell provider cooperate to turn that request into a result. Calling all of them "Tools" would hide every dependency except the last interface shown to the model.
+The rule stays live after startup. The fixed-version [Service guide](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.md) specifies two consequences when a required Service disappears:
 
-The diagram also answers the opening question. The Agent Loop is not the fixed center through which every extension must be hard-coded. It is one coordinator inside the Context. It depends on model access, Session state, and Tool Runtime, and it can be mounted or replaced under the same rules as those capabilities. Cordis is the composition substrate; DeepSeek Harness's runtime behavior comes from the Plugin graph mounted into it.
+1. Cordis disposes the dependent Plugins.
+2. Cordis loads them again when the Service returns.
 
-The Context can narrow that graph for one Agent. The implemented [Agent scope design](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/.agents/notes/implemented/architecture/2026-07-08-agent-scope-contexts.md) combines deployment-wide registrations with one Agent's local registrations. As a result, two Agents can share model and persistence infrastructure while seeing different Tools, prompt contributions, policies, or listeners. This article does not need the full assembly process yet. The important point is that scope changes which Plugin Effects are visible without changing what a Tool is.
+This is the part that most resembles service orchestration. The consumer declares what it needs, while the framework derives when it may run. Configuration order does not have to encode the dependency order by hand.
 
-## 5. A replaceable runtime still needs hard rules
+Effect completes the relationship. Service describes what a Plugin can offer. inject describes what a Plugin must receive. Effect records what the Plugin changes while it is active.
 
-The first benefit of this design is not the vague promise that Plugins make a system "easy to extend." The concrete benefit is that responsibilities normally fixed inside an Agent runtime become replaceable. A different model adapter, Session provider, Tool Runtime, or Agent Loop can enter through an existing Service seam. Consumers can keep depending on the capability instead of learning how every provider is built.
+Imagine a Tool provider that injects `tools`, then registers two Tool definitions and one listener. Those three registrations belong to the provider's lifecycle. If the Tool Registry disappears, Cordis deactivates the provider and withdraws all three. If the registry returns, the provider activates and registers them again. The consumer never calls a global cleanup routine and never keeps using a registry that no longer exists.
 
-The same ownership model supports narrower compositions. One Agent can receive a local Tool or policy without mutating the global view for every Agent. Cross-cutting behavior can attach to an event around model requests or Tool execution instead of being copied into each provider. When the owning Plugin or Agent scope leaves, Effects give the runtime one path for withdrawing those contributions.
+This also explains replaceability more precisely than “Plugins are flexible.” A replacement provider can claim the same Service name. Consumers keep their dependency on that name, but Cordis restarts them against the provider now present in their Context. Whether the replacement is truly compatible still depends on the Service contract, event order, cancellation behavior, and result formats.
 
-These gains depend on stricter runtime rules. A direct call graph is easy to follow in a debugger. A dynamic Service graph can fail because a provider is absent, a consumer has deactivated, or an Effect was disposed earlier than expected. Replacing an implementation also exposes contracts that fixed code can leave implicit, including event order, cancellation, result formats, and teardown behavior.
+We now have enough Cordis to answer the question that usually causes the most confusion: if a Plugin can add a Tool, are Plugin and Tool just two names for the same thing?
 
-Compatibility becomes harder for the same reason. If the Agent Loop, Tool Registry, and Session are all replaceable, their shared assumptions must be documented. A new implementation that accepts the same method names but changes when events fire can still break its neighbors. Pluggability removes special cases from the center, then demands precision at every seam.
+## 4. The official `greet` example shows where Plugin ends and Tool begins
 
-Trust is the sharpest boundary. A model-facing Tool waits for the model to request an action. A Plugin is trusted same-process code that begins participating when it loads. Cordis scope controls composition and cleanup; it is not a sandbox or an authority boundary. Installing a Plugin is therefore a broader trust decision than showing the model one more Tool. Article five will return to permissions and execution isolation in detail.
+DeepSeek Harness's official [Build a Tool tutorial](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.md) uses a `greet` example. The complete example is small enough to explain in the article rather than sending the reader away to reconstruct it:
 
-DeepSeek Harness's Plugin system is useful because it makes the runtime's composition rules visible. It does not eliminate complexity. It moves complexity out of a privileged center and into named dependencies, lifecycle ownership, scope, and compatibility contracts that every Plugin must obey.
+```ts
+import type { Context } from '@deepseek-ai/cordis';
+import { defineTool } from '@deepseek-ai/dsh-tools';
 
-Once that runtime has been assembled, a different question takes over: how does one user request move through steps and Turns, and what must the Session record so the task can resume? That is the subject of article three, ["After 'Fix This Bug': How Does DeepSeek Harness Organize Turns and Sessions?"](https://github.com/LuNa-shi/luna-shi.github.io/issues/4)
+export const name = 'greet-tool';
+export const inject = ['tools'];
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: { type: 'string', required: true, description: 'The name to greet' },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`;
+      },
+    }),
+  );
+}
+```
+
+Read it from the outside inward.
+
+First, the file is the **Plugin**. Cordis loads this TypeScript module. The exported `name` identifies it as `greet-tool`, and `inject = ['tools']` keeps it inactive until a Tool Registry Service exists.
+
+Second, Cordis calls `apply(ctx)` at activation time. Nothing here waits for the model. The Plugin is already participating in the application because the framework has mounted it.
+
+Third, `defineTool({...})` constructs the **Tool definition**. This object contains the part the model can understand: the Tool name `greet`, a description, and a parameter schema requiring a string called `name`. It also contains the runtime behavior that backs the contract: `execute`, the canonical output schema, and `output.render`.
+
+Fourth, `ctx.tools.register(...)` installs that definition into the current Tool Registry. This is the exact boundary between the two concepts. The surrounding module is the Plugin. The object passed to `register` is the Tool. Tool registration is one Effect created by the Plugin.
+
+Fifth, a later model request can include the registered Tool schema. If the user asks, "Use the greet tool to greet Ada," the model may return a Tool Call equivalent to `greet({ name: 'Ada' })`. Tool Runtime validates the arguments and invokes `execute(args)`.
+
+Finally, `execute` returns the canonical string `Hello, Ada!`. `output.render` converts that value into model-facing content, and the result goes back into the Agent's conversation.
+
+Registration and execution happen at different times:
+
+![The greet Plugin registering a Tool during activation, followed by a later model-requested Tool call](/assets/img/blog/deepseek-harness-02-plugin-system/plugin-vs-tool-greet.webp)
+
+_Figure 2. The large runtime unit on the left is the Plugin; `greet` is the smaller Tool definition it registers. Later, Agent Loop coordinates the model's Tool Call with the existing Tool Registry._
+
+The example now separates the terms directly:
+
+|                                | Plugin                                                                   | Tool                                                       |
+| ------------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| Concrete object in the example | The `greet-tool` TypeScript module                                       | The `greet` definition passed to `ctx.tools.register`      |
+| Primary audience               | The running system and Cordis                                            | The model and Tool Runtime                                 |
+| When it starts mattering       | When Cordis mounts and activates it                                      | When its schema is exposed, then when the model calls it   |
+| What it can do                 | Provide or consume Services, register Tools and listeners, own resources | Describe and execute one model-requestable action          |
+| Lifetime                       | Managed by its Context and dependencies                                  | Registered for as long as the owning Plugin remains active |
+
+One Plugin may register several Tools, one Tool, or no Tool. A persistence Plugin or user-interface Plugin can participate in the application without exposing any action to the model. Conversely, a Tool cannot load itself or declare its own place in the runtime graph. A Plugin must put it there.
+
+## 5. DeepSeek Harness applies these Cordis rules to the Agent Loop itself
+
+DeepSeek Harness uses Cordis for more than third-party additions. Its shipped Plugin configuration includes separate entries for Session, the Tool Registry, model access, the default Agent Loop, and many Tool providers. They enter the system through the same loader and lifecycle model as the small `greet-tool` module.
+
+The default Agent Loop makes the point concrete. At the fixed commit, its implementation is a Cordis `Service` subclass with five required dependencies:
+
+```ts
+export class AgentLoop extends Service {
+  static inject = ['agents', 'sessions', 'llm', 'tools', 'systemPrompt'];
+
+  constructor(ctx: Context, config: Config) {
+    super(ctx, 'agentLoop');
+    // ...
+  }
+}
+```
+
+This excerpt is small, but it answers the title's question. The Loop is a Plugin because Cordis mounts it, waits for its required Services, gives it a Context, and owns its teardown. The Loop also provides the named `agentLoop` Service after activation. Its central job does not place it outside the Plugin model.
+
+The production Bash integration follows the same shape as `greet`, only with more dependencies. Its Plugin injects `tools`, `shell`, `systemPrompt`, and `shellEnv`, then registers a `bash` Tool. The model sees the Tool's name, description, and parameters. The Plugin uses the current Shell Service and participates in prompt, policy, and cleanup behavior that the model never sees.
+
+Cordis lets DSH replace core responsibilities through named Service seams. It activates consumers only while their dependencies are valid and removes registrations with the Plugin that owns them.
+
+The same model imposes costs. The dependency graph is dynamic, so debugging may require checking which provider exists in the current Context and which consumer has been deactivated. Replacement implementations must honor timing and cleanup contracts as well as method names. Plugins are trusted same-process code, so Cordis composition is not a sandbox or a security boundary.
+
+This article needs no more DSH detail. Cordis manages same-process Plugins. Plugins cooperate through Services, inject, events, and Effects. A Tool is one model-facing contribution a Plugin may register.
+
+The complete DSH composition deserves its own article. After article three explains Turns and Sessions, article four will follow how Profiles, capability providers, consumers, scopes, and the Agent Loop are assembled into one running Agent: [“How Is an Agent Assembled? Inside DeepSeek Harness's Cordis Architecture”](https://github.com/LuNa-shi/luna-shi.github.io/issues/5)
 
 ### Further reading
 
-- [DeepSeek Harness architecture at the fixed commit](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/architecture.md)
-- [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md)
+- [Cordis primer at the fixed commit](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md)
+- [Your first Plugin](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/index.md)
 - [Services and dependencies](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.md)
-- [Build a Tool](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.md)
-- [Agent scope design and security non-goals](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/.agents/notes/implemented/architecture/2026-07-08-agent-scope-contexts.md)
+- [The complete `greet` Tool tutorial](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.md)
+- [DeepSeek Harness architecture at the fixed commit](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/architecture.md)

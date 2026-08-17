@@ -2,7 +2,7 @@
 title: '为什么 Agent Loop 也是插件？DeepSeek Harness 的插件系统'
 date: '2026-08-17'
 overview: >-
-  TLDR：在 DeepSeek Harness 中，Plugin 不是给 Agent 增加一个 Tool 的外围附件，而是组成运行系统的基本单位。Cordis 让模型接入、Session、Tool Registry 和 Agent Loop 等职责通过同一种方式进入系统；Tool 只是其中部分 Plugin 提供给模型的动作接口。
+  TLDR：Cordis 是 DeepSeek Harness 底下的同进程插件框架。它把 TypeScript 模块装入 Context，用具名 Service 连接提供方与使用方，通过 inject 等待依赖就绪，并在 Plugin 离开时撤回它拥有的 Effect。Tool 只是 Plugin 可能注册的一份模型可见动作定义。DeepSeek Harness 把同一套生命周期规则用于 Tool Registry、Session，甚至 Agent Loop。
 lang: zh
 translationKey: deepseek-harness-02-plugin-system
 canonicalSlug: deepseek-harness-02-plugin-system
@@ -15,169 +15,205 @@ categories:
   - agents
   - systems
 toc: true
-mermaid: true
 ---
 
-**如果 Agent Loop 本身也是 Plugin，这个系统的“本体”还剩下什么？**
+**如果熟悉微服务，可以先把 Cordis 想成一种被压进单进程的“微服务式组件架构”。**
 
-TLDR：在 DeepSeek Harness 中，Plugin 不是给 Agent 增加一个 Tool 的外围附件，而是组成运行系统的基本单位。Cordis 让模型接入、Session、Tool Registry 和 Agent Loop 等职责通过同一种方式进入系统；Tool 只是其中部分 Plugin 提供给模型的动作接口。
+TLDR：Cordis 是 DeepSeek Harness 底下的同进程插件框架。它把 TypeScript 模块装入 Context，用具名 Service 连接提供方与使用方，通过 inject 等待依赖就绪，并在 Plugin 离开时撤回它拥有的 Effect。Tool 只是 Plugin 可能注册的一份模型可见动作定义。DeepSeek Harness 把同一套生命周期规则用于 Tool Registry、Session，甚至 Agent Loop。
 
 > 版本说明：本文依据 DeepSeek Harness commit [`47f94385`](https://github.com/deepseek-ai/deepseek-harness/commit/47f943859bef60e4160492346772ded9b24f765a) 核验，时间为 2026 年 8 月 16 日。该版本对应 `dsh@0.1.0-rc.5`。项目仍处于开发者预览阶段，后续版本可能改变本文介绍的设计。
 
-“搜索插件”很好理解。软件本来就能运行，装上插件以后多了一项搜索功能；把插件删掉，搜索不见了，软件还是原来的软件。
+“像微服务”是一个有用的起点。一个组件用稳定名字提供某项能力，另一个组件声明自己需要它。框架等到提供方就绪，再让使用方运行。以后即使换掉提供方，使用方仍可依赖原来的能力约定。
 
-DeepSeek Harness 里的 Plugin 不是这个意思。模型适配器是 Plugin，Session Log 和 Tool Registry 是 Plugin，就连默认的 Agent Loop 也是 Plugin。这些部分并非挂在完整 Agent 运行系统外面的附加功能，它们本来就是运行系统的组成部分。
+但 Cordis 不会把每个组件变成一台服务器。它的 Plugin 是装在同一个 Node.js 进程里的可信模块，通常通过方法调用和进程内事件通信，不走 RPC。Cordis 管的是组件组合、依赖是否就绪以及退出时怎样清理，不是网络路由、独立部署或分布式故障恢复。
 
-所以，本篇先要拆开两个问题。Plugin 的边界深入到 Agent Loop 以后，它究竟指什么？它与模型能够调用的 Tool 又是什么关系？
+有了这条边界，Cordis 是什么就清楚多了：它不是 DeepSeek Harness 里的某一个 Plugin，而是负责装入和管理所有 DSH Plugin 的底层框架。
 
-第一个问题要从 Cordis 讲起。第二个问题，用 Bash 就能说明白。
+因此，“Agent Loop 也是 Plugin”并不是说 Agent Loop 可有可无。Cordis 里的 Plugin 也不是给完整软件增加功能的外围附件。它指的是一个在运行系统中拥有明确依赖、作用范围和生命周期的模块。
 
-## 1. Cordis 把 Plugin 边界推到了应用内部
+## 1. Cordis 像服务化架构，但没有网络边界
 
-常见插件系统先有一个宿主应用。宿主掌握主要状态和控制流程，再从边缘开放一些扩展位置。插件可以增加命令、面板或文件格式，却通常不能替换宿主的主要运行方式。
+官方 [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) 对它的定义是：DeepSeek Harness 底下内置的插件框架。“底下”说明了两者的关系。Cordis 提供容器和生命周期规则；DSH 提供被装入其中的具体组件。
 
-[Cordis](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md) 选择了另一条边界。它把正在运行的应用看成一个 **Context**，再把 **Plugin** 装进 Context。Plugin 可以向其中提供能力，使用别的 Plugin 提供的能力，也可以注册会随自己一起退出的行为。它不需要围着某个唯一的“应用主对象”工作。
+它与微服务相似的是提供方和使用方的关系，而不是部署方式。
 
-这里容易出现一个误解。说 DeepSeek Harness “没有特权核心”，不等于底下什么框架都没有。Cordis 仍然负责 Context、依赖跟踪、事件分发和生命周期。更准确的说法是，DeepSeek Harness 没有把产品自己的主要运行职责留在一个只能修改、不能替换的中心里。它的[架构文档](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/architecture.md)明确把模型接入、任务记录、Tool 注册和默认 Agent Loop 都放进了 Plugin 边界。
+| 问题             | 微服务架构                       | Cordis                                       |
+| ---------------- | -------------------------------- | -------------------------------------------- |
+| 组合的对象       | 各自运行的独立服务               | 同一进程里的模块                             |
+| 怎样找到能力     | 网络地址或服务发现名称           | `ctx` 上的 Service 名称，例如 `tools`、`llm` |
+| 怎样声明依赖     | 部署配置、服务发现或客户端配置   | Plugin 上的 inject                           |
+| 组件怎样通信     | RPC、消息队列或网络协议          | 直接调用 Service 和进程内事件                |
+| 平台主要管理什么 | 部署、健康检查、路由和分布式故障 | 激活、作用范围、所有权和清理                 |
 
-现在，“Agent Loop 也是 Plugin”就不难理解了。Agent 运行时仍然需要一个组件推进模型请求和 Tool Call，Plugin 并不表示它可有可无。这个说法表达的是，默认 Agent Loop 与它依赖的 Service 一样，都按照同一套规则进入系统。要换另一种 Loop 实现，运行系统不必先在固定主程序里增加一个特殊分支。
+两者共享的判断是：使用方应该依赖能力约定，而不是亲自构造某个具体提供方。它们的故障边界却完全不同。一个微服务可能仍在运行，只是网络不可达；Cordis Service 在当前 Context 里要么存在，要么不存在。Service 消失以后，Cordis 会停用所有把它列为必需依赖的 Plugin。
 
-当宿主应用不再是最合适的理解方式，问题就转向 Plugin 之间的关系。它们怎样找到彼此？依赖尚未出现时怎么办？一个 Plugin 离开以后，怎样保证它加进来的内容也全部消失？Cordis 用 Service、inject 和 Effect 回答这些问题。
+所以，Cordis 更像一个带有动态生命周期的 Service 容器，而不是缩小版 Kubernetes。它知道哪一个 Plugin 提供了能力，哪些 Plugin 正在等待或使用这项能力，也知道当前注册内容属于谁。
 
-## 2. Service 与 Effect 让 Plugin 能协作，也能撤回
+Cordis 的几个主要概念分别对应这些工作：
 
-**Service** 是一个有名字的运行时能力，由一个 Plugin 提供，交给其他 Plugin 使用。DeepSeek Harness 中的 `llm`、`tools` 和 `agents` 都是 Service。使用方通过 Context 里的名字寻找能力，无需直接导入某一种实现，再亲自决定怎样创建它。
+- **Context**：Plugin 当前能够看见的能力容器，也是它的生命周期作用范围。
+- **Plugin**：由 Cordis 装入 Context 的模块。
+- **Service**：一个 Plugin 用稳定名字提供给其他 Plugin 的运行时能力。
+- **inject**：Plugin 激活前必须存在的 Service 清单。
+- **Effect**：Plugin 激活期间造成、并在它离开时反向撤回的变化。
 
-这个名字形成了一条可替换的接缝。Agent Loop 需要访问模型，却不必拥有唯一的模型适配器。Bash Tool 的提供方需要运行 Shell，却不必决定命令最终交给本机进程、沙箱后端还是另一种执行环境。使用方依赖 Service 约定，提供方负责实现当前能力。
+只背这些定义仍然很抽象。下面直接跟着一个 Plugin 从装入走到退出。
 
-Plugin 用 **inject** 声明自己必需的 Service。写下 `inject: ['tools']`，意思是 `tools` Service 准备好以后，这个 Plugin 才能激活。Cordis 会等待依赖，不靠偶然的加载顺序碰运气。
+## 2. Cordis 调用 `apply(ctx)` 时，一个 Plugin 才真正开始运行
 
-这条规则在启动之后仍然有效。如果一个必需 Service 因为提供方卸载而消失，Cordis 会停用并清理依赖它的 Plugin；Service 恢复后，再重新激活使用方。[Service 文档](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.md)把这项动态行为写得很明确。
+最小的 Harness Plugin 只是一个 TypeScript 模块。仓库里的官方[第一个 Plugin 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/index.zh.md)从下面这个结构开始：
 
-依赖跟踪决定 Plugin 什么时候可以运行。**Effect** 则决定它停止以后，哪些东西必须跟着消失。
+```ts
+import type { Context } from '@deepseek-ai/cordis';
 
-注册一个 Tool 会改变正在运行的系统。监听事件、打开外部资源、启动后台任务也一样。Cordis 把这些变化记录为创建它们的 Plugin 所拥有的 Effect。每个 Effect 都有相应的撤回方式。Plugin 卸载，或必需 Service 消失时，Context 可以沿着 Effect 把变化反向收回，不让已经失去所有者的注册继续留在系统里。
+export const name = 'hello-plugin';
 
-因此，Plugin 之间的关系不只是“A 调用 B”。提供方拥有 Service，使用方用 inject 声明依赖，使用方激活后创建的每一项 Effect 又归它自己负责。
-
-```mermaid
-flowchart TB
-    subgraph CONTEXT["Cordis Context：运行系统的组合边界"]
-        PROVIDER["能力提供者 Plugin"]
-        SERVICE["Service<br/>有名字的运行时能力"]
-        CONSUMER["依赖方 Plugin"]
-        EFFECT["Effect<br/>由 Plugin 拥有、可以撤回"]
-        CONTRIBUTIONS["Tool · 事件监听<br/>后台任务 · 外部资源"]
-
-        PROVIDER -->|"提供"| SERVICE
-        SERVICE -->|"inject：依赖满足后激活"| CONSUMER
-        CONSUMER -->|"创建并拥有"| EFFECT
-        EFFECT -->|"注册或启动"| CONTRIBUTIONS
-    end
-
-    LIFECYCLE["Cordis 生命周期"]
-    LIFECYCLE -->|"依赖消失：停用<br/>依赖恢复：重新激活"| CONSUMER
-    LIFECYCLE -->|"Plugin 卸载：反向撤回"| EFFECT
+export function apply(ctx: Context) {
+  console.log('[hello-plugin] plugin loaded!');
+}
 ```
 
-_图 1：Cordis Plugin 不只提供能力，它还要拥有那些必须随自己一起消失的变化。_
+这里没有 Plugin 基类，也没有模型参与。这个文件只导出了名字和 `apply` 函数。Cordis 配置里的一行记录告诉 Loader 要装入哪个模块。Loader 导入文件，为它建立生命周期作用范围，然后调用 `apply(ctx)`。
 
-从中间的 Service 向两边看，刚好能看到两项规则。左边是替换，另一位提供方可以实现同一个具名能力；右边是生命周期，依赖存在时使用方才能激活，它的注册内容也不能活得比所有者更久。Cordis 把依赖和清理从编码习惯变成了运行规则。
+`ctx` 是这个 Plugin 进入运行系统的入口。它可以从 Context 取得已经存在的 Service，也可以提供新的 Service、注册事件监听、加入 Tool，或者启动一项由自己负责的工作。因为这些变化都经过当前 Context，Cordis 能把它们记在创建者名下。
 
-这也解释了卸载 Plugin 为什么不只是从数组里删掉一个名字。真正需要移除的是它创建的整组 Effect。Tool schema、事件监听、后台工作和外部资源可以一起撤回，系统最后只留下仍然拥有有效所有者的能力。
+这些关系始终留在同一个进程里：
 
-有了这套关系，就能准确地区分两个很容易混在一起的词。Plugin 说明谁参与运行系统、谁拥有 Effect；Tool 只说明模型能够请求哪一项动作。
+![Cordis Context 在单进程内通过 Service、inject、Effect 和 cleanup 连接多个 Plugin](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
 
-## 3. 一项 Bash Tool 把两种边界拆开了
+_Figure 1（图 1）：多个 Plugin 在同一个进程里的 Cordis Context 上相遇。提供方贡献具名 Service，使用方通过 inject 声明依赖，Plugin 拥有的 Effect 最终沿 cleanup 路径撤回。_
 
-假设模型可以调用 Bash。模型实际看见什么？它会收到 Tool 的名称、用途说明和参数 schema，知道应当怎样提交一条命令。需要执行时，模型根据这份接口输出一个 Tool Call。这一层面向模型的动作约定，就是 **Tool**。
+Cordis 会在这张关系图之上管理生命周期。模块被导入以后，Plugin 仍不一定激活。如果它声明了必需 Service，Cordis 会让它等待。等依赖全部出现以后，`apply(ctx)` 才会执行。
 
-Tool 不会自己加入系统，也不会寻找 Shell、安装权限检查或清理注册。完成这些工作的都是 Plugin。
+Plugin 停用时，它在运行期间造成的变化也要消失。假设它注册了一项 Tool 和一个事件监听，Cordis 的注册辅助方法会把两项变化记录成当前 Plugin 拥有的 Effect。如果 Plugin 打开了网络连接或定时器之类的外部资源，也可以用 `ctx.effect()` 明确返回清理函数。
 
-按照 DeepSeek Harness 的逻辑分工，Bash Tool Provider Plugin 把 Bash 定义注册到 Tool Runtime。它可以依赖另一位 Plugin 提供的 `shell` Service。Tool Runtime 保存当前 Tool，并负责执行路径；权限策略 Plugin 可以在执行前检查调用；Agent Loop 则从 Tool Runtime 取得当前 schema 交给模型，再把模型返回的 Tool Call 分发回来。
+所以，Context 不只是一个装满常用字段的全局对象。它还是所有权边界。同一个 `ctx` 一方面允许 Plugin 改变运行系统，另一方面也告诉 Cordis：这些变化以后应该跟着谁一起撤回。
 
-[最小 Tool 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.md)已经展示了这层关系：Tool 是 Plugin 注册进 Tool Runtime 的一份定义，Plugin 通过 inject 等待 Tool Runtime 就绪。Tool 是 Plugin 提供的一项内容，两者不是同一个东西的两种叫法。
+## 3. Service、inject 和 Effect 决定 Plugin 怎样协作
 
-换三个地方，这个区别会更明显。
+一个 Plugin 往往要等另一个 Plugin 提供能力以后才能工作。Cordis 用具名 Service 表达这种关系。
 
-更换 Shell Service 提供方以后，Bash Tool 面向模型的名称和 schema 可以保持不变，命令却会进入另一种执行后端。卸载 Bash Tool Provider Plugin，它拥有的注册 Effect 会被撤回，Bash Tool 随即从当前 registry 和后续模型请求中消失。更换权限策略 Plugin，模型看到的 Bash Tool 可能没有变化，运行系统在执行前作出的检查却可以不同。
+DeepSeek Harness 中有名为 `tools`、`llm`、`sessions` 和 `agents` 的 Service。提供方在 Context 上占据一个稳定名称；使用方按名称取得能力，不必导入某个具体实现，更不需要亲自决定怎样创建它。
 
-Tool 的边界很窄，只描述模型可以请求的一项动作。Plugin 的边界更宽，它是加入运行系统的一段代码，会使用 Service、注册行为，并一直存活到自己的 Context 将它清理掉。一个 Plugin 可以注册多个 Tool、一个 Tool，也可以完全不注册 Tool。
+如果一个 Plugin 要注册 Tool，它的依赖声明可以只有一行：
 
-两者生效的时间也不同。Tool 要等模型主动调用；Plugin 被 Cordis 装入并激活后，就已经开始参与运行系统。它可以提供 Service、监听事件或启动工作，不必等模型先提出任何 Tool Call。后面谈到信任边界时，这个差别会再次出现。
-
-## 4. DeepSeek Harness 把运行职责逐项放进 Plugin 边界
-
-分清 Plugin 和 Tool 以后，再看 DeepSeek Harness 就不需要按照包名背清单。它使用 Plugin 处理的是几类不同的运行职责，并非只有“给模型增加动作”这一种。
-
-有些 Plugin **提供基础能力**。模型适配器通过 `llm` Service 接入模型；Session 保存可以推导模型历史和界面状态的持久事实；文件系统、Shell 和子进程提供方把运行系统接到具体执行环境。
-
-有些 Plugin **协调运行过程**。Tool Registry 保存当前模型可见的动作和受控执行路径，默认 Agent Loop 推进模型请求、Tool Call 与后续步骤。它们很重要，却没有因此离开 Plugin 系统。它们同样从 Context 取得 Service，也同样按照 Plugin 生命周期工作。
-
-另一类 Plugin **改变已有流程**。权限、遥测、提示词和上下文贡献者可以接到公开事件或 registry 上，不必把逻辑写进 Agent Loop，才能查看 Tool Call 或为下一次模型请求补充输入。Cordis 事件提供接入位置，Effect 则记录这些行为由谁拥有。
-
-还有一些 Plugin **连接外部世界**。用户界面可以驱动正在运行的 Agent，并根据 Session 事件渲染状态；持久化提供方可以把同一份 Session 约定保存到其他位置。它们参与整个应用，却不需要变成模型可以调用的 Tool。
-
-下面这张图用 Bash 把这些角色放进同一个视图。它是一张逻辑图，不表示真实包依赖、启动顺序或部署拓扑。
-
-```mermaid
-flowchart TB
-    MODEL["模型"]
-
-    subgraph HARNESS["DeepSeek Harness：Cordis Context"]
-        LOOP["Agent Loop<br/>Plugin"]
-        ADAPTER["模型适配器<br/>Plugin"]
-        SESSION["Session<br/>Plugin"]
-        REGISTRY["Tool Registry<br/>Plugin"]
-        BASH_PLUGIN["Bash Tool Provider<br/>Plugin"]
-        BASH_TOOL["Bash Tool<br/>模型可见的动作"]
-        SHELL["Shell Service Provider<br/>Plugin"]
-        POLICY["权限策略<br/>Plugin"]
-
-        ADAPTER <-->|"llm Service → Loop<br/>模型请求 → 适配器"| LOOP
-        SESSION <-->|"历史 / 状态 → Loop<br/>追加 → Session"| LOOP
-
-        BASH_PLUGIN -->|"注册"| BASH_TOOL
-        BASH_TOOL -->|"保存 / 执行"| REGISTRY
-        SHELL -->|"shell Service"| BASH_PLUGIN
-        POLICY -->|"执行前检查"| REGISTRY
-
-        REGISTRY <-->|"Tool schemas → Loop<br/>Tool Call → Registry"| LOOP
-        REGISTRY -->|"调用"| BASH_PLUGIN
-    end
-
-    ADAPTER -->|"请求 / 响应"| MODEL
-    BASH_TOOL -.->|"只有 Tool 的名称、<br/>描述和参数对模型可见"| MODEL
+```ts
+export const inject = ['tools'];
 ```
 
-_图 2：模型只看见 Bash Tool，运行系统则要协调负责注册、检查和执行的整组 Plugin。_
+这不是 JavaScript import，而是一项运行时就绪条件：当前 Context 里没有 `tools` Service，就不要激活这个 Plugin。等 Cordis 最终调用 `apply(ctx)` 时，`ctx.tools` 已经可以使用。
 
-图里的虚线是最需要注意的边界。模型收不到 Plugin 关系图，只会收到当前 Tool schema，再返回 Tool Call。Harness 内部的 Agent Loop、Tool Registry、权限策略、Tool 提供方与 Shell 提供方共同把这次请求变成结果。如果把它们全叫作“工具”，除了最后那层模型接口，其余依赖都会被藏起来。
+这条规则在启动结束后仍然有效。固定版本的 [Service 文档](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.zh.md)明确写了必需 Service 消失后的两步行为：
 
-这张图也回答了开头的问题。Agent Loop 不是所有扩展都必须硬编码进去的固定中心，而是 Context 中的一位协调者。它依赖模型接入、Session 状态和 Tool Runtime，也可以按照与这些能力相同的规则装入或替换。Cordis 是负责组合的底层框架，DeepSeek Harness 的实际运行方式则来自装在其中的 Plugin 关系。
+1. Cordis 自动停用并清理依赖它的 Plugin。
+2. Service 恢复以后，Cordis 再次装入这些 Plugin。
 
-Context 还可以为某一个 Agent 缩小这张关系图。已经实现的 [Agent scope 设计](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/.agents/notes/implemented/architecture/2026-07-08-agent-scope-contexts.md)会把部署级注册与一个 Agent 的局部注册合并起来。因此，两个 Agent 可以共享模型与持久化基础设施，却看见不同的 Tool、提示词、策略或监听器。本篇暂时不展开完整组装过程，只需记住：scope 改变的是哪些 Plugin Effect 对当前 Agent 可见，并没有改变 Tool 的定义。
+这一部分最像服务编排。使用方只声明自己需要什么，框架根据能力是否存在决定它何时可以运行；配置文件不必靠手工排列顺序来碰运气。
 
-## 5. 可替换的运行系统仍然需要严格规则
+Effect 补上了最后一块。Service 描述 Plugin 能提供什么，inject 描述 Plugin 必须先拿到什么，Effect 则记录 Plugin 在激活期间改变了什么。
 
-这种设计带来的第一项收益，不是一句含糊的“插件更容易扩展”，而是 Agent 运行系统中原本常被固定下来的职责可以替换。模型适配器、Session 提供方、Tool Runtime 或 Agent Loop 都能通过已有 Service 接缝进入系统。使用方继续依赖能力约定，不必了解每一种提供方怎样构造。
+例如，一个 Tool Provider Plugin 注入 `tools`，随后注册两项 Tool 和一个监听器。这三项注册都归它的生命周期所有。如果 Tool Registry 消失，Cordis 会停用提供方，同时撤掉三项注册。Registry 恢复以后，提供方重新激活，再重新注册。使用方不会继续调用已经消失的 Registry，也不需要某个全局清理函数猜测应该删掉哪些内容。
 
-同一套所有权规则也支持更小范围的组合。一个 Agent 可以获得局部 Tool 或策略，无需修改所有 Agent 共用的全局视图。安全、重试和观测等横切行为可以接入模型请求或 Tool 执行周围的事件，不必复制到每个提供方。Plugin 或 Agent scope 离开时，Effect 又为这些贡献提供了统一的撤回路径。
+这样也能更准确地理解“可替换”。新的提供方可以占据同一个 Service 名称，使用方继续依赖这个名字；Cordis 会让使用方在当前提供方就绪后重新运行。当然，名字相同并不自动保证兼容。事件顺序、取消方式、结果格式和退出行为仍然必须遵守同一份 Service 约定。
 
-这些收益依赖更严格的运行规则。直接调用关系通常容易沿着调用栈查找。动态 Service 关系出现问题时，原因可能是提供方缺失、使用方已经停用，也可能是某项 Effect 比预期更早被清理。替换实现还会暴露固定代码可以默认不说的约定，例如事件顺序、取消方式、结果格式和退出行为。
+现在已经有足够的 Cordis 背景，可以处理最容易混淆的问题：如果 Plugin 能增加 Tool，Plugin 和 Tool 是否只是同一个东西的两种叫法？
 
-兼容性也会因此更难。如果 Agent Loop、Tool Registry 与 Session 都能替换，它们共享的假设就必须写清楚。一个新实现即使提供了相同方法，只要改变事件发生的时机，仍然可能破坏相邻 Plugin。插件化减少了中心位置的特殊分支，却要求每条接缝更加准确。
+## 4. 官方 `greet` 例子清楚地划出了 Plugin 与 Tool 的边界
 
-信任边界尤其值得单独提醒。面向模型的 Tool 要等模型发出请求，Plugin 则是装入后立即参与运行的同进程可信代码。Cordis scope 负责组合与清理，不是沙箱，也不是权限边界。因此，安装一个 Plugin 是比向模型开放一项 Tool 更大的信任决定。第 5 篇会再详细讨论权限与执行隔离。
+DeepSeek Harness 官方的[开发一个 Tool 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.zh.md)使用了 `greet`。这个例子足够短，正文可以把它完整讲明白，无需让读者跳到链接里自己拼出结论：
 
-DeepSeek Harness 的 Plugin 系统并没有让复杂度消失。它把原先挤在特权中心里的复杂度，移到了具名依赖、生命周期所有权、scope 和兼容性约定中。好处在于这些规则终于有了共同的表达方式，代价则是每个 Plugin 都必须准确遵守它们。
+```ts
+import type { Context } from '@deepseek-ai/cordis';
+import { defineTool } from '@deepseek-ai/dsh-tools';
 
-运行系统组装完成以后，下一个问题随即出现：一句用户请求怎样经过多个 step 和 Turn，Session 又必须记录什么，任务才能在中断后继续？第 3 篇会讨论这个问题：[一句“修掉这个 Bug”之后：DeepSeek Harness 如何组织 Turn 与 Session？](https://github.com/LuNa-shi/luna-shi.github.io/issues/4)
+export const name = 'greet-tool';
+export const inject = ['tools'];
+
+export function apply(ctx: Context) {
+  ctx.tools.register(
+    defineTool({
+      name: 'greet',
+      description: 'Greet someone by name.',
+      parameters: {
+        name: { type: 'string', required: true, description: 'The name to greet' },
+      },
+      output: {
+        schema: { type: 'string' },
+        render: (_args, value) => [{ type: 'text', text: value }],
+      },
+      async execute(args) {
+        return `Hello, ${args.name}!`;
+      },
+    }),
+  );
+}
+```
+
+可以从外向内读这段代码。
+
+第一，整个文件是 **Plugin**。Cordis 装入这个 TypeScript 模块。导出的 `name` 把它标识为 `greet-tool`，而 `inject = ['tools']` 让它在 Tool Registry Service 出现前保持等待。
+
+第二，Cordis 在激活阶段调用 `apply(ctx)`。这里完全不需要等待模型。框架装入 Plugin 以后，它就已经开始参与运行系统。
+
+第三，`defineTool({...})` 创建 **Tool 定义**。其中一部分是模型能够理解的接口：Tool 名字 `greet`、用途描述，以及一个要求传入字符串 `name` 的参数 schema。另一部分是运行系统用于兑现接口的行为：`execute`、规范输出 schema 和 `output.render`。
+
+第四，`ctx.tools.register(...)` 把这份定义装进当前 Tool Registry。这一行就是两个概念的精确边界：外面的 TypeScript 模块是 Plugin，传给 `register` 的对象是 Tool。注册 Tool 是这个 Plugin 创建的一项 Effect。
+
+第五，后续模型请求可以带上已经注册的 Tool schema。用户输入 `Use the greet tool to greet Ada.` 以后，模型可能返回相当于 `greet({ name: 'Ada' })` 的 Tool Call。Tool Runtime 先校验参数，再调用 `execute(args)`。
+
+最后，`execute` 返回规范字符串 `Hello, Ada!`。`output.render` 再把这个值转换成模型可见的内容，结果被放回 Agent 的对话中。
+
+注册发生在 Plugin 激活时，执行发生在模型调用时：
+
+![greet Plugin 在激活时注册 Tool，模型稍后再请求执行这项 Tool](/assets/img/blog/deepseek-harness-02-plugin-system/plugin-vs-tool-greet.webp)
+
+_Figure 2（图 2）：左侧较大的运行单元是 Plugin，`greet` 是它注册进去的较小 Tool 定义。稍后模型发出 Tool Call 时，Agent Loop 才在模型与现有 Tool Registry 之间协调这次执行。_
+
+这个例子已经把两者分开：
+
+|                  | Plugin                                      | Tool                                      |
+| ---------------- | ------------------------------------------- | ----------------------------------------- |
+| 例子里的具体对象 | `greet-tool` TypeScript 模块                | 传给 `ctx.tools.register` 的 `greet` 定义 |
+| 主要面向谁       | Cordis 与整个运行系统                       | 模型与 Tool Runtime                       |
+| 何时开始生效     | Cordis 装入并激活它时                       | schema 被暴露时，以及模型调用时           |
+| 可以做什么       | 提供或使用 Service，注册 Tool、监听器和资源 | 描述并执行一项模型可以请求的动作          |
+| 生命周期         | 由 Context 和依赖关系管理                   | 只在拥有它的 Plugin 保持激活时存在        |
+
+一个 Plugin 可以注册多个 Tool、一个 Tool，也可以完全不注册 Tool。持久化 Plugin 或用户界面 Plugin 能参与整个应用，却不需要向模型暴露动作。反过来，Tool 不能自己装入系统，也不能声明自己处在依赖图的什么位置；必须由 Plugin 把它注册进去。
+
+## 5. DeepSeek Harness 把同一套规则用在 Agent Loop 上
+
+DeepSeek Harness 不只用 Cordis 管理第三方扩展。它自带的配置会分别装入 Session、Tool Registry、模型接入、默认 Agent Loop 和多个 Tool Provider。它们与刚才的 `greet-tool` 一样，都经过 Cordis Loader 和同一套生命周期规则进入系统。
+
+默认 Agent Loop 是最直接的证据。在本文固定的版本中，它是 Cordis `Service` 的子类，并声明了五项必需依赖：
+
+```ts
+export class AgentLoop extends Service {
+  static inject = ['agents', 'sessions', 'llm', 'tools', 'systemPrompt'];
+
+  constructor(ctx: Context, config: Config) {
+    super(ctx, 'agentLoop');
+    // ...
+  }
+}
+```
+
+这几行已经足以回答标题。Agent Loop 是 Plugin，因为 Cordis 负责装入它、等待它的必需 Service、给它 Context，并在退出时清理它。激活以后，它又以 `agentLoop` 这个名字向其他 Plugin 提供 Service。职责位于运行流程中心，并不会让它脱离 Plugin 模型。
+
+正式的 Bash 集成也与 `greet` 采用相同结构，只是依赖更多。Bash Plugin 会 inject `tools`、`shell`、`systemPrompt` 和 `shellEnv`，然后注册一项名为 `bash` 的 Tool。模型只看见 Tool 名字、描述和参数；Plugin 则在模型看不见的地方使用当前 Shell Service，并参与提示词、策略和清理过程。
+
+Cordis 因此给 DSH 带来三项具体性质。核心职责可以沿具名 Service 接缝替换；使用方只在依赖有效时激活；注册内容会跟着拥有它的 Plugin 一起退出，不会变成失去来源的全局状态。
+
+同一套模型也会增加调试成本。依赖图会动态变化，排查问题时需要确认当前 Context 中究竟是哪一个提供方存在、哪些使用方已经停用。替换实现除了方法名字相同，还必须兼容时间顺序和清理方式。Plugin 仍是同进程可信代码，所以 Cordis 提供的是组合和生命周期，不是沙箱或权限边界。
+
+本篇讲到这里就够了。需要记住的词义是：Cordis 管理同进程 Plugin；Plugin 通过 Service、inject、事件和 Effect 协作；Tool 只是 Plugin 可能注册的一项模型可见动作。
+
+DSH 怎样完整组装运行系统，应当单独展开。第 3 篇解释 Turn 与 Session 以后，第 4 篇会继续讨论 Profile、能力提供方、使用方、scope 和 Agent Loop 怎样共同组成一个实际运行的 Agent：[一个 Agent 是怎样被组装出来的？拆解 DeepSeek Harness 的 Cordis 架构](https://github.com/LuNa-shi/luna-shi.github.io/issues/5)
 
 ### 延伸阅读
 
-- [固定版本的 DeepSeek Harness 架构文档](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/architecture.md)
-- [Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.md)
-- [Service 与依赖](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.md)
-- [创建 Tool](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.md)
-- [Agent scope 设计与安全边界说明](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/.agents/notes/implemented/architecture/2026-07-08-agent-scope-contexts.md)
+- [固定版本的 Cordis primer](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/cordis-primer.zh.md)
+- [第一个 Plugin](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/index.zh.md)
+- [Service 与依赖](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/framework/service.zh.md)
+- [完整的 `greet` Tool 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.zh.md)
+- [固定版本的 DeepSeek Harness 架构文档](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/architecture.zh.md)
