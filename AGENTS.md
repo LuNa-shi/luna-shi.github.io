@@ -188,6 +188,12 @@ const { pirsch } = site.analytics;
 
 ---
 
+## Blog authoring, review, and publication
+
+When a task plans, drafts, revises, reviews, illustrates, translates, or publishes a blog post, read [`docs/BLOG_WORKFLOW.md`](docs/BLOG_WORKFLOW.md) completely before starting any such work, including read-only review or work limited to article assets or the tracking issue. That document is the authoritative collaboration workflow for article contracts, evidence, visuals, independent rereads, author review, and live publication. A pure Markdown Vault Sync follows the separate section below; if the sync also changes the argument, translation, or visuals, apply both workflows.
+
+---
+
 ## Markdown Vault Sync
 
 When the user asks to sync or deploy the Markdown vault, use this source:

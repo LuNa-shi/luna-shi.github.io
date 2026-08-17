@@ -33,9 +33,15 @@ TLDR：在 DSH 里，Plugin 不是完整程序之外的可选附件，而是由 
 
 Cordis 是 DSH 底下的 Plugin 框架，运行在同一个 Node.js 进程里。DSH 启动时先建立一个 Cordis Context，再由 Cordis Loader 按配置导入一个个 TypeScript 模块。模块声明自己需要哪些 Service；依赖就绪以后，Cordis 才激活它。最常见的入口是 `apply(ctx)`，提供 Service 的 Plugin 也可以写成 class。Plugin 通过 `ctx` 使用或提供 Service、注册 Tool 和监听器，而这些变化也因此归它的生命周期所有。
 
-这才是本文要解释的 Cordis：它不是 DSH 里的某一个 Plugin，也不是发给模型的上下文，而是让所有 Plugin 得以装入、协作和退出的底层框架。
+Cordis 不是 DSH 里的某一个 Plugin，也不是发给模型的上下文；它是让所有 Plugin 得以装入、协作和退出的底层框架。
 
-下文先把 Cordis 自身讲清楚，再用一项最小 Tool 和 Agent Loop 说明 DSH 怎样使用它。至于完整的 DSH 组装过程，留给后续文章。
+同一套 Cordis 规则既管理最小的 Tool Plugin，也管理 Agent Loop 这样的核心模块。
+
+把这些概念放进一座剧场，会更容易看清它们怎样协作：
+
+![Cordis 剧场：同一 Node.js 进程中的 Context 容纳多个 Plugin；Plugin 通过 inject 声明 Service 依赖，Effect 在 cleanup 时撤回](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-theater-hero.webp)
+
+_图 1：Context 是当前作用范围，Plugin 是进场工作的剧组，Service 是共享的灯光与音响，inject 是开演前提交的技术需求单。Cordis 像舞台监督一样，等 Service 就绪后让 Plugin 开工。Effect 不是“舞台特效”，而是 Plugin 加入的可逆变化，例如 Tool 注册或事件监听；cleanup 是退出时撤回这些变化的逻辑。整幅图都位于同一个 Node.js 进程里，空间位置只表示作用范围、依赖和生命周期，不表示网络或进程边界。_
 
 ## 1. DSH 先用 Cordis 建立 Context，再把模块装进去
 
@@ -88,7 +94,7 @@ export function apply(ctx: Context) {
 | 对象式      | 默认导出包含上述字段的对象                | 对象的 `apply(ctx)`   | 希望把 Plugin 元数据集中在一个对象里 |
 | 类式        | 默认导出继承 Cordis `Service` 的 class    | class 构造函数        | 需要向其他 Plugin 提供具名 Service   |
 
-因此，“Plugin 是 TypeScript 模块”是 DSH 开发者看到的装载单位；更精确地说，Cordis 挂载的是模块公开的函数、对象或 `Service` 子类。后文的 `greet-tool` 使用第一种，Agent Loop 使用第三种。两者写法不同，但都进入同一套 Context 和生命周期。
+因此，“Plugin 是 TypeScript 模块”是 DSH 开发者看到的装载单位；更精确地说，Cordis 挂载的是模块公开的函数、对象或 `Service` 子类。`greet-tool` 使用第一种，Agent Loop 使用第三种。两者写法不同，但都进入同一套 Context 和生命周期。
 
 `ctx` 是这个 Plugin 进入运行系统的入口。它可以从 Context 取得已经存在的 Service，也可以提供新的 Service、注册事件监听、加入 Tool，或者启动一项由自己负责的工作。因为这些变化都经过当前 Context，Cordis 能把它们记在创建者名下。
 
@@ -127,17 +133,17 @@ Effect 补上了最后一块。Service 描述 Plugin 能提供什么，inject �
 
 ![Cordis Context 在单进程内通过 Service、inject、Effect 和 cleanup 连接多个 Plugin](/assets/img/blog/deepseek-harness-02-plugin-system/cordis-one-process.webp)
 
-_Figure 1（图 1）：多个 Plugin 在同一个 Cordis Context 上相遇。提供方贡献具名 Service，使用方通过 inject 声明依赖，Plugin 拥有的 Effect 最终沿 cleanup 路径撤回。_
+_图 2：多个 Plugin 在同一个 Cordis Context 上相遇。提供方贡献具名 Service，使用方通过 inject 声明依赖，Plugin 拥有的 Effect 最终沿 cleanup 路径撤回。_
 
-到这里再使用微服务类比，才不会把 Cordis 讲偏。两者都鼓励使用方依赖稳定的能力约定，而不是亲自构造某个具体提供方；也都把“谁提供能力”和“谁使用能力”分开。但 Cordis 的 Plugin 不是独立服务器，没有单独部署，也不走 RPC。它们通常直接调用 Service 或发送进程内事件。Cordis 管的是激活、作用范围、所有权和清理，不是网络路由、健康检查或分布式故障恢复。更准确地说，它是一个带有动态生命周期的同进程 Service 容器。
+Cordis 与微服务的相似处，在于使用方依赖稳定的能力约定，而不是亲自构造某个具体提供方；两者也都把“谁提供能力”和“谁使用能力”分开。但 Cordis 的 Plugin 不是独立服务器，没有单独部署，也不走 RPC。它们通常直接调用 Service 或发送进程内事件。Cordis 管的是激活、作用范围、所有权和清理，不是网络路由、健康检查或分布式故障恢复。更准确地说，它是一个带有动态生命周期的同进程 Service 容器。
 
 这样也能更准确地理解“可替换”。新的提供方可以占据同一个 Service 名称，使用方继续依赖这个名字；Cordis 会让使用方在当前提供方就绪后重新运行。当然，名字相同并不自动保证兼容。事件顺序、取消方式、结果格式和退出行为仍然必须遵守同一份 Service 约定。
 
-现在已经有足够的 Cordis 背景，可以处理最容易混淆的问题：如果 Plugin 能增加 Tool，Plugin 和 Tool 是否只是同一个东西的两种叫法？
+这也引出一个容易混淆的问题：如果 Plugin 能增加 Tool，Plugin 和 Tool 是否只是同一个东西的两种叫法？
 
 ## 4. 官方 `greet` 例子清楚地划出了 Plugin 与 Tool 的边界
 
-DeepSeek Harness 官方的[开发一个 Tool 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.zh.md)使用了 `greet`。这个例子足够短，正文可以把它完整讲明白，无需让读者跳到链接里自己拼出结论：
+DeepSeek Harness 官方的[开发一个 Tool 教程](https://github.com/deepseek-ai/deepseek-harness/blob/47f943859bef60e4160492346772ded9b24f765a/docs/user/develop/basic/tool.zh.md)用 `greet` 展示 Plugin 怎样注册一项 Tool：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis';
@@ -184,9 +190,9 @@ export function apply(ctx: Context) {
 
 ![greet Plugin 在激活时注册 Tool，模型稍后再请求执行这项 Tool](/assets/img/blog/deepseek-harness-02-plugin-system/plugin-vs-tool-greet.webp)
 
-_Figure 2（图 2）：左侧较大的运行单元是 Plugin，`greet` 是它注册进去的较小 Tool 定义。稍后模型发出 Tool Call 时，Agent Loop 才在模型与现有 Tool Registry 之间协调这次执行。_
+_图 3：左侧较大的运行单元是 Plugin，`greet` 是它注册进去的较小 Tool 定义。稍后模型发出 Tool Call 时，Agent Loop 才在模型与现有 Tool Registry 之间协调这次执行。_
 
-这个例子已经把两者分开：
+Plugin 与 Tool 的边界如下：
 
 |                  | Plugin                                      | Tool                                      |
 | ---------------- | ------------------------------------------- | ----------------------------------------- |
@@ -202,7 +208,7 @@ _Figure 2（图 2）：左侧较大的运行单元是 Plugin，`greet` 是它注
 
 DeepSeek Harness 不只用 Cordis 管理第三方扩展。它自带的配置会分别装入 Session、Tool Registry、模型接入、默认 Agent Loop 和多个 Tool Provider。它们与刚才的 `greet-tool` 一样，都经过 Cordis Loader 和同一套生命周期规则进入系统。
 
-默认 Agent Loop 是最直接的证据。在本文固定的版本中，它是 Cordis `Service` 的子类，并声明了五项必需依赖：
+在固定 commit 中，默认 Agent Loop 是 Cordis `Service` 的子类，并声明了五项必需依赖：
 
 ```ts
 export class AgentLoop extends Service {
@@ -215,7 +221,7 @@ export class AgentLoop extends Service {
 }
 ```
 
-这几行已经足以回答标题。Agent Loop 是 Plugin，因为 Cordis 负责装入它、等待它的必需 Service、给它 Context，并在退出时清理它。激活以后，它又以 `agentLoop` 这个名字向其他 Plugin 提供 Service。职责位于运行流程中心，并不会让它脱离 Plugin 模型。
+Agent Loop 是 Plugin，因为 Cordis 负责装入它、等待它的必需 Service、给它 Context，并在退出时清理它。激活以后，它又以 `agentLoop` 这个名字向其他 Plugin 提供 Service。职责位于运行流程中心，并不会让它脱离 Plugin 模型。
 
 正式的 Bash 集成也与 `greet` 采用相同结构，只是依赖更多。Bash Plugin 会 inject `tools`、`shell`、`systemPrompt` 和 `shellEnv`，然后注册一项名为 `bash` 的 Tool。模型只看见 Tool 名字、描述和参数；Plugin 则在模型看不见的地方使用当前 Shell Service，并参与提示词、策略和清理过程。
 
@@ -223,9 +229,9 @@ Cordis 因此给 DSH 带来三项具体性质。核心职责可以沿具名 Serv
 
 同一套模型也会增加调试成本。依赖图会动态变化，排查问题时需要确认当前 Context 中究竟是哪一个提供方存在、哪些使用方已经停用。替换实现除了方法名字相同，还必须兼容时间顺序和清理方式。Plugin 仍是同进程可信代码，所以 Cordis 提供的是组合和生命周期，不是沙箱或权限边界。
 
-本篇讲到这里就够了。需要记住的词义是：Cordis 管理同进程 Plugin；Plugin 通过 Service、inject、事件和 Effect 协作；Tool 只是 Plugin 可能注册的一项模型可见动作。
+归纳起来，Cordis 管理同进程 Plugin；Plugin 通过 Service、inject、事件和 Effect 协作；Tool 是 Plugin 可能注册的一项模型可见动作。
 
-DSH 怎样完整组装运行系统，应当单独展开。第 3 篇解释 Turn 与 Session 以后，第 4 篇会继续讨论 Profile、能力提供方、使用方、scope 和 Agent Loop 怎样共同组成一个实际运行的 Agent：[一个 Agent 是怎样被组装出来的？拆解 DeepSeek Harness 的 Cordis 架构](https://github.com/LuNa-shi/luna-shi.github.io/issues/5)
+第 3 篇将解释 Turn 与 Session；第 4 篇继续讨论 Profile、能力提供方、使用方、scope 和 Agent Loop 怎样共同组成一个实际运行的 Agent：[一个 Agent 是怎样被组装出来的？拆解 DeepSeek Harness 的 Cordis 架构](https://github.com/LuNa-shi/luna-shi.github.io/issues/5)
 
 ### 延伸阅读
 
