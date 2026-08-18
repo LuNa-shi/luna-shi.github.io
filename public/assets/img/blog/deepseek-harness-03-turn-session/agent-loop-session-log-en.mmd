@@ -1,0 +1,59 @@
+sequenceDiagram
+  autonumber
+  participant I as Input
+  participant A as Agent Loop Plugin
+  participant P as System Prompt Service
+  participant S as Session Event Log
+  participant L as LLM Service
+  participant T as Tool Service
+  participant D as Persistence
+
+  rect rgb(238, 246, 255)
+    Note over I,D: Turn 1 — one Input, three Steps
+    I->>A: “Fix sum([]): expected 0, got undefined”
+    A->>S: append turn/start
+
+    Note over A,T: Step 1 — edit
+    A->>P: assemble system prompt and Tool schemas
+    A->>S: append step/start and admitted Input after pre-step
+    S-->>A: derive model history
+    A->>L: model request
+    L-->>A: assistant output with edit Tool Call
+    A->>S: append assistant output and tool/call
+    A->>T: execute edit Tool
+    T-->>A: edit result
+    A->>S: append tool/result and step/end
+
+    Note over A,T: Step 2 — verify
+    A->>P: reassemble current prompt and Tools
+    A->>S: append step/start after pre-step
+    S-->>A: derive history including edit result
+    A->>L: next model request
+    L-->>A: assistant output with test Tool Call
+    A->>T: execute test Tool
+    T-->>A: tests passed
+    A->>S: append call, result, and step/end
+
+    Note over A,L: Step 3 — finish
+    A->>S: append step/start
+    S-->>A: derive history including test result
+    A->>L: next model request
+    L-->>A: final answer, no Tool Call
+    A->>S: append assistant message, step/end, turn/end
+  end
+
+  S-->>D: write-behind / checkpoint contiguous events
+
+  rect rgb(244, 250, 240)
+    Note over I,S: Turn 2 — a later Input, same Session
+    I->>A: “Why should empty input return 0?”
+    A->>S: append turn/start
+    A->>P: assemble current prompt and Tools
+    A->>S: append step/start and admitted Input after pre-step
+    S-->>A: derive history from Turn 1 + new Input
+    A->>L: model request
+    L-->>A: explanation, no Tool Call
+    A->>S: append assistant message, step/end, turn/end
+  end
+
+  S-->>D: persist the extended Session history

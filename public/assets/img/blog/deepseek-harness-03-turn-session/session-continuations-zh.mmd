@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph A[Session A——已经记录的历史]
+    A1[Turn 1\n已闭合]
+    A2[Turn 2\n已闭合]
+    A3[Turn 3\n进程停止时仍未闭合]
+    A1 --> A2 --> A3
+  end
+
+  A2 -->|Resume：延续同一个 Session identity| R[Session A 继续\n新的 Input 追加 Turn 3]
+  A3 -->|Crash Recovery| C[保留有效的持久化前缀\n把未完成尾部闭合为 interrupted]
+  C --> C2[之后的 Input 打开新 Turn]
+
+  A2 -->|在合法闭合边界 Fork| F0[Session B\nparentSession: A]
+  F0 --> F1[继承冻结的历史前缀\nTurn 1 + Turn 2]
+  F1 --> F2[独立发展的未来\nTurn 3′、Turn 4′……]
+
+  classDef source fill:#eef6ff,stroke:#4178be,color:#17324d
+  classDef resume fill:#eefaf1,stroke:#3f8f5b,color:#183d27
+  classDef recover fill:#fff7e8,stroke:#c7861f,color:#5b3b08
+  classDef fork fill:#f5efff,stroke:#7d58b3,color:#35224e
+  class A1,A2,A3 source
+  class R resume
+  class C,C2 recover
+  class F0,F1,F2 fork

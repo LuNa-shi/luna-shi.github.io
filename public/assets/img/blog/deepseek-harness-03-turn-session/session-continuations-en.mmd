@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph A[Session A — recorded history]
+    A1[Turn 1\nclosed]
+    A2[Turn 2\nclosed]
+    A3[Turn 3\nopen when process stops]
+    A1 --> A2 --> A3
+  end
+
+  A2 -->|Resume same Session identity| R[Session A continues\nnext Input appends Turn 3]
+  A3 -->|Crash Recovery| C[Keep valid persisted prefix\nclose unfinished tail as interrupted]
+  C --> C2[Later Input opens a new Turn]
+
+  A2 -->|Fork at a valid closed boundary| F0[Session B\nparentSession: A]
+  F0 --> F1[Inherited frozen prefix\nTurn 1 + Turn 2]
+  F1 --> F2[Independent future\nTurn 3′, Turn 4′, …]
+
+  classDef source fill:#eef6ff,stroke:#4178be,color:#17324d
+  classDef resume fill:#eefaf1,stroke:#3f8f5b,color:#183d27
+  classDef recover fill:#fff7e8,stroke:#c7861f,color:#5b3b08
+  classDef fork fill:#f5efff,stroke:#7d58b3,color:#35224e
+  class A1,A2,A3 source
+  class R resume
+  class C,C2 recover
+  class F0,F1,F2 fork

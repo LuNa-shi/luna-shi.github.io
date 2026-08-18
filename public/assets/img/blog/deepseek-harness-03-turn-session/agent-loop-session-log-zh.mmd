@@ -1,0 +1,59 @@
+sequenceDiagram
+  autonumber
+  participant I as Input
+  participant A as Agent Loop Plugin
+  participant P as System Prompt Service
+  participant S as Session Event Log
+  participant L as LLM Service
+  participant T as Tool Service
+  participant D as Persistence
+
+  rect rgb(238, 246, 255)
+    Note over I,D: Turn 1——一个 Input，三个 Step
+    I->>A: “修复 sum([])：期望 0，实际 undefined”
+    A->>S: 追加 turn/start
+
+    Note over A,T: Step 1——修改
+    A->>P: 组装 system prompt 与 Tool schemas
+    A->>S: 在 pre-step 后追加 step/start 与已接纳的 Input
+    S-->>A: 派生模型历史
+    A->>L: 发起模型请求
+    L-->>A: 返回包含修改 Tool Call 的输出
+    A->>S: 追加模型输出与 tool/call
+    A->>T: 执行修改 Tool
+    T-->>A: 返回修改结果
+    A->>S: 追加 tool/result 与 step/end
+
+    Note over A,T: Step 2——验证
+    A->>P: 重新组装当前 prompt 与 Tools
+    A->>S: 在 pre-step 后追加 step/start
+    S-->>A: 派生包含修改结果的历史
+    A->>L: 发起下一次模型请求
+    L-->>A: 返回包含测试 Tool Call 的输出
+    A->>T: 执行测试 Tool
+    T-->>A: 测试通过
+    A->>S: 追加 call、result 与 step/end
+
+    Note over A,L: Step 3——结束
+    A->>S: 追加 step/start
+    S-->>A: 派生包含测试结果的历史
+    A->>L: 发起下一次模型请求
+    L-->>A: 给出最终回答，不再请求 Tool
+    A->>S: 追加 assistant message、step/end、turn/end
+  end
+
+  S-->>D: 以 write-behind / checkpoint 持久化连续事件
+
+  rect rgb(244, 250, 240)
+    Note over I,S: Turn 2——新的 Input，同一个 Session
+    I->>A: “为什么 empty input 应该返回 0？”
+    A->>S: 追加 turn/start
+    A->>P: 组装当前 prompt 与 Tools
+    A->>S: 在 pre-step 后追加 step/start 与已接纳的 Input
+    S-->>A: 从 Turn 1 与新 Input 派生历史
+    A->>L: 发起模型请求
+    L-->>A: 直接解释，不请求 Tool
+    A->>S: 追加 assistant message、step/end、turn/end
+  end
+
+  S-->>D: 持久化扩展后的 Session 历史
