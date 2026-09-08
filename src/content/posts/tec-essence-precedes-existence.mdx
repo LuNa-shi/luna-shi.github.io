@@ -152,47 +152,79 @@ When comparing systems, measure task success, elapsed time and resource use sepa
 
 ---
 
-## 4. Reading system structure through the running agent
+## 4. Reinterpreting the objects of MAS research
 
-The distinction between setup and execution helps locate familiar system features. A topology summarizes relations between running units. Tools let those units act. Communication changes what another unit can observe. These features have concrete roles without requiring more constituents in every Task definition.
+MAS work often takes a topology, a team of roles, a communication protocol or a memory mechanism as its object of study. TEC asks what each of these changes in the execution of a task. The distinction matters for explaining results: a better score after changing a graph could come from a different division of work, different information reaching a model call, or different instructions at its nodes. Those are different interventions, even when one method packages them together. Related work on agent memory and automatic design helps identify mechanisms that a multi-agent system may also use; these mechanisms do not themselves require multiple agents.
 
-### 4.1 Topology is a projection
+### 4.1 Topology: which relation does an edge represent?
 
-The most instructive case is topology, because the field has treated it as the main object of design and even of search. Ask what a topology actually fixes. A fixed workflow such as MetaGPT's pipeline fixes two things: a decomposition of the task into stages with dependencies, and a rule about which stage's artifacts each subsequent stage may read. The first is a dependency relation introduced by the decomposition; the second is an access rule over environmental state. An orchestrator such as Magentic-One's (Fourney et al., 2024) is a capacity that holds the authority to generate, match and verify. A critic is a capacity that holds verification authority. A "graph of agents" in GPTSwarm (Zhuge et al., 2024) is a dependency structure plus a visibility structure whose edges and node prompts are optimized jointly. Topology, in short, is the shadow cast on the three primitives by a policy over the operators: which structure the task has, which views the environment grants, and which capacities hold which authority (Figure 3). [D] It is not a thing; it is a projection.
+An agent topology is a graph that records a chosen relation between execution units. Before interpreting it, we must specify what its edges mean. “A must finish before B starts,” “B may read A's messages,” and “A may assign work to B” describe dependency, information access and control, respectively. They need not produce the same graph.
+
+For the parity theorem, suppose one agent drafts the proof, two others review it, and a fourth prepares the final argument. One reviewer checks the algebraic expansion; the other checks the logical implication and integer assumptions. Both reviews need the draft, and finalization needs both reviews. Each review returns an annotated copy of the draft, so the finalizer receives the argument together with the findings. If an edge means **the next unit needs this unit's output**, the graph has four edges: Draft → Check A, Draft → Check B, Check A → Finalize, and Check B → Finalize.
+
+TEC explains the design decisions behind that drawing:
+
+- **Task:** the proof request has been split into drafting, two review obligations and finalization. This decomposition creates the dependencies.
+- **Environment:** the reviewers can read the draft, and the finalizer can read their findings. Permission to read a result makes the handoff possible; **assemble** determines which parts actually enter a model call.
+- **Capacity and operator policy:** **match** assigns capacities to these requests. Instructions can specialize one reviewer in algebra and the other in logic. The coordination policy decides who may request another review or accept the result through **verify**.
+
+Now keep all four edges and change the reviewers. They might use identical instructions and receive the whole draft, or use different instructions and receive material selected for their review obligations. The handoff graph stays the same, but the computations and available evidence differ. Conversely, letting Check B inspect Check A's findings adds a dependency if B must wait for them. That changes both the information available to B and the opportunity for parallel execution.
+
+This is the precise sense in which topology is a **projection** in TEC: select one relation from a fuller execution design and retain its nodes and edges. The graph is useful, but it omits the task content, model instructions, selected observations and other relations unless these are explicitly attached as annotations. [D] The three primitives alone do not determine a unique graph; decomposition, matching and access policies must also be specified.
 
 <TecFigure
   mode="topology"
   fallback="/assets/img/blog/tec-essence-precedes-existence/fig3_projection.svg"
-  alt="Task dependencies, environment visibility, and capacity authority project into agent topologies."
+  alt="A proof workflow with explicitly defined output-dependency edges; the same graph can use different reviewer instructions and information."
 />
 
-_Figure 3. Switch between a pipeline, parallel review and specialist review. The latter two have the same handoff graph but different views and capacities: topology alone omits those details. The full-size static diagram gives additional examples of topology as a projection._
+_Figure 3. Each node represents an execution unit. An arrow means that the receiving unit needs the sender's output. Switch from sequential to parallel review to change those dependencies, then to specialist review to change instructions and views while keeping the same graph. A graph with the same shape need not describe the same computation._
 
-This has a sharp consequence for the topology-search literature—DyLAN (Liu et al., 2023b), GPTSwarm, ADAS (Hu et al., 2024), AFlow (Zhang et al., 2025c), MaAS (Zhang et al., 2025d), AgentSquare (Shang et al., 2024). These searches typically work with benchmark tasks and selected base models while varying prompts, workflows or edges. In TEC terms, changing a prompt can change capacity, and changing an edge can change visibility or task dependencies. The primitives therefore are not all fixed. The useful distinction is between searching those settings inside a benchmark-defined design space and changing the task contracts, available observations or capability lifecycle that define that space. Whether the resulting gains transfer to new tasks is an empirical question.
+This distinction also prevents misreading graph-based research. In [GPTSwarm (Zhuge et al., 2024)](https://arxiv.org/abs/2402.16823v3), nodes represent operations such as model calls, rather than necessarily whole agents, and edges represent information flow. The method optimizes node prompts and graph connectivity. TEC reads these as changes to Capacity and to the routing of information into subsequent execution. A gain from their joint optimization cannot be attributed to graph shape alone. A useful comparison therefore records what changed at the nodes and what information changed at the edges, alongside the resulting cost and success rate.
 
-### 4.2 A sub-agent is an action to its caller and an execution unit in its own right
+### 4.2 Roles and hierarchies: who does which work, with what authority?
 
-Suppose the proving agent asks a child to review its parity argument. To the caller, this is an available action with an eventual result. The child starts its own execution: read the statement and draft, examine the inferences and report any gap. Its Task is the review request, its Environment includes the draft and definitions, and its Capacity determines how it performs the review. [D]
+A role name such as “prover,” “critic” or “orchestrator” can conceal several different choices. Assigning a critic the obligation to check the parity argument changes its **Task**. Giving it instructions for checking quantifiers changes its **Capacity**. Giving it the proof draft changes its **Environment**. Allowing it to reject the result or request another attempt assigns authority over **verify** or **generate**. Calling it a critic does not tell us which of these choices was made. [D]
 
-The caller's tool interface therefore wraps another agent's interaction process. A peer arrangement changes how work is initiated and coordinated: peers may claim work independently and exchange observations through shared state. Whether an agent persists after one request is a separate lifecycle choice; persistence alone does not distinguish a tool invocation from a peer relationship.
+Existing systems combine these choices in different ways. [MetaGPT (Hong et al., 2023)](https://arxiv.org/abs/2308.00352v7) encodes standard operating procedures and uses structured outputs for handoffs. TEC reads its organization as task decomposition plus rules for what downstream executions receive. [Magentic-One (Fourney et al., 2024)](https://arxiv.org/abs/2411.04468v1) gives an Orchestrator responsibility for planning, tracking progress and replanning while directing specialized agents. TEC locates the hierarchy in that allocation of coordination decisions, together with the capacities available to perform the assigned work.
 
-### 4.3 Communication is a write to shared state within someone's view
+A sub-agent called through a tool interface fits the same account. When the prover requests a review, the request is an action from the caller's perspective. The child is still a complete execution unit with its own task, observations and action sequence. “Tool” describes the calling interface; “agent” describes the execution behind it. Whether that child persists is another design choice.
 
-There is no communication primitive. To communicate is to write to the global state at a location that lies in another runtime's view. Direct messaging is the case where the medium is a queue and the view is one-to-one; file-based communication is the case where a "private" message is a file only one other view includes. The blackboard (Erman et al., 1980), the tuple space (Gelernter, 1985) and stigmergy (Theraulaz and Bonabeau, 1999) are environment-mediated communication with structured, associative and unaddressed stores; learned communication in multi-agent RL (Sukhbaatar et al., 2016; Foerster et al., 2016; Das et al., 2019) is learning a store and a visibility function jointly. The consequence, in Section 6.5, is that "efficient communication" reduces to the joint design of the store and the views.
+The research question becomes more specific than which role names form the best team: does a gain come from specialized instructions, a better division of obligations, different evidence, or a better allocation of coordination decisions?
 
-### 4.4 State accumulated during a run and configuration reused across runs
+### 4.3 Communication: how does one execution's result reach another?
 
-The definitions, proof draft and record of rejected inferences are environmental or execution state. A reusable instruction to justify each implication before submitting an argument belongs to Capacity when it is loaded as part of the action-selection setup. The distinction is what the information does, not whether it lives in a file called “memory.”
+Communication research studies what agents exchange, who receives it and when it arrives. TEC represents this through changes to the Environment and the assembly of later inputs. A message must be recorded or delivered somewhere, become observable to its recipient, and then be used in a decision. These are separate steps; making a message readable does not guarantee that it enters the next model call. [D]
 
-For example, “this draft does not justify the step from n² = 2k to n being even” is an observation associated with one run. A saved instruction that changes how future runs check inferences is a configuration update. The same file format could hold either; the system must make the role clear. Provenance links an observation to the run and revision that produced it, while a capacity version identifies the configuration used. These records support diagnosis and comparison when needed. They do not add new primitives to the proof request. [D]
+In the proof example, a reviewer might send “the implication after n² = 2k is unjustified” through an inbox or attach it to the proof draft. Either can give the prover the same observation. Sending only “incorrect” delivers less useful evidence even if the graph and number of messages are unchanged. Giving both reviewers access to each other's comments also changes their information, potentially sacrificing independent assessment.
 
-Ordinary feedback can change the next action without changing Capacity. Revising the reusable instructions is the separate operation called evolve. This distinction makes it possible to compare two configurations without mistaking every new observation for a change in the agent's underlying means of acting.
+MetaGPT's structured handoffs provide one concrete example of communication whose content and format are part of the design. The older blackboard and tuple-space approaches likewise organize how partial results become available to other problem solvers (Erman et al., 1980; Gelernter, 1985). TEC groups these mechanisms by the information they expose and the rules governing its use, rather than by whether the interface looks like chat or shared storage.
 
-### 4.5 Add structure when execution needs it
+This representation does not make implementations equivalent in cost. An inbox and a shared document may differ in delivery delay, ordering, concurrency and retrieval overhead. The comparison should ask whether they deliver the needed evidence at the needed step, at what cost, and with what effect on the resulting proof. Section 6.5 develops that consequence.
 
-Before starting the proof, the system needs a stated proposition, access to the relevant definitions and workspace, and a capacity that can construct and communicate an argument. It does not also need a capability leaderboard, a task dependency graph or a provenance database.
+### 4.4 Memory: what is retained, and how does it affect later execution?
 
-Splitting review across agents introduces handoffs and dependencies. Reusing review results introduces a need to associate them with the right proof version. Comparing prompt versions introduces evaluation records. Each addition solves a problem created by the way the execution is organized. TEC makes these choices explicit instead of treating every useful management field as part of every agent's definition.
+Memory research concerns both the information retained from earlier activity and the mechanism that makes it useful later. [MemGPT (Packer et al., 2023)](https://arxiv.org/abs/2310.08560v2) manages movement between memory tiers and the limited model context. [A-MEM (Xu et al., 2025)](https://arxiv.org/abs/2502.12110v11) organizes notes with attributes and links, and updates existing notes as new material arrives. These approaches change more than the amount stored: they change how information is organized and made available.
+
+TEC separates three interventions:
+
+- **Retain information in the Environment.** Save the parity proof, its assumptions and the reviewer’s objection. A later execution can consult that record without repeating the same discovery.
+- **Change retrieval and assemble.** Index the record under parity or retrieve it when an argument needs an odd/even case split. A saved proof cannot help a model call that never receives the relevant part.
+- **Adopt a reusable procedure in Capacity.** Turn experience into an instruction such as “identify the justification for each implication before submitting a proof,” and load it as part of how later runs act. This changes the reusable means of reasoning, rather than merely adding another fact to consult.
+
+[Agent Workflow Memory (Wang et al., 2024c)](https://arxiv.org/abs/2409.07429v1) illustrates procedural reuse: it derives reusable workflows from past experiences and supplies them to guide later tasks. In TEC, storing such a workflow concerns the Environment; retrieving it concerns **assemble**; adopting it as a reusable action procedure can change Capacity. The mapping depends on how the system uses it, not on the word “memory” in its name. [D]
+
+These distinctions identify what an evaluation should isolate. Did the system improve because it retained a useful lemma, retrieved it at the right moment, or changed its proof strategy? Persistence across runs alone does not answer that question. Nor does every new observation constitute a capacity update: feedback on the current draft can change the next action while the model, instructions and available actions stay fixed.
+
+### 4.5 Workflow search and self-improvement: what is being optimized?
+
+Automatic agent-design methods search different parts of the execution setup. [DSPy (Khattab et al., 2023)](https://arxiv.org/abs/2310.03714v1) compiles declarative language-model programs and optimizes their components against a metric. GPTSwarm searches prompts and connectivity. [ADAS (Hu et al., 2024)](https://arxiv.org/abs/2408.08435v2) uses a meta-agent to propose agent code, evaluates candidates and maintains an archive of designs. Their common object is a configurable procedure for solving tasks, but their search spaces are different.
+
+TEC describes a candidate by the choices it changes: task-generation rules, matching, context assembly, the capacities used, or the procedure for evaluating results. Search proposes changes to some of these choices; evaluation determines which candidates are retained. When an accepted change becomes reusable configuration, that is the operation called **evolve**. This description separates the object being optimized from the optimizer that proposes the change. [D]
+
+For theorem proving, one search might change only the prover's instructions. Another might introduce separate algebra and logic reviews. A third might change which lemmas are retrieved. All could improve the final proof, but they intervene on different parts of TEC and incur different costs. Calling all three “a better agent” hides the explanation that the experiment should establish.
+
+The same distinction clarifies self-improvement. An external search process can optimize an agent design. A system claiming to improve itself must also show how its own execution records inform changes that later runs actually use. Neither process guarantees improvement merely by producing a new configuration. Section 6.6 asks whether the retained change helps on tasks that did not guide its selection, and whether the gain survives accounting for cost and regressions.
 
 ---
 
@@ -234,9 +266,9 @@ For a task-allocation system, requests can be treated as demand and capacities a
 
 Because active context is selected from a view by a policy, the policy has a measurable effect on quality that can go either way. Liu et al. (2023) on positional degradation, Zhang et al. (2025b) on collapse, and a large practitioner literature on distraction by irrelevant retrieval establish that an indiscriminate policy loses to a selective one. [E] TEC's addition is to name the policy as a design object and to conjecture that indexing, progressive disclosure and eviction may improve the Pareto frontier over concatenation on long-horizon task families where relevant information is sparse. [C] This is the information bottleneck (Tishby et al., 1999) with the target being information useful for the requested outcome. Refuted if concatenation matches a selective policy on the frontier when relevant information is a small fraction of the available state.
 
-### 6.5 Communication design reduces to environment design
+### 6.5 Communication should be compared by information delivered and its cost
 
-Given Section 4.3, the study of efficient inter-agent communication is the joint study of the shared store's structure and the visibility functions over it. [D] Whether agents need a messaging channel is the question of whether the store can be structured so that what each runtime needs lies in its view when it needs it; the design of a repository, a task board or a memory index is the design of a protocol. Refuted if a channel outperforms every structuring of the store with views held fixed—unlikely, since any message is representable as a store entry with a one-runtime view.
+Section 4.3 represents communication as information written or delivered into an environment, made visible to another runtime, and selected for use. [D] This lets a messaging protocol and a shared-store design be compared in terms of the observations they provide. It does not imply equal delivery time, ordering guarantees or cost. A useful experiment holds the task, capacities and required evidence fixed, then varies the medium, access rules and assembly policy. The question is which design supplies the needed evidence reliably and cheaply enough to improve execution. The representation is a modeling choice; performance equivalence requires these operational conditions to be matched, not just the message contents.
 
 ### 6.6 Self-improvement requires evidence that an update helps
 
@@ -268,7 +300,7 @@ Finally, a conjecture about a particular coordination strategy, where explicit c
 
 ## 7. Limits of the framework
 
-**The boundary between state and configuration needs to be explicit.** Section 4.4 distinguishes observations used during execution from reusable configuration that changes action selection. Systems that edit their own prompts or skills during a run can cross that boundary. Comparing such runs requires recording when the configuration changed; the initial triple alone does not describe the whole history.
+**The boundary between state and configuration needs to be explicit.** Section 4.4 distinguishes retained information, its retrieval, and reusable procedures that change action selection. Systems that edit their own prompts or skills during a run can cross that boundary. Comparing such runs requires recording when the configuration changed; the initial triple alone does not describe the whole history.
 
 **Three regions fit poorly.** Social simulation—Generative Agents (Park et al., 2023) and descendants—is in TEC terms the most thorough study of an environment that exists (memory stream as view, reflection as policy), but it is organized around believability rather than task success; the framework can describe it and cannot evaluate it. Adversarial and mixed-motive settings assume agents whose essence is not the task they were assigned; TEC assumes cooperation and needs extension before it can speak there. And learning that changes model weights rather than harness state is an evolve operation on a different timescale that the framework does not yet distinguish.
 
@@ -311,7 +343,7 @@ Table A1 places the main families on seven design questions derived from the pri
 | Debate / sampling-and-voting (Li et al., 2024; Zhang et al., 2025g)                                             | Designer                        | Shared, then cross-read              | Fixed, homogeneous      | Fixed                           | Ephemeral           | Vote                     | Nothing                    |
 | Topology search (DyLAN; GPTSwarm; ADAS; AFlow; MaAS; AgentSquare)                                               | Benchmark                       | Prompt                               | Prompts                 | Searched offline                | Ephemeral           | Benchmark metric         | Prompts and organization   |
 | Prompt optimization (DSPy, Khattab et al., 2023; OPRO, Yang et al., 2023; PromptBreeder, Fernando et al., 2023) | Benchmark                       | Prompt                               | Prompts                 | Single agent                    | Ephemeral           | Benchmark metric         | Prompts, on-distribution   |
-| Memory systems (MemGPT; A-MEM; Mem0; Agent Workflow Memory; ACE)                                                | External                        | Single agent; store structure varies | Fixed                   | Single agent                    | Cross-episode store | External                 | The store                  |
+| Memory systems (MemGPT; A-MEM; Mem0; Agent Workflow Memory; ACE)                                                | External                        | Single agent; store structure varies | Varies by mechanism     | Single agent                    | Cross-episode store | External                 | Store and reused workflows |
 | Dynamic-task discovery (FunSearch; AI Scientist)                                                                | Executing capacities            | Shared archive                       | Fixed                   | Fixed loop                      | Archive persists    | Fixed program verifier   | The archive                |
 | Self-modifying agents (Darwin Gödel Machine; continual harnesses)                                               | External benchmark              | Single agent                         | Dynamic                 | Single agent                    | Archive of parents  | Benchmark                | Code, prompts, skills      |
 | Programmable recursive harnesses (RLM, Zhang et al., 2025a; Prime Intellect, 2026)                              | Root runtime, at execution time | Externalized in kernel; progressive  | Dynamic (harness state) | Adaptive at runtime             | Persistent tree     | Root, informal           | Harness state, unvalidated |
@@ -325,16 +357,16 @@ Table A1 places the main families on seven design questions derived from the pri
 | Decomposition at runtime                                     | Validated              | ReAct (Yao et al., 2022); Tree of Thoughts (Yao et al., 2023); Reflexion (Shinn et al., 2023)                                                                 | Generation became an operator the executing capacity can invoke                                                             |
 | Structured artifacts as handoff medium                       | Validated, conditional | MetaGPT (Hong et al., 2023)                                                                                                                                   | Works when the task matches the encoded dependency structure                                                                |
 | Interface and view in coding                                 | Validated              | SWE-agent (Yang et al., 2024); Agentless (Xia et al., 2024)                                                                                                   | With verifiers free, view and verifier determine the frontier; autonomy is not required                                     |
-| Persistent memory and store structure                        | Validated              | MemGPT (Packer et al., 2023); A-MEM (Xu et al., 2025); Mem0 (Chhikara et al., 2025); AWM (Wang et al., 2024c); ACE (Zhang et al., 2025b)                      | Store structure is a design variable; visibility across runtimes is not yet one                                             |
+| Persistent memory and store structure                        | Validated              | MemGPT (Packer et al., 2023); A-MEM (Xu et al., 2025); Mem0 (Chhikara et al., 2025); AWM (Wang et al., 2024c); ACE (Zhang et al., 2025b)                      | Separate storage, retrieval, visibility and procedural reuse (4.4)                                                          |
 | Tool use                                                     | Validated              | Toolformer (Schick et al., 2023); ToolLLM (Qin et al., 2023); Gorilla (Patil et al., 2023)                                                                    | Solved as capacity acquisition                                                                                              |
 | Heterogeneous capacity                                       | Validated              | Mixture-of-Agents (Wang et al., 2024d); heterogeneous debate (Zhang et al., 2025g)                                                                            | Capacity diversity, as 6.1 predicts                                                                                         |
 | Homogeneous scaling saturates                                | Validated              | Li et al. (2024); Qian et al. (2024)                                                                                                                          | Critical path and sampling ceiling, as 6.1 and 6.2 predict                                                                  |
 | Role-play scaffolds and fixed workflows                      | Saturated              | CAMEL; ChatDev; AutoGen                                                                                                                                       | Generation at design time, nothing evolving, little left to learn from role choice                                          |
 | Debate among instances of one model                          | Saturated              | Huang et al. (2023); Wang et al. (2024a); Zhang et al. (2025g)                                                                                                | Often fails to beat strong baselines in the cited evaluations; compare with a simulator matching per-call contexts (6.1)    |
 | Prompt optimization                                          | Saturated              | DSPy; OPRO; PromptBreeder                                                                                                                                     | Prompts optimized on a benchmark distribution                                                                               |
-| Offline topology search                                      | Saturated              | DyLAN; GPTSwarm; ADAS; AFlow; MaAS; AgentSquare                                                                                                               | Searches prompts and organization within a benchmark-defined design space (4.1)                                             |
+| Offline topology search                                      | Saturated              | DyLAN; GPTSwarm; ADAS; AFlow; MaAS; AgentSquare                                                                                                               | Searches prompts and organization within a benchmark-defined design space (4.1, 4.5)                                        |
 | Task handoffs, scheduling and evaluation records             | Open                   | Design question                                                                                                                                               | Add contracts, checks and dependencies when the coordination problem requires them                                          |
-| Visibility as a design variable; reuse rate of stored memory | Open                   | Memory systems are single-agent; no reuse rates reported                                                                                                      | Which runtime sees which memory on which task has barely been posed                                                         |
+| Visibility as a design variable; reuse rate of stored memory | Open                   | The cited memory systems vary storage and retrieval mechanisms                                                                                                | Measure which retained information reaches which execution and contributes to success                                       |
 | Capacity records for matching and evaluation                 | Open                   | Voyager (Wang et al., 2023) provides a skill-library example                                                                                                  | Performance records help select capacities; they are not part of the minimum definition                                     |
 | Runtime matching per task                                    | Open                   | Absent; only offline search exists                                                                                                                            | The market of 6.3                                                                                                           |
 | Decentralized generation via a shared task list              | Open                   | No controlled study; FunSearch and AI Scientist are suggestive                                                                                                | 6.7                                                                                                                         |
@@ -392,9 +424,9 @@ Holland, J. H. (1975). _Adaptation in Natural and Artificial Systems_. Universit
 
 Hong, L., and Page, S. E. (2004). Groups of diverse problem solvers can outperform groups of high-ability problem solvers. _PNAS_, 101(46), 16385–16389.
 
-Hong, S., et al. (2023). MetaGPT: Meta programming for a multi-agent collaborative framework. _ICLR 2024_. [arXiv:2308.00352](https://arxiv.org/abs/2308.00352).
+Hong, S., et al. (2023). MetaGPT: Meta programming for a multi-agent collaborative framework. _ICLR 2024_. [arXiv:2308.00352](https://arxiv.org/abs/2308.00352v7).
 
-Hu, S., Lu, C., and Clune, J. (2024). Automated design of agentic systems. _ICLR 2025_. [arXiv:2408.08435](https://arxiv.org/abs/2408.08435).
+Hu, S., Lu, C., and Clune, J. (2024). Automated design of agentic systems. _ICLR 2025_. [arXiv:2408.08435](https://arxiv.org/abs/2408.08435v2).
 
 Huang, J., et al. (2023). Large language models cannot self-correct reasoning yet. _ICLR 2024_. [arXiv:2310.01798](https://arxiv.org/abs/2310.01798).
 
@@ -404,7 +436,7 @@ Kapoor, S., Stroebl, B., Siegel, Z. S., Nadgir, N., and Narayanan, A. (2024). AI
 
 Kapoor, S., et al. (2025). Holistic Agent Leaderboard: The Missing Infrastructure for AI Agent Evaluation. [arXiv:2510.11977v1](https://arxiv.org/abs/2510.11977v1).
 
-Khattab, O., et al. (2023). DSPy: Compiling declarative language model calls into self-improving pipelines. _ICLR 2024_. [arXiv:2310.03714](https://arxiv.org/abs/2310.03714).
+Khattab, O., et al. (2023). DSPy: Compiling declarative language model calls into self-improving pipelines. _ICLR 2024_. [arXiv:2310.03714](https://arxiv.org/abs/2310.03714v1).
 
 Kirkpatrick, J., et al. (2017). Overcoming catastrophic forgetting in neural networks. _PNAS_, 114(13), 3521–3526.
 
@@ -482,7 +514,7 @@ Wang, R., Lehman, J., Clune, J., and Stanley, K. O. (2019). POET: Endlessly gene
 
 Wang, X., et al. (2023). Self-consistency improves chain of thought reasoning in language models. _ICLR 2023_. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171).
 
-Wang, Z. Z., Mao, J., Fried, D., and Neubig, G. (2024c). Agent workflow memory. [arXiv:2409.07429](https://arxiv.org/abs/2409.07429).
+Wang, Z. Z., Mao, J., Fried, D., and Neubig, G. (2024c). Agent workflow memory. [arXiv:2409.07429](https://arxiv.org/abs/2409.07429v1).
 
 Wellman, M. P. (1993). A market-oriented programming environment and its application to distributed multicommodity flow problems. _JAIR_, 1, 1–23.
 

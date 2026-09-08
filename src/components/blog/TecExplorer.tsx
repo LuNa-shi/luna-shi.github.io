@@ -225,7 +225,11 @@ function Topology({ copy }: { copy: Copy }) {
               </g>
             ))}
           </svg>
-          <span className="tec-graph-key">{preset === 2 ? c.diverse : c.shared}</span>
+          <span className="tec-graph-key">
+            {c.edge}
+            <br />
+            {preset === 2 ? c.diverse : c.shared}
+          </span>
         </div>
       </div>
       <p className="tec-reading" aria-live="polite">

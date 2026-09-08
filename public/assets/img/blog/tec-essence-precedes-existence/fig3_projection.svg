@@ -1,144 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="580" viewBox="0 0 960 580" font-family="Helvetica, Arial, sans-serif">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="960"
+  height="620"
+  viewBox="0 0 960 620"
+  font-family="Arial, sans-serif"
+>
   <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    <marker
+      id="arr"
+      viewBox="0 0 10 10"
+      refX="9"
+      refY="5"
+      markerWidth="7"
+      markerHeight="7"
+      orient="auto"
+    >
+      <path d="M0 0L10 5L0 10Z" fill="#465d68" />
     </marker>
-    <marker id="arrg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#9a9a96"/>
-    </marker>
-    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e6e6e2" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#e6e6e2" stop-opacity="0.15"/>
-    </linearGradient>
   </defs>
-  <rect width="960" height="580" fill="#ffffff"/>
-
-  <!-- ===== THE OBJECT ===== -->
-  <text x="40" y="34" font-size="13" font-weight="bold" fill="#333" letter-spacing="1.5">THE OBJECT</text>
-  <text x="150" y="34" font-size="11.5" fill="#666">three primitives and the authority a policy assigns over them</text>
-
-  <!-- Panel A: task -->
-  <rect x="40" y="50" width="280" height="190" rx="8" fill="#f4f4f2" stroke="#8a8a86" stroke-width="1.1"/>
-  <text x="56" y="72" font-size="13" font-weight="bold" fill="#111">Task</text>
-  <text x="56" y="88" font-size="10.5" fill="#555">dependencies chosen for this workflow</text>
-  <!-- DAG -->
-  <g stroke="#333" stroke-width="1.2" fill="#ffffff">
-    <circle cx="90" cy="165" r="14"/>
-    <circle cx="160" cy="130" r="14"/>
-    <circle cx="160" cy="200" r="14"/>
-    <circle cx="230" cy="165" r="14"/>
-    <circle cx="290" cy="165" r="14"/>
-  </g>
-  <g font-size="10" fill="#111" text-anchor="middle">
-    <text x="90" y="169">t1</text><text x="160" y="134">t2</text><text x="160" y="204">t3</text><text x="230" y="169">t4</text><text x="290" y="169">t5</text>
-  </g>
-  <g stroke="#333" stroke-width="1.1" fill="none" marker-end="url(#arr)">
-    <path d="M102,158 L147,136"/>
-    <path d="M102,172 L147,194"/>
-    <path d="M173,136 L218,158"/>
-    <path d="M173,194 L218,172"/>
-    <path d="M244,165 L276,165"/>
-  </g>
-  <text x="180" y="228" font-size="9.5" fill="#777" text-anchor="middle">critical path t1→t2→t4→t5 bounds parallelism (§6.2)</text>
-
-  <!-- Panel B: environment -->
-  <rect x="340" y="50" width="280" height="190" rx="8" fill="#eef3f7" stroke="#8a8a86" stroke-width="1.1"/>
-  <text x="356" y="72" font-size="13" font-weight="bold" fill="#111">Environment</text>
-  <text x="356" y="88" font-size="10.5" fill="#555">visibility function: which view sees what</text>
-  <rect x="360" y="100" width="240" height="118" rx="5" fill="#ffffff" stroke="#555" stroke-width="1"/>
-  <text x="368" y="114" font-size="9.5" fill="#777">global state</text>
-  <ellipse cx="440" cy="162" rx="62" ry="40" fill="#cfdbe6" fill-opacity="0.7" stroke="#333" stroke-width="1.1"/>
-  <ellipse cx="520" cy="162" rx="62" ry="40" fill="#f0d9c8" fill-opacity="0.7" stroke="#333" stroke-width="1.1"/>
-  <text x="412" y="166" font-size="10" fill="#111" text-anchor="middle">view A</text>
-  <text x="548" y="166" font-size="10" fill="#111" text-anchor="middle">view B</text>
-  <text x="480" y="166" font-size="9" fill="#333" text-anchor="middle">shared</text>
-  <text x="480" y="228" font-size="9.5" fill="#777" text-anchor="middle">a write into the overlap is "communication" (§4.3)</text>
-
-  <!-- Panel C: capacity authority -->
-  <rect x="640" y="50" width="280" height="190" rx="8" fill="#f4f4f2" stroke="#8a8a86" stroke-width="1.1"/>
-  <text x="656" y="72" font-size="13" font-weight="bold" fill="#111">Capacity</text>
-  <text x="656" y="88" font-size="10.5" fill="#555">who holds authority over which operator</text>
-  <!-- table -->
-  <g font-size="10" fill="#333">
-    <text x="760" y="112" text-anchor="middle">generate</text>
-    <text x="820" y="112" text-anchor="middle">match</text>
-    <text x="880" y="112" text-anchor="middle">verify</text>
-    <text x="664" y="140">c1  (orchestrator)</text>
-    <text x="664" y="170">c2  (worker)</text>
-    <text x="664" y="200">c3  (critic)</text>
-  </g>
-  <line x1="656" y1="120" x2="908" y2="120" stroke="#aaa" stroke-width="0.8"/>
-  <g fill="#333">
-    <circle cx="760" cy="136" r="5"/><circle cx="820" cy="136" r="5"/><circle cx="880" cy="136" r="5"/>
-    <circle cx="880" cy="196" r="5"/>
-  </g>
-  <g fill="none" stroke="#bbb" stroke-width="1">
-    <circle cx="760" cy="166" r="5"/><circle cx="820" cy="166" r="5"/><circle cx="880" cy="166" r="5"/>
-    <circle cx="760" cy="196" r="5"/><circle cx="820" cy="196" r="5"/>
-  </g>
-  <text x="780" y="228" font-size="9.5" fill="#777" text-anchor="middle">an "orchestrator" is just this row of the table</text>
-
-  <!-- ===== PROJECTION BEAM ===== -->
-  <polygon points="40,244 920,244 900,330 60,330" fill="url(#beam)"/>
-  <text x="480" y="276" font-size="12" fill="#444" text-anchor="middle" font-style="italic">projection: fix a policy over the operators and look only at who talks to whom</text>
-  <g stroke="#9a9a96" stroke-width="1.2" fill="none" marker-end="url(#arrg)">
-    <path d="M180,290 L180,338"/>
-    <path d="M480,290 L480,338"/>
-    <path d="M780,290 L780,338"/>
-  </g>
-
-  <!-- ===== THE SHADOWS ===== -->
-  <text x="40" y="360" font-size="13" font-weight="bold" fill="#333" letter-spacing="1.5">THE SHADOWS</text>
-  <text x="170" y="360" font-size="11.5" fill="#666">possible topologies under different dependencies, views and authority</text>
-
-  <!-- pipeline -->
-  <rect x="40" y="374" width="280" height="150" rx="8" fill="#fbfbfa" stroke="#c8c8c4" stroke-width="1"/>
-  <g stroke="#333" stroke-width="1.1" fill="#e9e9e6">
-    <rect x="58" y="430" width="48" height="30" rx="4"/>
-    <rect x="122" y="430" width="48" height="30" rx="4"/>
-    <rect x="186" y="430" width="48" height="30" rx="4"/>
-    <rect x="250" y="430" width="48" height="30" rx="4"/>
-  </g>
-  <g stroke="#333" stroke-width="1.1" fill="none" marker-end="url(#arr)">
-    <path d="M106,445 L120,445"/><path d="M170,445 L184,445"/><path d="M234,445 L248,445"/>
-  </g>
-  <g font-size="9" fill="#333" text-anchor="middle">
-    <text x="82" y="449">PM</text><text x="146" y="449">arch</text><text x="210" y="449">eng</text><text x="274" y="449">QA</text>
-  </g>
-  <text x="180" y="484" font-size="11.5" fill="#111" text-anchor="middle" font-weight="bold">pipeline</text>
-  <text x="180" y="500" font-size="10" fill="#555" text-anchor="middle">MetaGPT, ChatDev</text>
-  <text x="180" y="514" font-size="9.5" fill="#777" text-anchor="middle">= dependency chain + stage-wise views</text>
-
-  <!-- orchestrator -->
-  <rect x="340" y="374" width="280" height="150" rx="8" fill="#fbfbfa" stroke="#c8c8c4" stroke-width="1"/>
-  <circle cx="480" cy="426" r="15" fill="#333"/>
-  <text x="480" y="430" font-size="9" fill="#fff" text-anchor="middle">orch</text>
-  <g stroke="#333" stroke-width="1.1" fill="#e9e9e6">
-    <circle cx="415" cy="400" r="10"/><circle cx="545" cy="400" r="10"/>
-    <circle cx="415" cy="452" r="10"/><circle cx="545" cy="452" r="10"/>
-  </g>
-  <g stroke="#333" stroke-width="1" fill="none">
-    <path d="M467,420 L424,404"/><path d="M493,420 L536,404"/>
-    <path d="M467,432 L424,448"/><path d="M493,432 L536,448"/>
-  </g>
-  <text x="480" y="484" font-size="11.5" fill="#111" text-anchor="middle" font-weight="bold">orchestrator + workers</text>
-  <text x="480" y="500" font-size="10" fill="#555" text-anchor="middle">Magentic-One, coding assistants</text>
-  <text x="480" y="514" font-size="9.5" fill="#777" text-anchor="middle">= one capacity holds generate, match, verify</text>
-
-  <!-- graph -->
-  <rect x="640" y="374" width="280" height="150" rx="8" fill="#fbfbfa" stroke="#c8c8c4" stroke-width="1"/>
-  <g stroke="#333" stroke-width="1" fill="none">
-    <path d="M720,410 L780,400"/><path d="M780,400 L840,420"/><path d="M720,410 L760,460"/>
-    <path d="M760,460 L840,420"/><path d="M780,400 L760,460"/><path d="M840,420 L820,470"/><path d="M760,460 L820,470"/>
-  </g>
-  <g stroke="#333" stroke-width="1.1" fill="#e9e9e6">
-    <circle cx="720" cy="410" r="10"/><circle cx="780" cy="400" r="10"/><circle cx="840" cy="420" r="10"/>
-    <circle cx="760" cy="460" r="10"/><circle cx="820" cy="470" r="10"/>
-  </g>
-  <text x="780" y="484" font-size="11.5" fill="#111" text-anchor="middle" font-weight="bold">graph</text>
-  <text x="780" y="500" font-size="10" fill="#555" text-anchor="middle">GPTSwarm, DyLAN, AFlow</text>
-  <text x="780" y="514" font-size="9.5" fill="#777" text-anchor="middle">= edges and prompts searched</text>
-
-  <!-- footer -->
-  <text x="480" y="556" font-size="11" fill="#333" text-anchor="middle" font-style="italic">Searching prompts and edges can change capacity and visibility. A topology alone does not describe the full system.</text>
+  <rect width="960" height="620" fill="#fff" />
+  <text x="32" y="38" font-size="23" fill="#29343a">
+    One output-dependency graph, two different execution designs
+  </text>
+  <text x="32" y="70" font-size="16" fill="#29343a">
+    Node = execution unit. Arrow = the receiver needs the sender’s output.
+  </text>
+  <rect x="375" y="95" width="210" height="54" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="401" y="129" font-size="19" fill="#29343a">Draft proof</text>
+  <rect x="155" y="195" width="210" height="54" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="181" y="229" font-size="19" fill="#29343a">Check A</text>
+  <rect x="595" y="195" width="210" height="54" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="621" y="229" font-size="19" fill="#29343a">Check B</text>
+  <rect x="375" y="295" width="210" height="54" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="401" y="329" font-size="19" fill="#29343a">Finalize proof</text>
+  <path d="M405 149L285 194" stroke="#465d68" stroke-width="2" fill="none" marker-end="url(#arr)" />
+  <path d="M555 149L675 194" stroke="#465d68" stroke-width="2" fill="none" marker-end="url(#arr)" />
+  <path d="M285 249L405 294" stroke="#465d68" stroke-width="2" fill="none" marker-end="url(#arr)" />
+  <path d="M675 249L555 294" stroke="#465d68" stroke-width="2" fill="none" marker-end="url(#arr)" />
+  <rect x="32" y="385" width="432" height="150" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="50" y="416" font-size="20" fill="#29343a">Design A: parallel review</text>
+  <text x="50" y="451" font-size="16" fill="#29343a">Same review instructions for A and B.</text>
+  <text x="50" y="478" font-size="16" fill="#29343a">Each receives the complete draft.</text>
+  <text x="50" y="505" font-size="16" fill="#29343a">Neither receives the other’s findings.</text>
+  <rect x="496" y="385" width="432" height="150" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="514" y="416" font-size="20" fill="#29343a">Design B: specialist review</text>
+  <text x="514" y="451" font-size="16" fill="#29343a">A checks the algebraic expansion.</text>
+  <text x="514" y="478" font-size="16" fill="#29343a">B checks logic and integer assumptions.</text>
+  <text x="514" y="505" font-size="16" fill="#29343a">
+    Each receives the material for its obligation.
+  </text>
+  <text x="32" y="575" font-size="17" fill="#29343a">
+    The edges are identical. Reviewer instructions and available evidence are different.
+  </text>
+  <text x="32" y="603" font-size="15" fill="#29343a">
+    Topology retains a chosen relation; it omits these details unless they are annotated.
+  </text>
 </svg>
