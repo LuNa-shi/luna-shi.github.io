@@ -49,7 +49,7 @@ TEC separates three questions: what should be accomplished (**Task**), where exe
   alt="Task, Environment access and Capacity configure an agent that observes, chooses actions and receives feedback."
 />
 
-_Figure 1. The three conditions configure an execution unit. Step through the parser example to see the agent receive an observation, choose an edit, act on its working copy and use test feedback. The setup can stay fixed while the interaction continues._
+_Figure 1. The three conditions configure an execution unit. Step through the proof example to see the agent read definitions, draft an argument and use feedback about a missing inference. The setup can stay fixed while the interaction continues._
 
 Four things follow at once, and they organize what comes after.
 
@@ -65,50 +65,50 @@ Fourth, a system can use what happened during earlier runs to change how later r
 
 ## 3. From a task to a running agent
 
-Consider a small repair request: “Make the parser return an empty result for empty input, while preserving its behavior on non-empty input.” Someone must choose a working copy of the repository and a capacity that can read code, edit it and run tests. Once started, the agent can inspect the parser, make a change, observe a test failure and try again. TEC separates the conditions for this run from the interaction that unfolds during it.
+Consider a theorem-proving request: “Prove that, for every integer n, if n² is even, then n is even.” The agent has access to definitions of even and odd integers, a workspace for its proof, and a way to request review. It can read the definitions, propose an argument, receive feedback about a missing step and revise the proof. TEC separates the conditions for this run from the interaction that unfolds during it.
 
 ### 3.1 Task: the requested outcome and its scope
 
-A Task specifies what the execution is trying to accomplish. In the parser example, two pieces make the request specific:
+A Task specifies what the execution is trying to accomplish. In the theorem-proving example, two pieces make the request specific:
 
-- **The desired outcome:** empty input should produce an empty result. Without it, the agent has no direction for choosing changes.
-- **The relevant scope:** preserve behavior on non-empty input. Without this constraint, replacing the parser with a function that always returns an empty result would meet the first sentence and miss the intended repair.
+- **The desired outcome:** establish that evenness of n² implies evenness of n. Without a target proposition, the agent has no direction for choosing an argument.
+- **The relevant scope:** the claim concerns every integer n and requires a general proof. Checking several numerical cases does not satisfy that request; the domain and quantifier determine what the argument must establish.
 
 These can be expressed in ordinary language. A structured record can help software manage the request, but a string is not inherently an inadequate task representation. The question is whether the request communicates the intended outcome clearly enough to act on.
 
-A **verifier** is a procedure for judging a result against that outcome. Here, a test for empty input and the existing regression tests supply useful evidence. They do not define the task, and passing them does not prove correctness for all inputs. A human review could assess the same request; exploratory work may begin before a reliable automatic check exists. Some basis for judging success is needed to claim completion, but a separate automated verifier is not a prerequisite for a task or an agent.
+A **verifier** is a procedure for judging a result against that outcome. Here, a reviewer can check whether each inference follows from the definitions and whether the argument covers every integer. Testing particular values can expose mistakes but cannot prove this universal claim. A formal proof checker is another option if the statement and argument are formalized; it is not required to begin the work. Some basis for judging success is needed to claim completion, but a separate automated verifier is not a prerequisite for a task or an agent.
 
 Other information becomes useful when the system has a specific coordination problem:
 
-- **Input/output contracts** matter at a handoff. If another agent will test the fix, it needs to know which working copy or patch to use and what result to return. A single agent working in one repository may not need separate contract fields.
-- **Dependencies** matter after work is split. Testing a proposed patch depends on producing that patch. Recording this relation lets a scheduler avoid starting the dependent check too early; it is unnecessary for an undivided task.
-- **A budget** matters when execution must stop at a resource limit. A time or token allowance tells the system when to stop trying, even if the repair remains incomplete. It is an execution constraint, not part of what “correct parser behavior” means.
-- **Provenance** matters when results can be mixed up. If two agents produce different patches, recording which run and repository revision produced a test result prevents a passing result from being attached to the wrong patch. It belongs in the execution record linked to the task.
-- **Lifecycle status and failure attribution** serve different operational needs. Status tells a scheduler whether work is pending, running or finished, which helps avoid duplicate assignment. Failure attribution records an investigated explanation of what went wrong. Neither is needed to define the repair, and an attribution field alone cannot identify a cause.
+- **Input/output contracts** matter at a handoff. A reviewing agent needs the exact statement, assumptions and proof draft, and should return either a justified assessment or a specific gap. A single agent keeping these together may not need separate contract fields.
+- **Dependencies** matter after work is split. A review of a proposed proof depends on producing that draft. Recording this relation lets a scheduler avoid starting the dependent review too early; it is unnecessary for an undivided task.
+- **A budget** matters when execution must stop at a resource limit. A time or token allowance tells the system when to stop searching, even if the proof remains incomplete. It is an execution constraint, not part of the proposition being proved.
+- **Provenance** matters when results can be mixed up. If two agents produce different proofs, recording which draft a review examined prevents its approval from being attached to a different argument. It belongs in the execution record linked to the task.
+- **Lifecycle status and failure attribution** serve different operational needs. Status tells a scheduler whether work is pending, running or finished, which helps avoid duplicate assignment. Failure attribution records an investigated explanation of what went wrong, such as an unjustified inference. Neither is needed to state the theorem, and an attribution field alone cannot identify a cause.
 
 The minimum Task remains the requested outcome with the constraints needed to make it specific. Evaluation and coordination mechanisms should be added for the problems they solve, rather than made mandatory by definition.
 
 ### 3.2 Environment: what execution can observe and affect
 
-For this run, the Environment is the working repository and the interfaces through which the agent interacts with it. Two parts are needed:
+For this run, the Environment is the proof workspace and the interfaces through which the agent reads definitions, records arguments and receives review. Two parts are needed:
 
-- **State and responses:** the current files and the results returned by operations such as reading a file or running a test. Without them, the agent has no feedback about the situation it is trying to change.
-- **An interaction boundary:** which state the agent may observe and which operations may affect it. Read access to the parser permits inspection; write access to a working copy permits repair. Access to production is not required for this task.
+- **State and responses:** the available definitions, current proof draft and feedback returned by a reviewer. Without them, the agent has no feedback about the argument it is developing.
+- **An interaction boundary:** which material the agent may read and where it may write or request review. It can revise its proof draft, but it cannot change the requested theorem and count that as a proof of the original claim.
 
-Choosing the environment does not freeze its state. Editing a file changes the repository, and a later test observes the changed version. Other agents may also change shared state. The binding fixes which environment and access rules the run uses; the state encountered through them evolves.
+Choosing the environment does not freeze its state. Writing a new argument changes the proof workspace, and a later review examines that version. Other agents may also contribute lemmas or comments. The binding fixes which environment and access rules the run uses; the state encountered through them evolves.
 
-A **view** names the part of the environment available to the agent. An **observation** is what it actually receives at a particular step. Permission to read the whole repository does not mean every file has been read. For an LLM agent, the **active context** is the input assembled for one model call, including the selected observations and relevant history. A **context policy** determines that selection. These distinctions explain why a readable file can still be absent from a model's current input.
+A **view** names the part of the environment available to the agent. An **observation** is what it actually receives at a particular step. Access to a library of lemmas does not mean every lemma has been read. For an LLM agent, the **active context** is the input assembled for one model call, including the selected observations and relevant history. A **context policy** determines that selection. These distinctions explain why an available lemma can still be absent from a model's current input.
 
 Large systems may keep additional working state in files or a persistent kernel. Such storage helps carry information across calls; it is an implementation choice, not another required layer in the minimum Environment definition.
 
 ### 3.3 Capacity: how the unit chooses and performs actions
 
-Capacity describes the reusable means of acting. The parser repair needs:
+Capacity describes the reusable means of acting. The proof attempt needs:
 
-- **A way to select the next action** from the task, observations and execution history. In an LLM agent, a model and its instructions perform this role. Without it, access to a repository does not determine what to do next.
-- **Available actions:** for this example, reading files, proposing or writing edits, and running tests. Without an action that can change the working copy, the same unit could diagnose the bug but could not perform the repair.
+- **A way to select the next action** from the task, observations and execution history. In an LLM agent, a model and its instructions perform this role. Without it, access to definitions does not determine which proof strategy to try.
+- **Available actions:** for this example, reading definitions, writing a proof step and requesting review. Without a way to record or communicate an argument, the unit cannot deliver the requested proof.
 
-Capacity and Environment meet at an interface. Capacity determines which action the unit can select; the Environment determines what that action does to the current state and what result comes back. A file-editing tool is part of the agent's action repertoire, while the file contents it changes belong to the Environment.
+Capacity and Environment meet at an interface. Capacity determines which action the unit can select; the Environment determines what that action does to the current state and what result comes back. An operation for writing a proof step is part of the agent's action repertoire, while the recorded argument belongs to the Environment.
 
 Prompts, reusable skills and tool implementations can supply this capacity. They are not each mandatory: a simple controller can act without a skill library. Similarly, a version number, a task signature or a performance record helps a system choose between capacities or evaluate updates; none is required for a capacity to exist. Those records become valuable when matching work to demonstrated ability, as in Section 6.3.
 
@@ -116,13 +116,13 @@ Prompts, reusable skills and tool implementations can supply this capacity. They
 
 Once the Task, Environment access and Capacity are bound, the system can instantiate an **Agent**, the execution unit that repeatedly observes and acts. Here, **runtime** refers to that running instance. The triple describes its setup; the Agent is the dynamic interaction process carried out under that setup. [D]
 
-For the parser repair, one possible run is:
+For the theorem, one possible run is:
 
-1. The agent reads the parser and receives its current source as an observation.
-2. Using that observation and the repair request, it chooses an edit to handle empty input.
-3. The edit changes the working copy. The agent then runs the relevant tests.
-4. A regression test fails. The new observation changes what the agent knows, so it revises the edit and tests again.
-5. The available checks pass. The agent returns the patch and test results for acceptance; if it cannot establish success, it can report the unresolved problem instead.
+1. The agent reads the definitions: an even integer has the form 2k, and an odd integer has the form 2k + 1, for an integer k.
+2. It drafts “n² = 2k, therefore n is even” and submits the argument for review. Writing the draft changes the workspace.
+3. The reviewer identifies the gap: the conclusion has been asserted without showing why it follows. Rewriting the hypothesis as n² = 2k does not supply that missing inference.
+4. The agent uses this feedback to try the contrapositive. If n is odd, write n = 2m + 1. Then n² = 4m² + 4m + 1 = 2(2m² + 2m) + 1, which is odd because 2m² + 2m is an integer. Thus an odd integer cannot have an even square. Since every integer is either even or odd, an even square implies an even n.
+5. The agent returns this complete argument for review. The reviewer can now inspect the parity classification and each algebraic step; if a gap remains, execution can continue or report the unresolved obligation.
 
 The task can stay the same throughout this run, and so can the model and available tools. What changes is the environment, the accumulated history and the next action selected from them. Fixing the setup therefore does not fix the trajectory in advance. A single model call is one decision within this process, not the whole agent.
 
@@ -132,10 +132,10 @@ Multiple agents can start from the same setup and still have separate histories.
 
 The observation–action loop describes how the agent runs. TEC uses five additional names to describe how a system organizes that execution:
 
-- **generate** creates or refines a task request. In the example, it states the empty-input repair and the behavior to preserve.
+- **generate** creates or refines a task request. In the example, it states the proposition, its integer domain and the requirement for a general proof.
 - **match** selects a capacity and arranges the environment access needed to instantiate the execution unit.
 - **assemble** selects observations and history for the next model call. It can run repeatedly as new feedback arrives.
-- **verify** assesses a candidate result. Test failures can send the running agent back to another edit; passing evidence can support accepting the patch. Verification does not precede every environmental change: the working copy already changed when the edit was applied.
+- **verify** assesses a candidate result. A missing inference can send the running agent back to revise its proof; a complete argument can support acceptance. Verification does not precede every environmental change: the workspace already changed when the draft was written.
 - **evolve** changes reusable capacity or configuration based on run records. It affects how later execution proceeds, and its benefits require the comparisons in Section 6.6.
 
 These are organizational operations, not an exhaustive list of state transitions. They need not be five separate services or occur exactly once in a fixed sequence. In particular, assemble, action and feedback can repeat many times before a result is accepted.
@@ -146,9 +146,9 @@ These are organizational operations, not an exhaustive list of state transitions
   alt="Five organizational operators around an agent's repeated observation and action."
 />
 
-_Figure 2. The steps show one possible repair workflow. During execution, observations inform actions and their results inform the next call. Verify assesses the resulting patch; evolve proposes a reusable update. The final gate represents evaluation and version checks, not an actual experiment._
+_Figure 2. The steps show one possible proof workflow. During execution, observations inform actions and their results inform the next call. Verify assesses the resulting argument; evolve proposes a reusable update. The final gate represents evaluation and version checks, not an actual experiment._
 
-When comparing systems, measure task success, elapsed time and resource use separately (Kapoor et al., 2024), and repeat attempts to assess reliability (Yao et al., 2024). A faster loop can produce worse patches, and a higher success rate can require more compute. These measurements evaluate the execution; they are not extra constituents of Task, Environment or Capacity.
+When comparing systems, measure task success, elapsed time and resource use separately (Kapoor et al., 2024), and repeat attempts to assess reliability (Yao et al., 2024). A faster loop can produce weaker arguments, and a higher success rate can require more compute. These measurements evaluate the execution; they are not extra constituents of Task, Environment or Capacity.
 
 ---
 
@@ -172,7 +172,7 @@ This has a sharp consequence for the topology-search literature—DyLAN (Liu et 
 
 ### 4.2 A sub-agent is an action to its caller and an execution unit in its own right
 
-Suppose the repair agent asks a child to inspect a proposed patch. To the caller, this is an available action with an eventual result. The child starts its own execution: inspect the patch, choose a check, run it and respond to the findings. Its Task is the review request, its Environment includes access to the patch, and its Capacity determines how it performs the review. [D]
+Suppose the proving agent asks a child to review its parity argument. To the caller, this is an available action with an eventual result. The child starts its own execution: read the statement and draft, examine the inferences and report any gap. Its Task is the review request, its Environment includes the draft and definitions, and its Capacity determines how it performs the review. [D]
 
 The caller's tool interface therefore wraps another agent's interaction process. A peer arrangement changes how work is initiated and coordinated: peers may claim work independently and exchange observations through shared state. Whether an agent persists after one request is a separate lifecycle choice; persistence alone does not distinguish a tool invocation from a peer relationship.
 
@@ -182,17 +182,17 @@ There is no communication primitive. To communicate is to write to the global st
 
 ### 4.4 State accumulated during a run and configuration reused across runs
 
-The parser source, test output and record of attempted edits change as the agent acts. These are environmental or execution state. A reusable instruction to inspect affected tests before editing belongs to Capacity when it is loaded as part of the action-selection setup. The distinction is what the information does, not whether it lives in a file called “memory.”
+The definitions, proof draft and record of rejected inferences are environmental or execution state. A reusable instruction to justify each implication before submitting an argument belongs to Capacity when it is loaded as part of the action-selection setup. The distinction is what the information does, not whether it lives in a file called “memory.”
 
-For example, “this attempt failed test X” is an observation associated with one run. A saved instruction that changes how future runs choose tests is a configuration update. The same file format could hold either; the system must make the role clear. Provenance links an observation to the run and revision that produced it, while a capacity version identifies the configuration used. These records support diagnosis and comparison when needed. They do not add new primitives to the repair request. [D]
+For example, “this draft does not justify the step from n² = 2k to n being even” is an observation associated with one run. A saved instruction that changes how future runs check inferences is a configuration update. The same file format could hold either; the system must make the role clear. Provenance links an observation to the run and revision that produced it, while a capacity version identifies the configuration used. These records support diagnosis and comparison when needed. They do not add new primitives to the proof request. [D]
 
 Ordinary feedback can change the next action without changing Capacity. Revising the reusable instructions is the separate operation called evolve. This distinction makes it possible to compare two configurations without mistaking every new observation for a change in the agent's underlying means of acting.
 
 ### 4.5 Add structure when execution needs it
 
-Before starting the parser repair, the system needs a clear request, an accessible working copy and a capacity that can perform the relevant operations. It does not also need a capability leaderboard, a task dependency graph or a provenance database.
+Before starting the proof, the system needs a stated proposition, access to the relevant definitions and workspace, and a capacity that can construct and communicate an argument. It does not also need a capability leaderboard, a task dependency graph or a provenance database.
 
-Splitting review across agents introduces handoffs and dependencies. Reusing test results introduces a need to associate them with the right patch. Comparing prompt versions introduces evaluation records. Each addition solves a problem created by the way the execution is organized. TEC makes these choices explicit instead of treating every useful management field as part of every agent's definition.
+Splitting review across agents introduces handoffs and dependencies. Reusing review results introduces a need to associate them with the right proof version. Comparing prompt versions introduces evaluation records. Each addition solves a problem created by the way the execution is organized. TEC makes these choices explicit instead of treating every useful management field as part of every agent's definition.
 
 ---
 
@@ -240,9 +240,9 @@ Given Section 4.3, the study of efficient inter-agent communication is the joint
 
 ### 6.6 Self-improvement requires evidence that an update helps
 
-A system can record its actions and results, use that feedback to propose a change, and save the change for future tasks. Suppose that, in another run of the parser repair, the agent skips the affected tests and returns a patch that breaks non-empty input. An update procedure could revise its prompt to inspect those tests before editing. The next runtime loads the revised prompt. The model weights can stay the same: the change is to the capacity specification used to run it.
+A system can record its actions and results, use that feedback to propose a change, and save the change for future tasks. Suppose that, in another attempt at the parity theorem, the agent submits the unsupported step “n² = 2k, therefore n is even” as a complete proof. An update procedure could revise its prompt to identify the justification for every implication before submitting an argument. The next runtime loads the revised prompt. The model weights can stay the same: the change is to the capacity specification used to run it.
 
-This gives a concrete feedback loop: **run a task → inspect the result → propose a configuration change → evaluate a new version**. TEC calls the operation that changes the specification _evolve_. The name describes an update mechanism; it does not guarantee that the update improves anything. Passing the original failing task is useful feedback, but that task already influenced the prompt change. It cannot by itself show that the new prompt will help on other tasks.
+This gives a concrete feedback loop: **run a task → inspect the result → propose a configuration change → evaluate a new version**. TEC calls the operation that changes the specification _evolve_. The name describes an update mechanism; it does not guarantee that the update improves anything. Producing a valid proof of the original theorem is useful feedback, but that task already influenced the prompt change. It cannot by itself show that the new prompt will help on other tasks.
 
 To assess a claim of self-improvement, TEC proposes seven checks. [D]
 
@@ -254,7 +254,7 @@ To assess a claim of self-improvement, TEC proposes seven checks. [D]
 6. Keep the previous version and a way to restore it. Rollback is a safeguard for adopting updates, not evidence that an update is better.
 7. Test whether the changed component caused the gain. For the prompt example, rerun the comparison with the original prompt restored while holding the model, tools and evaluation tasks fixed. If several components changed, isolate them where possible.
 
-The first three checks establish what the system changed and how that change reaches future runs. Checks four, five and seven assess the benefit and its explanation. The sixth keeps the update reversible. In the coding example, the new prompt would support a self-improvement claim if it produces a reproducible benefit on held-out tasks under a stated cost and regression tradeoff, and the comparison links that benefit to the prompt change. If it only fixes the one failure used to write it, the evidence supports a narrower conclusion: the system adapted to that example.
+The first three checks establish what the system changed and how that change reaches future runs. Checks four, five and seven assess the benefit and its explanation. The sixth keeps the update reversible. In the theorem-proving example, the new prompt would support a self-improvement claim if it produces a reproducible benefit on held-out tasks under a stated cost and regression tradeoff, and the comparison links that benefit to the prompt change. If it only fixes the one failure used to write it, the evidence supports a narrower conclusion: the system adapted to that example.
 
 The Darwin Gödel Machine (Zhang et al., 2025e), discussed here as a system that modifies agent code and retains versions in an archive, illustrates why these questions should be kept separate. An archive shows that changes persist and earlier versions remain available. Evidence of transfer addresses performance on other tasks. Neither alone tells us which edits caused a gain or which previously successful tasks became harder. Those require their own comparisons.
 
@@ -284,7 +284,7 @@ Finally, a conjecture about a particular coordination strategy, where explicit c
 
 Programmable harnesses have made the primitives available at runtime. The recursive-language-model design of Zhang, Kraska and Khattab (2025a) treats the prompt as a variable in a Python environment that the model inspects and recurses over; Prime Intellect's harness of that name (2026) makes a persistent kernel the model's sole tool, spawns children as full runtimes with their own kernels, persists the resulting tree, and keeps prompts, skills, memory and sub-agent specifications as state the agent may edit, with refinement from trajectories and rollback. Read through TEC this is nearly the full set of primitives, with a coordination medium that includes persistent kernel state.
 
-These mechanisms make it possible to edit prompts, skills and other configuration during use. A record of edits and a rollback mechanism establish that updates can be made and retained; they do not by themselves establish that later versions solve tasks better. The next step is to connect each saved version to the tasks it was evaluated on, its measured costs and regressions, and the comparison with its parent. The recursive call should specify the requested outcome, the child's environment access and its capacity, then start an execution that can respond to feedback. If children hand work off, the system should also record which patch and result each handoff refers to. If it schedules dependent work or compares capacities, it should add the corresponding dependencies or evaluation records. A task board can coordinate these runs without pretending that its management fields define the agent.
+These mechanisms make it possible to edit prompts, skills and other configuration during use. A record of edits and a rollback mechanism establish that updates can be made and retained; they do not by themselves establish that later versions solve tasks better. The next step is to connect each saved version to the tasks it was evaluated on, its measured costs and regressions, and the comparison with its parent. The recursive call should specify the requested outcome, the child's environment access and its capacity, then start an execution that can respond to feedback. If children hand work off, the system should also record which proof version and review result each handoff refers to. If it schedules dependent work or compares capacities, it should add the corresponding dependencies or evaluation records. A task board can coordinate these runs without pretending that its management fields define the agent.
 
 On that substrate the experiments write themselves, and each controls a confound that has made prior comparisons uninterpretable. A homogeneous collective against a single runtime at matched samples and assembly policy, as the mandatory baseline (6.1). Views varied with capacities fixed, and capacities varied with views fixed, to locate the crossover where diversity beats sampling. Assembly policy varied on tasks with a known relevant-information fraction (6.4). Shared-memory write-back permitted or forbidden, with reset, removal, shuffle and replay to find which entries carried the gain. Refinement judged on a held-out suite fixed in advance, against its parent, at matched compute, with forgetting reported (6.6). Decentralized claiming against a central planner where verifier cost and local informativeness are dials (6.3, 6.7). Agent count swept on families with known work-to-critical-path ratios (6.2). Every result reported with reliability across attempts, and pinned to a model version.
 
@@ -339,7 +339,7 @@ Table A1 places the main families on seven design questions derived from the pri
 | Runtime matching per task                                    | Open                   | Absent; only offline search exists                                                                                                                            | The market of 6.3                                                                                                           |
 | Decentralized generation via a shared task list              | Open                   | No controlled study; FunSearch and AI Scientist are suggestive                                                                                                | 6.7                                                                                                                         |
 | Evidence of self-improvement                                 | Open                   | DGM (Zhang et al., 2025e); harnesses that retain configuration updates                                                                                        | Assess held-out gains, costs, regressions and attribution separately (6.6)                                                  |
-| Credit assignment                                            | Open                   | Zhang et al. (2025f): responsible agent identified under 20% of the time; MAST (Cemri et al., 2025) supplies vocabulary                                       | Attribution uses execution traces linked to the relevant task, patch and configuration                                      |
+| Credit assignment                                            | Open                   | Zhang et al. (2025f): responsible agent identified under 20% of the time; MAST (Cemri et al., 2025) supplies vocabulary                                       | Attribution uses execution traces linked to the relevant task, proof and configuration                                      |
 | Evaluation                                                   | Open                   | Cost-aware leaderboards exist (Kapoor et al., 2025); no benchmark with known dependency structure, graded verifiers, controlled relevant-information fraction | Without it, architecture comparisons confound organization with sample count, model, context size, verifier and parallelism |
 
 ---

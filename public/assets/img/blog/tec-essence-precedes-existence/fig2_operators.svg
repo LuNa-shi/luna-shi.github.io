@@ -45,7 +45,7 @@
   <path d="M 890 321 L 890 339 L 50 339 L 50 321" fill="none" stroke="#b5541c" stroke-width="2" />
   <text x="405" y="363" font-size="14" fill="#b5541c">repeat as needed</text>
   <text x="32" y="400" font-size="15" fill="#333">
-    Assembly and checking can recur within the interaction; edits already change state.
+    Assembly and checking can recur; writing a draft already changes the workspace.
   </text>
   <text x="32" y="424" font-size="15" fill="#333">
     Evolve uses run records to change later setups. Evaluate improvement separately (§6.6).
