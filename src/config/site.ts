@@ -496,7 +496,7 @@ export const site = {
       gated: 'Candidate update · validation still required',
       released: 'Validated update · available to future episodes',
       noExperiment:
-        'This gate summarizes the checks in Section 6.6. Selecting it does not run an evaluation.',
+        'This gate summarizes the evaluation procedure in Section 8.2. Selecting it does not run an evaluation.',
     },
     topology: {
       title: 'Same graph. Different proof-review designs.',
@@ -535,8 +535,8 @@ export const site = {
       diverse: 'Specialized reviewer instructions',
     },
     parallel: {
-      title: 'More workers cannot shorten a dependency.',
-      subtitle: 'Four one-unit tasks. Change the structure and the worker count.',
+      title: 'A fixed plan has a fixed scheduling limit.',
+      subtitle: 'Worker count changes the schedule. Structure changes the plan.',
       structures: ['Chain', 'Fork and join'],
       workers: 'Available workers',
       worker: 'Worker',
