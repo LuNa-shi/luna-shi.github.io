@@ -1,72 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="410" viewBox="0 0 960 410" font-family="Helvetica, Arial, sans-serif">
-  <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
-    </marker>
-    <marker id="arrd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#b5541c"/>
-    </marker>
-  </defs>
-  <rect width="960" height="410" fill="#ffffff"/>
-
-  <!-- episode bracket -->
-  <rect x="40" y="60" width="880" height="230" rx="10" fill="#f6f6f4" stroke="#b0b0ac" stroke-width="1" stroke-dasharray="4,3"/>
-  <text x="56" y="82" font-size="11.5" fill="#666" font-style="italic">within an episode</text>
-
-  <!-- operator boxes -->
-  <!-- generate -->
-  <rect x="70" y="110" width="170" height="66" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="155" y="136" font-size="15" font-weight="bold" fill="#111" text-anchor="middle">generate</text>
-  <text x="155" y="156" font-size="11" fill="#444" text-anchor="middle">create tasks</text>
-  <text x="155" y="196" font-size="10.5" fill="#333" text-anchor="middle">touches: <tspan font-weight="bold">Task</tspan></text>
-  <text x="155" y="212" font-size="10" fill="#777" text-anchor="middle">(decomposition; discovery)</text>
-
-  <!-- match -->
-  <rect x="290" y="110" width="170" height="66" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="375" y="136" font-size="15" font-weight="bold" fill="#111" text-anchor="middle">match</text>
-  <text x="375" y="156" font-size="11" fill="#444" text-anchor="middle">bind tasks to capacities</text>
-  <text x="375" y="196" font-size="10.5" fill="#333" text-anchor="middle">touches: <tspan font-weight="bold">Task × Capacity</tspan></text>
-  <text x="375" y="212" font-size="10" fill="#777" text-anchor="middle">(a runtime is born here)</text>
-
-  <!-- assemble -->
-  <rect x="510" y="110" width="170" height="66" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="595" y="136" font-size="15" font-weight="bold" fill="#111" text-anchor="middle">assemble</text>
-  <text x="595" y="156" font-size="11" fill="#444" text-anchor="middle">view → active context</text>
-  <text x="595" y="196" font-size="10.5" fill="#333" text-anchor="middle">touches: <tspan font-weight="bold">Environment</tspan></text>
-  <text x="595" y="212" font-size="10" fill="#777" text-anchor="middle">(the context policy)</text>
-
-  <!-- verify -->
-  <rect x="730" y="110" width="170" height="66" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="815" y="136" font-size="15" font-weight="bold" fill="#111" text-anchor="middle">verify</text>
-  <text x="815" y="156" font-size="11" fill="#444" text-anchor="middle">gate release to global state</text>
-  <text x="815" y="196" font-size="10.5" fill="#333" text-anchor="middle">touches: <tspan font-weight="bold">Task ⇒ Environment</tspan></text>
-  <text x="815" y="212" font-size="10" fill="#777" text-anchor="middle">(acceptance predicate)</text>
-
-  <!-- forward arrows -->
-  <path d="M240,143 L290,143" stroke="#333" stroke-width="1.3" marker-end="url(#arr)"/>
-  <path d="M460,143 L510,143" stroke="#333" stroke-width="1.3" marker-end="url(#arr)"/>
-  <path d="M680,143 L730,143" stroke="#333" stroke-width="1.3" marker-end="url(#arr)"/>
-
-  <!-- execution note under assemble->verify -->
-  <text x="705" y="134" font-size="9.5" fill="#777" text-anchor="middle">run</text>
-
-  <!-- loop back: verified results generate new tasks -->
-  <path d="M815,176 L815,250 L155,250 L155,176" stroke="#333" stroke-width="1.1" fill="none" marker-end="url(#arr)"/>
-  <text x="485" y="244" font-size="10.5" fill="#333" text-anchor="middle">verified results and failures become evidence for new tasks</text>
-
-  <!-- authority row -->
-  <text x="56" y="278" font-size="11" fill="#333" font-weight="bold">An architecture is a policy over these operators:</text>
-  <text x="345" y="278" font-size="11" fill="#333">who may invoke each operator, and under what constraint.</text>
-
-  <!-- evolve arc -->
-  <path d="M900,298 C980,320 940,362 480,362 C20,362 -20,320 60,298" stroke="#b5541c" stroke-width="1.6" fill="none" stroke-dasharray="7,4" marker-end="url(#arrd)"/>
-  <rect x="310" y="336" width="340" height="56" rx="6" fill="#fff7f2" stroke="#b5541c" stroke-width="1.4"/>
-  <text x="480" y="358" font-size="15" font-weight="bold" fill="#b5541c" text-anchor="middle">evolve</text>
-  <text x="480" y="378" font-size="10.5" fill="#b5541c" text-anchor="middle">across episodes · revise generation rules, policies, capacity</text>
-  <text x="700" y="332" font-size="10.5" fill="#b5541c" text-anchor="middle">from accumulated trajectories</text>
-  <text x="240" y="332" font-size="10.5" fill="#b5541c" text-anchor="middle">evaluate updates with the checks in §6.6</text>
-
-  <!-- title strip -->
-  <text x="40" y="36" font-size="13" font-weight="bold" fill="#333" letter-spacing="1.5">FIVE OPERATORS</text>
-  <text x="180" y="36" font-size="11.5" fill="#666">a system is a set of triples plus the global state; these are the only ways it moves</text>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="960"
+  height="460"
+  viewBox="0 0 960 460"
+  font-family="Arial, sans-serif"
+>
+  <rect width="960" height="460" fill="#fff" />
+  <text x="32" y="38" font-size="23" fill="#333">Five operators organize execution</text>
+  <text x="32" y="68" font-size="15" fill="#333">
+    These are organizational operations, not every transition or a mandatory linear sequence.
+  </text>
+  <rect x="32.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="46.0" y="123" font-size="19" fill="#333">generate</text>
+  <text x="46.0" y="150" font-size="14" fill="#333">Create or refine</text>
+  <text x="46.0" y="172" font-size="14" fill="#333">the request</text>
+  <rect x="216.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="230.0" y="123" font-size="19" fill="#333">match</text>
+  <text x="230.0" y="150" font-size="14" fill="#333">Choose capacity</text>
+  <text x="230.0" y="172" font-size="14" fill="#333">and access</text>
+  <rect x="400.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="414.0" y="123" font-size="19" fill="#333">assemble</text>
+  <text x="414.0" y="150" font-size="14" fill="#333">Select observations</text>
+  <text x="414.0" y="172" font-size="14" fill="#333">and history</text>
+  <rect x="584.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="598.0" y="123" font-size="19" fill="#333">verify</text>
+  <text x="598.0" y="150" font-size="14" fill="#333">Assess a</text>
+  <text x="598.0" y="172" font-size="14" fill="#333">candidate result</text>
+  <rect x="768.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
+  <text x="782.0" y="123" font-size="19" fill="#333">evolve</text>
+  <text x="782.0" y="150" font-size="14" fill="#333">Revise reusable</text>
+  <text x="782.0" y="172" font-size="14" fill="#333">configuration</text>
+  <text x="32" y="238" font-size="19" fill="#333">Agent execution: repeated interaction</text>
+  <rect x="32" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="50" y="294" font-size="18" fill="#333">Observe</text>
+  <text x="241" y="293" font-size="20" fill="#333">→</text>
+  <rect x="260" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="278" y="294" font-size="18" fill="#333">Choose</text>
+  <text x="469" y="293" font-size="20" fill="#333">→</text>
+  <rect x="488" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="506" y="294" font-size="18" fill="#333">Act</text>
+  <text x="697" y="293" font-size="20" fill="#333">→</text>
+  <rect x="716" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="734" y="294" font-size="18" fill="#333">Feedback</text>
+  <path d="M 890 321 L 890 339 L 50 339 L 50 321" fill="none" stroke="#b5541c" stroke-width="2" />
+  <text x="405" y="363" font-size="14" fill="#b5541c">repeat as needed</text>
+  <text x="32" y="400" font-size="15" fill="#333">
+    Assembly and checking can recur within the interaction; edits already change state.
+  </text>
+  <text x="32" y="424" font-size="15" fill="#333">
+    Evolve uses run records to change later setups. Evaluate improvement separately (§6.6).
+  </text>
 </svg>

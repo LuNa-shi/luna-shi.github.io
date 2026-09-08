@@ -1,94 +1,75 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460" font-family="Helvetica, Arial, sans-serif">
-  <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
-    </marker>
-    <marker id="arrd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 z" fill="#b5541c"/>
-    </marker>
-  </defs>
-  <rect width="1000" height="460" fill="#ffffff"/>
-
-  <!-- ESSENCE panel -->
-  <rect x="30" y="40" width="360" height="330" rx="10" fill="#f4f4f2" stroke="#8a8a86" stroke-width="1.2"/>
-  <text x="48" y="68" font-size="13" font-weight="bold" fill="#333" letter-spacing="1.5">ESSENCE</text>
-  <text x="48" y="86" font-size="11.5" fill="#666" font-style="italic">fixed before the agent runs</text>
-
-  <!-- Task -->
-  <rect x="50" y="102" width="320" height="112" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="66" y="126" font-size="15" font-weight="bold" fill="#111">Task</text>
-  <text x="66" y="144" font-size="11.5" fill="#444">the reason an agent exists</text>
-  <text x="66" y="166" font-size="10.5" fill="#333">goal · input/output contracts · acceptance predicate (verifier)</text>
-  <text x="66" y="182" font-size="10.5" fill="#333">dependency set · budget · provenance · lifecycle · attribution</text>
-  <text x="66" y="203" font-size="10.5" fill="#777" font-style="italic">specification created by generate</text>
-
-  <!-- Capacity -->
-  <rect x="50" y="232" width="320" height="120" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="66" y="256" font-size="15" font-weight="bold" fill="#111">Capacity</text>
-  <text x="66" y="274" font-size="11.5" fill="#444">what an agent is made of</text>
-  <text x="66" y="296" font-size="10.5" fill="#333">model · prompts · tools · skills · memory · specification</text>
-  <text x="66" y="312" font-size="10.5" fill="#333">+ task signature · cost · version · track record · failure boundary</text>
-  <text x="66" y="341" font-size="10.5" fill="#777" font-style="italic">changed only by  evolve</text>
-
-  <!-- EXISTENCE panel -->
-  <rect x="510" y="40" width="460" height="330" rx="10" fill="#eef3f7" stroke="#8a8a86" stroke-width="1.2"/>
-  <text x="528" y="68" font-size="13" font-weight="bold" fill="#333" letter-spacing="1.5">EXISTENCE</text>
-  <text x="528" y="86" font-size="11.5" fill="#666" font-style="italic">a runtime in an environment</text>
-
-  <!-- Environment nested layers -->
-  <text x="528" y="112" font-size="15" font-weight="bold" fill="#111">Environment</text>
-  <rect x="528" y="122" width="424" height="230" rx="6" fill="#ffffff" stroke="#333" stroke-width="1.3"/>
-  <text x="540" y="140" font-size="11" fill="#333">global state</text>
-  <text x="940" y="140" font-size="10" fill="#888" text-anchor="end">repo · files · services · stores · shared memory</text>
-
-  <rect x="544" y="150" width="392" height="190" rx="5" fill="#f7f9fb" stroke="#555" stroke-width="1.1"/>
-  <text x="556" y="167" font-size="11" fill="#333">view</text>
-  <text x="924" y="167" font-size="10" fill="#888" text-anchor="end">what this runtime may read</text>
-
-  <rect x="560" y="178" width="360" height="150" rx="5" fill="#eef2f6" stroke="#555" stroke-width="1.1"/>
-  <text x="572" y="195" font-size="11" fill="#333">observation</text>
-  <text x="908" y="195" font-size="10" fill="#888" text-anchor="end">what it actually read</text>
-
-  <!-- working state + active context side by side -->
-  <rect x="576" y="206" width="160" height="108" rx="5" fill="#e3e9ef" stroke="#555" stroke-width="1.1"/>
-  <text x="588" y="224" font-size="11" fill="#333">external working state</text>
-  <text x="588" y="240" font-size="10" fill="#666">kernel variables, indexes,</text>
-  <text x="588" y="253" font-size="10" fill="#666">handles to children —</text>
-  <text x="588" y="266" font-size="10" fill="#666">shapes behavior, never</text>
-  <text x="588" y="279" font-size="10" fill="#666">enters the token input</text>
-
-  <rect x="748" y="206" width="156" height="108" rx="5" fill="#d9e2ea" stroke="#333" stroke-width="1.3"/>
-  <text x="760" y="224" font-size="11" font-weight="bold" fill="#111">active context</text>
-  <text x="760" y="240" font-size="10" fill="#555">tokens serialized into</text>
-  <text x="760" y="253" font-size="10" fill="#555">one model call</text>
-
-  <!-- context policy arrow -->
-  <path d="M736,260 L748,260" stroke="#333" stroke-width="1.1" marker-end="url(#arr)"/>
-  <text x="740" y="300" font-size="9.5" fill="#333" text-anchor="middle">context</text>
-  <text x="740" y="311" font-size="9.5" fill="#333" text-anchor="middle">policy</text>
-
-  <!-- Runtime marker -->
-  <rect x="410" y="180" width="80" height="60" rx="30" fill="#ffffff" stroke="#111" stroke-width="1.6"/>
-  <text x="450" y="205" font-size="13" font-weight="bold" fill="#111" text-anchor="middle">Runtime</text>
-  <text x="450" y="221" font-size="9.5" fill="#555" text-anchor="middle">= agent</text>
-
-  <!-- bind arrows -->
-  <path d="M370,158 C395,158 402,190 412,196" stroke="#333" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
-  <path d="M370,292 C395,292 402,232 412,224" stroke="#333" stroke-width="1.3" fill="none" marker-end="url(#arr)"/>
-  <text x="392" y="148" font-size="10" fill="#333">bound to</text>
-  <text x="378" y="312" font-size="10" fill="#333">instantiated from</text>
-
-  <!-- runtime -> environment (through a view) -->
-  <path d="M490,210 L544,210" stroke="#333" stroke-width="1.3" marker-end="url(#arr)"/>
-  <text x="517" y="248" font-size="10" fill="#333" text-anchor="middle">through</text>
-  <text x="517" y="259" font-size="10" fill="#333" text-anchor="middle">a view</text>
-
-  <!-- evolve return arrow -->
-  <path d="M740,370 L740,412 L210,412 L210,356" stroke="#b5541c" stroke-width="1.4" fill="none" stroke-dasharray="6,4" marker-end="url(#arrd)"/>
-  <text x="475" y="404" font-size="11.5" fill="#b5541c" text-anchor="middle" font-weight="bold">evolve</text>
-  <text x="475" y="428" font-size="10.5" fill="#b5541c" text-anchor="middle">use feedback to update future configurations; evaluate the new version against the old (§6.6)</text>
-
-  <!-- top arrow: essence precedes existence -->
-  <path d="M210,30 L740,30" stroke="#333" stroke-width="1" marker-end="url(#arr)"/>
-  <text x="475" y="22" font-size="11" fill="#333" text-anchor="middle" font-style="italic">essence precedes existence</text>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="960"
+  height="460"
+  viewBox="0 0 960 460"
+  font-family="Arial, sans-serif"
+>
+  <rect width="960" height="460" fill="#fff" />
+  <text x="32" y="38" font-size="23" fill="#333">Three conditions configure a running agent</text>
+  <text x="32" y="68" font-size="15" fill="#333">
+    Example: repair a parser while preserving its behavior on non-empty input.
+  </text>
+  <rect
+    x="32.0"
+    y="95"
+    width="289.3333333333333"
+    height="104"
+    rx="8"
+    fill="#f3f6f7"
+    stroke="#aebdc3"
+  />
+  <text x="46.0" y="123" font-size="19" fill="#333">Task</text>
+  <text x="46.0" y="150" font-size="14" fill="#333">Outcome + scope</text>
+  <text x="46.0" y="172" font-size="14" fill="#333">Handle empty input; preserve behavior</text>
+  <rect
+    x="333.3333333333333"
+    y="95"
+    width="289.3333333333333"
+    height="104"
+    rx="8"
+    fill="#f3f6f7"
+    stroke="#aebdc3"
+  />
+  <text x="347.3333333333333" y="123" font-size="19" fill="#333">Environment</text>
+  <text x="347.3333333333333" y="150" font-size="14" fill="#333">State + interaction access</text>
+  <text x="347.3333333333333" y="172" font-size="14" fill="#333">
+    Working copy; read, edit and test
+  </text>
+  <rect
+    x="634.6666666666666"
+    y="95"
+    width="289.3333333333333"
+    height="104"
+    rx="8"
+    fill="#f3f6f7"
+    stroke="#aebdc3"
+  />
+  <text x="648.6666666666666" y="123" font-size="19" fill="#333">Capacity</text>
+  <text x="648.6666666666666" y="150" font-size="14" fill="#333">
+    Action selection + available actions
+  </text>
+  <text x="648.6666666666666" y="172" font-size="14" fill="#333">
+    Model and instructions; file/test tools
+  </text>
+  <text x="32" y="238" font-size="19" fill="#333">Agent execution: repeated interaction</text>
+  <rect x="32" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="50" y="294" font-size="18" fill="#333">Observe</text>
+  <text x="241" y="293" font-size="20" fill="#333">→</text>
+  <rect x="260" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="278" y="294" font-size="18" fill="#333">Choose</text>
+  <text x="469" y="293" font-size="20" fill="#333">→</text>
+  <rect x="488" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="506" y="294" font-size="18" fill="#333">Act</text>
+  <text x="697" y="293" font-size="20" fill="#333">→</text>
+  <rect x="716" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
+  <text x="734" y="294" font-size="18" fill="#333">Feedback</text>
+  <path d="M 890 321 L 890 339 L 50 339 L 50 321" fill="none" stroke="#b5541c" stroke-width="2" />
+  <text x="405" y="363" font-size="14" fill="#b5541c">repeat as needed</text>
+  <text x="32" y="400" font-size="15" fill="#333">
+    An edit changes the working copy. A failing test informs the next decision.
+  </text>
+  <text x="32" y="424" font-size="15" fill="#333">
+    The setup can remain fixed while the state, history and next action change.
+  </text>
 </svg>

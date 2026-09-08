@@ -32,49 +32,33 @@ function Choices({
 
 function Triple({ copy }: { copy: Copy }) {
   const [selected, setSelected] = useState(0);
+  const [stage, setStage] = useState(0);
   const c = copy.triple;
   return (
     <>
       <Choices labels={c.tabs} value={selected} onChange={setSelected} name={copy.controls} />
-      <div className="tec-triple" data-selected={selected}>
-        <div className="tec-essence">
-          <span className="tec-eyebrow">{c.essence}</span>
-          <div className={`tec-primitive ${selected === 0 ? 'is-active' : ''}`}>
-            <b>{c.task}</b>
-            <span>{c.taskDetail}</span>
+      <div className="tec-triple">
+        {c.tabs.map((label, i) => (
+          <div key={label} className={`tec-primitive ${selected === i ? 'is-active' : ''}`}>
+            <b>{label}</b>
+            <span>{c.summaries[i]}</span>
           </div>
-          <div className={`tec-primitive ${selected === 2 ? 'is-active' : ''}`}>
-            <b>{c.capacity}</b>
-            <span>{c.capacityDetail}</span>
-          </div>
-        </div>
-        <div className="tec-binding">
-          <span aria-hidden="true">↓</span>
-          <b>{c.runtime}</b>
-          <span>{c.binding}</span>
-        </div>
-        <div className={`tec-environment ${selected === 1 ? 'is-active' : ''}`}>
-          <span className="tec-eyebrow">{c.existence}</span>
-          <b>{c.environment}</b>
-          <div className="tec-layer">
-            <span>{c.layers[0]}</span>
-            <div className="tec-layer">
-              <span>{c.layers[1]}</span>
-              <div className="tec-layer">
-                <span>{c.layers[2]}</span>
-                <div className="tec-contexts">
-                  <span>{c.layers[3]}</span>
-                  <span>{c.layers[4]}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <span className="tec-policy">{c.policy}</span>
-        </div>
+        ))}
       </div>
       <p className="tec-reading" aria-live="polite">
         {c.details[selected]}
       </p>
+      <div className="tec-runtime">
+        <b>{c.runtime}</b>
+        <Choices labels={c.stages} value={stage} onChange={setStage} name={c.runtime} />
+        <p className="tec-reading" aria-live="polite">
+          {c.trajectory[stage]}
+        </p>
+        <button type="button" onClick={() => setStage((stage + 1) % c.stages.length)}>
+          {stage === c.stages.length - 1 ? c.continuation : copy.next}
+        </button>
+        <p className="tec-runtime-note">{c.stable}</p>
+      </div>
     </>
   );
 }
@@ -134,6 +118,7 @@ function Operators({ copy }: { copy: Copy }) {
         <span className="tec-eyebrow">{step < 4 ? c.within : c.across}</span>
         <p>{c.details[step]}</p>
       </div>
+      <p className="tec-runtime-note">{c.loop}</p>
       <div className={`tec-evolve-gate ${step === 4 ? 'is-current' : ''}`}>
         <span className="tec-eyebrow">{c.evidence}</span>
         <label>
