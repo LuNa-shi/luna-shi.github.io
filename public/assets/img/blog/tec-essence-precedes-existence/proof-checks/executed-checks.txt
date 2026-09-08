@@ -1,0 +1,31 @@
+$ lean PrimeAudit.lean
+exit_code=0
+'weakened' depends on axioms: [propext]
+'circular_specification' does not depend on any axioms
+weakened : ∃ p, Prime p ∧ p % 4 = 3
+circular_specification (already_proved : Requested) : Requested
+
+$ lean RejectedTarget.lean
+exit_code=1
+'weakened' depends on axioms: [propext]
+'circular_specification' does not depend on any axioms
+weakened : ∃ p, Prime p ∧ p % 4 = 3
+circular_specification (already_proved : Requested) : Requested
+.planning/tec-v4-import/prime-proof-checks/RejectedTarget.lean:25:23: error: Type mismatch
+  weakened
+has type
+  ∃ p, Prime p ∧ p % 4 = 3
+but is expected to have type
+  Requested
+.planning/tec-v4-import/prime-proof-checks/RejectedTarget.lean:26:23: error: Type mismatch
+  circular_specification
+has type
+  Requested → Requested
+but is expected to have type
+  Requested
+
+$ lean Composition.lean
+exit_code=0
+'plus_one_is_fresh' depends on axioms: [propext]
+'bad_candidate_factors' depends on axioms: [propext]
+'minus_one_interface' depends on axioms: [propext]

@@ -341,7 +341,7 @@
   flex: 1;
   height: 32px;
   border-block-end: 1px solid var(--tec-line);
-  background: repeating-linear-gradient(90deg, var(--tec-line) 0 1px, transparent 1px 25%);
+  background: repeating-linear-gradient(90deg, var(--tec-line) 0 1px, transparent 1px 11.111%);
 }
 .tec-task-block {
   position: absolute;
@@ -366,7 +366,7 @@
 }
 .tec-results {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
   margin-top: 1.25rem;
   border-block: 1px solid var(--tec-line);
@@ -418,6 +418,7 @@
     font-size: 12px;
   }
   .tec-results {
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;
   }
   .tec-results b {
@@ -439,5 +440,67 @@
   .tec-viz *::after {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+.tec-premise-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.tec-premise-map rect {
+  fill: var(--tec-wash);
+  stroke: var(--tec-line);
+  stroke-width: 1.5;
+}
+.tec-premise-map text {
+  fill: var(--tec-ink);
+  font-size: 16px;
+}
+.tec-premise-map .tec-map-id {
+  fill: var(--tec-accent);
+  font-weight: 600;
+  font-size: 18px;
+}
+.tec-premise-map line {
+  stroke: var(--tec-line);
+  stroke-width: 2;
+}
+.tec-premise-map marker path {
+  fill: var(--tec-accent);
+}
+.tec-premise-map .is-linked,
+.tec-premise-map .is-selected rect {
+  stroke: var(--tec-accent);
+  stroke-width: 2.5;
+}
+.tec-premise-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.tec-premise-details p {
+  margin: 0;
+  padding: 1rem;
+  border-left: 2px solid var(--tec-accent);
+  background: var(--tec-wash);
+  font-size: 14px;
+}
+.tec-premise-details b {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.tec-map-narrow {
+  display: none;
+}
+@media (max-width: 560px) {
+  .tec-map-wide {
+    display: none;
+  }
+  .tec-map-narrow {
+    display: block;
+  }
+  .tec-premise-details {
+    grid-template-columns: 1fr;
   }
 }

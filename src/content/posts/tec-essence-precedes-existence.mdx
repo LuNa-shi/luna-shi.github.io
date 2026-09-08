@@ -2,8 +2,8 @@
 title: 'Essence Precedes Existence: A Task–Environment–Capacity View of Multi-Agent Systems'
 date: '2026-09-05T12:00:00Z'
 overview: >-
-  TEC describes an agent as an execution unit that uses a capacity to pursue a task through interaction with an environment,
-  and uses this framework to examine coordination, context, verification, and self-improvement.
+  Agent count does not explain improvement. TEC separates evidence, proof composition, execution plans,
+  shared accumulation and evaluation drift through one formal theorem-proving task.
 lang: en
 canonicalSlug: tec-essence-precedes-existence
 tags:
@@ -19,623 +19,434 @@ draft: false
 
 import TecFigure from '../../components/blog/TecFigure.astro';
 
-_Claims are marked [E] when established in cited work, [D] when derived here, and [C] when conjectural._
-
----
+_Claims are marked [E] when supported by cited work, [D] when derived here, and [C] when proposed for empirical testing._
 
 ## TL;DR
 
-An agent is a running execution unit configured by a Task, an Environment and a Capacity. Its design precedes its execution, while its history develops through observation, action and feedback. TEC uses these three primitives to reinterpret topology, roles, communication, memory and automatic agent design. Its implications concern how the parts constrain one another: more inference cannot distinguish cases hidden by every available view; successful subtasks need a sound composition rule to establish the parent goal; and the critical path belongs to a chosen execution plan, which new capacities or reusable results can change. A system can improve through shared knowledge while individual capacities stay fixed. Capacity and Environment changes can also have value only in combination. Finally, when a system changes its own task generation or verification, higher internal scores need not mean better performance on the original objective.
+A graph of agents is not an explanation of a system. The explanation starts with what must be accomplished (**Task**), what execution can observe and change (**Environment**), and how it acts (**Capacity**). An agent is the interaction process instantiated under those conditions. This view changes what counts as progress: a missing observation can look like weak reasoning; a better library can look like a better model; a new proof plan can look like parallel speedup; and a relaxed verifier can look like self-improvement. TEC turns these confounds into six propositions and a set of experiments. The central demand is simple: **identify which relation improved, instead of crediting the population of agents.**
 
 ---
 
-## 1. We cannot say why multi-agent systems fail
+## 1. Agent count is a poor explanation
 
-Three years of frameworks—CAMEL's role-play (Li et al., 2023), MetaGPT's standard operating procedures (Hong et al., 2023), ChatDev's virtual company (Qian et al., 2023), AutoGen's programmable conversations (Wu et al., 2023), and the orchestrator-plus-specialists pattern now shipping in every coding assistant—have produced a body of negative results that is, by now, the most solid empirical knowledge the field has. Cemri et al. (2025) annotated over 1,600 traces from seven open-source systems and found failure rates between 41% and 87%, in fourteen modes across three families: the task was under-specified, the agents disagreed about what they were doing, or nobody checked the answer. Kapoor et al. (2024) showed that accuracy-only leaderboards rewarded agents that simpler and cheaper baselines dominated. Multi-agent debate often fails to outperform simpler single-agent baselines despite using more inference compute (Zhang et al., 2025g), and a single agent with a good prompt matches the best discussion protocols (Wang et al., 2024a). Practitioners split on the same line: Anthropic reports that parallel sub-agents pay for themselves on breadth-first research (Anthropic, 2025a); Cognition advises against multi-agent designs for most software work because fragmented context yields incoherent output (Cognition, 2025).
+Suppose a team proves a theorem that one agent failed to prove. What made the difference? Perhaps the team explored more candidates. Perhaps one member found a library theorem the original agent never saw. Perhaps the division of work exposed a missing assumption. Or perhaps the team submitted an easier statement, and the evaluator checked only that its file compiled. “Four agents beat one” distinguishes none of these explanations.
 
-None of this is evidence against multi-agent systems. It is evidence that we describe them in the wrong vocabulary. We talk about roles, orchestrators, planners and critics—the _forms_ of organization—and the forms say nothing about the structure of the task or about who can see what. Earlier distributed-AI work explicitly modeled task allocation and partial information. The contract net organized task allocation through negotiation (Smith, 1980); the blackboard coordinated problem-solving modules through shared partial results (Erman et al., 1980); and the Dec-POMDP formulation modeled cooperative decisions based on local observation histories (Bernstein et al., 2002). TEC uses these earlier questions to examine language-model agents, starting with a claim about what an agent _is_.
+This is a practical problem in MAS evaluation. [Cemri et al. (2025)](https://arxiv.org/abs/2503.13657) developed a failure taxonomy from over 1,600 traces across seven systems, including specification, coordination and verification failures. [Kapoor et al. (2024)](https://arxiv.org/abs/2407.01502) showed why accuracy alone can obscure the value of simpler, cheaper agents. Practitioners also report different outcomes under different workloads: [Anthropic's research system](https://www.anthropic.com/engineering/multi-agent-research-system) benefits from parallel exploration, while [Cognition's account](https://cognition.ai/blog/dont-build-multi-agents) emphasizes the damage caused by fragmented context in software work. [E] The interesting question is which conditions produce each outcome.
 
----
+Our usual nouns are too coarse for that question. “Critic” can mean a different prompt, a different obligation, a different view of the evidence, or authority to reject an answer. “Memory” can mean stored facts, retrieval, or a procedure that changes future reasoning. “Topology” can mean dependencies, communication, or control. Calling each of these a component does not tell us what an intervention changes.
 
-## 2. The spine: an agent's essence precedes its existence
+TEC starts one level below these organizational forms. It describes the conditions that make an execution possible, then asks how familiar MAS mechanisms alter those conditions. The aim is to make competing explanations experimentally separable.
 
-In _Existentialism Is a Humanism_, Sartre distinguished two kinds of thing. A paper-knife is conceived by an artisan who has its use and its method of manufacture in mind before it exists; for artifacts, essence precedes existence. A human being, having no maker with a plan, exists first and becomes something through choices; for people, existence precedes essence (Sartre, 1946). The distinction is exactly the one the agent literature has blurred. An agent is instantiated for a purpose, from a design, by a maker. For each run, a task and a capacity specification determine what the agent is meant to do and how it can act. That specification need not remain unchanged forever: a system can revise it before a later run.
+## 2. The spine: essence precedes existence
 
-TEC separates three questions: what should be accomplished (**Task**), where execution can observe and act (**Environment**), and how it selects and performs actions (**Capacity**). Binding these conditions defines the setup for an agent. The agent itself is the running execution unit, with a history that changes as it interacts with its environment. [D]
+Sartre's paper-knife has a purpose and a method of manufacture before the particular object exists. This is his example of an artifact for which essence precedes existence, in contrast to his account of human existence (Sartre, 1946). An engineered agent belongs on the artifact side of that distinction: we specify a purpose, provide access to a world, and supply a means of acting before we launch its execution.
+
+TEC gives that design three parts:
+
+- **Task:** the outcome to pursue, with the scope needed to identify it.
+- **Environment:** the state and interaction boundary through which execution observes and acts.
+- **Capacity:** the reusable means of selecting and performing actions.
+
+Binding these conditions produces an execution setup. **The agent is the running interaction process under that setup.** Its observations, actions and history develop over time; its next move is not a field in the specification. [D]
 
 <TecFigure
   mode="triple"
   fallback="/assets/img/blog/tec-essence-precedes-existence/fig1_triple.svg"
-  alt="Task, Environment access and Capacity configure an agent that observes, chooses actions and receives feedback."
+  alt="Task, Environment and Capacity configure Builder; Builder's observations and actions unfold during execution."
 />
 
-_Figure 1. The three conditions configure an execution unit. Step through the proof example to see the agent read definitions, draft an argument and use feedback about a missing inference. The setup can stay fixed while the interaction continues._
+_Figure 1. The setup specifies Builder's obligation and means of acting. Step through a run in which feedback changes its construction while the setup remains fixed. Section 3 defines the complete proof task and team._
 
-Four things follow at once, and they organize what comes after.
+Self-modification fits this account without reversing a philosophical arrow. A run produces evidence; an update procedure uses that evidence to change a reusable configuration; later execution uses the changed configuration. A correction to the current proof changes the current state. Saving a new proof-search procedure changes how future runs act. **Self-improvement is the further claim that this change makes the system better at an objective that remains comparable.** Section 6.6 examines how that claim can fail even as internal scores rise.
 
-First, treating agents as interchangeable nodes hides the conditions under which each one acts. TEC starts with those conditions, then follows the execution they support. Section 4 uses this distinction to explain topology, tools, sub-agents, communication and memory.
+## 3. One proof task, four execution units
 
-Second, the task gives execution a direction. An unclear request can still start an agent, but it leaves the intended result uncertain. The specification failures discussed by Cemri et al. (2025) motivate clarifying that request; they do not imply that every task needs a large fixed schema.
+Our running task is to prove that there are infinitely many primes congruent to 3 modulo 4. We state it in the form the final artifact must establish:
 
-Third, execution is limited by what the setup lets it distinguish. A team asked to review a proof cannot reliably distinguish a valid argument from a circular one if every member receives only the same conclusion and cannot inspect the derivation. Section 6.1 makes this information limit precise; the later deductions examine composition, execution plans and the joint value of Environment and Capacity.
+$$
+\forall B\in\mathbb N,\quad \exists q\in\mathbb N:\quad q>B\;\land\;q\text{ is prime}\;\land\;q\equiv3\pmod4.
+$$
 
-Fourth, a system can use what happened during earlier runs to change how later runs work. A failed attempt might lead it to revise a prompt or add a reusable skill. If it saves that change and loads it for future tasks, it has updated its capacity. In TEC, this is the role of _evolve_. The update may help, do nothing, or make performance worse. To claim self-improvement, the system must compare the new version with the old one on tasks that were not used to produce the change, while accounting for extra cost and any abilities it has lost. Section 6.6 explains that comparison.
+This example has substantive intermediate results, a large formal library to search, and an exact distinction between checking a proof and checking the requested proof. It also has a useful shortcut: the fixed Mathlib version used as our reference contains [`Nat.forall_exists_prime_gt_and_modEq`](https://github.com/leanprover-community/mathlib4/blob/c5ea00351c28e24afc9f0f84379aa41082b1188f/Mathlib/NumberTheory/LSeries/PrimesInAP.lean#L504), which specializes to this goal. Successful retrieval can replace a constructive plan with an application of that theorem. That is a baseline the team must beat, and a concrete example of why a task has no unique execution plan.
 
----
+### 3.1 Task: enough to identify success
 
-## 3. From a task to a running agent
+The minimum Task consists of the requested outcome and its scope. Here the domain is the natural numbers, the bound B is arbitrary, and the result must supply a larger prime in the specified residue class. Returning q = 3 proves that one such prime exists; it does not prove the requested unboundedness. The distinction comes from the task itself.
 
-Consider a theorem-proving request: “Prove that, for every integer n, if n² is even, then n is even.” The agent has access to definitions of even and odd integers, a workspace for its proof, and a way to request review. It can read the definitions, propose an argument, receive feedback about a missing step and revise the proof. TEC separates the conditions for this run from the interaction that unfolds during it.
+For this execution, we additionally require a Lean proof of the fixed target under an agreed import and axiom policy. The verifier therefore has two jobs: check the proof term, and check that its type establishes the preserved target. A task can exist before an automated verifier is available. A claim of completion needs a justified way to decide whether that task was met.
 
-### 3.1 Task: the requested outcome and its scope
+The constructive plan uses two pieces that can be developed independently once their interfaces are fixed:
 
-A Task specifies what the execution is trying to accomplish. In the theorem-proving example, two pieces make the request specific:
+1. **Construction.** Let S be the finite set of primes at most B that are 3 modulo 4, and let P be their product. The empty product is 1, so P ≥ 1. Set N = 4P − 1. Then N ≥ 3 and N is 3 modulo 4. No member of S divides N: it divides 4P, and dividing both would force it to divide 1.
+2. **Factor lemma.** Every natural number that is 3 modulo 4 has a prime divisor that is 3 modulo 4. Such a number is odd, so its prime factors, counted with multiplicity, are 1 or 3 modulo 4. If all were 1, their product would be 1 modulo 4, a contradiction.
 
-- **The desired outcome:** establish that evenness of n² implies evenness of n. Without a target proposition, the agent has no direction for choosing an argument.
-- **The relevant scope:** the claim concerns every integer n and requires a general proof. Checking several numerical cases does not satisfy that request; the domain and quantifier determine what the argument must establish.
+Combining them gives a prime q dividing N in the required residue class. Since q cannot belong to S, it exceeds B. The factor lemma is reusable in later residue and prime-divisor arguments; its proof does not depend on this particular S or B. The same mathematical results have formal proofs in [_Mathematics in Lean_](https://github.com/leanprover-community/mathematics_in_lean/blob/dd6d752fedb14082f557913c2dccb2d4851e5173/MIL/C05_Elementary_Number_Theory/solutions/Solutions_S03_Infinitely_Many_Primes.lean#L164), whose infinitude proof uses a different construction. The factor lemma there is a declaration in the tutorial, not a claim about its native availability in Mathlib.
 
-These can be expressed in ordinary language. A structured record can help software manage the request, but a string is not inherently an inadequate task representation. The question is whether the request communicates the intended outcome clearly enough to act on.
+This decomposition explains why some management information becomes necessary:
 
-A **verifier** is a procedure for judging a result against that outcome. Here, a reviewer can check whether each inference follows from the definitions and whether the argument covers every integer. Testing particular values can expose mistakes but cannot prove this universal claim. A formal proof checker is another option if the statement and argument are formalized; it is not required to begin the work. Some basis for judging success is needed to claim completion, but a separate automated verifier is not a prerequisite for a task or an agent.
+- **A handoff contract** preserves the facts the next proof needs. Builder must deliver the residue condition as well as nondivisibility; a generic “candidate checked” is insufficient.
+- **A dependency** records when an obligation can start. Factor can prove the general lemma before Builder finishes, but the final application needs both results.
+- **Provenance** prevents approval of one theorem or revision from being attached to another. Store the declaration, exact type, source version and check result together when results cross a handoff or enter a shared library.
+- **A budget and status** control execution: whether search should continue, and which obligations are ready. They help run the plan; they do not become additional mathematical constituents of the theorem.
 
-Other information becomes useful when the system has a specific coordination problem:
+Each addition answers a problem introduced by the execution design. None warrants a mandatory field in every conceivable Task.
 
-- **Input/output contracts** matter at a handoff. A reviewing agent needs the exact statement, assumptions and proof draft, and should return either a justified assessment or a specific gap. A single agent keeping these together may not need separate contract fields.
-- **Dependencies** matter after work is split. A review of a proposed proof depends on producing that draft. Recording this relation lets a scheduler avoid starting the dependent review too early; it is unnecessary for an undivided task.
-- **A budget** matters when execution must stop at a resource limit. A time or token allowance tells the system when to stop searching, even if the proof remains incomplete. It is an execution constraint, not part of the proposition being proved.
-- **Provenance** matters when results can be mixed up. If two agents produce different proofs, recording which draft a review examined prevents its approval from being attached to a different argument. It belongs in the execution record linked to the task.
-- **Lifecycle status and failure attribution** serve different operational needs. Status tells a scheduler whether work is pending, running or finished, which helps avoid duplicate assignment. Failure attribution records an investigated explanation of what went wrong, such as an unjustified inference. Neither is needed to state the theorem, and an attribution field alone cannot identify a cause.
+### 3.2 Environment: available is different from observed
 
-The minimum Task remains the requested outcome with the constraints needed to make it specific. Evaluation and coordination mechanisms should be added for the problems they solve, rather than made mandatory by definition.
+The Environment contains the pinned library sources and theorem index, definitions, per-agent working modules, shared declarations and compiler reports. Access rules determine which parts each execution can read or alter. The target and acceptance policy are preserved separately from the candidate files.
 
-### 3.2 Environment: what execution can observe and affect
+A **view** is the portion of this environment an agent can access. An **observation** is a result it actually receives, such as a theorem type returned by search. The **active context** is the input assembled for a particular model call. A library declaration can be accessible without being retrieved, and retrieved without surviving the next summary. These distinctions matter in a library far larger than one model input.
 
-For this run, the Environment is the proof workspace and the interfaces through which the agent reads definitions, records arguments and receives review. Two parts are needed:
+The same distinction applies to checking. A build report that says “success” is an observation about a submitted file. The exact declaration type is a different observation. An Auditor that receives the first and cannot obtain the second lacks evidence needed to determine whether the file proves our target.
 
-- **State and responses:** the available definitions, current proof draft and feedback returned by a reviewer. Without them, the agent has no feedback about the argument it is developing.
-- **An interaction boundary:** which material the agent may read and where it may write or request review. It can revise its proof draft, but it cannot change the requested theorem and count that as a proof of the original claim.
+### 3.3 Capacity and Agent: means of acting, then interaction
 
-Choosing the environment does not freeze its state. Writing a new argument changes the proof workspace, and a later review examines that version. Other agents may also contribute lemmas or comments. The binding fixes which environment and access rules the run uses; the state encountered through them evolves.
+Capacity minimally supplies an action-selection procedure and the actions it can perform. Here a model with reusable instructions chooses searches and proof steps; tools let it inspect types, edit modules and request checks. The search operation belongs to Capacity; the indexed library it searches belongs to Environment. Which theorem comes back depends on both.
 
-A **view** names the part of the environment available to the agent. An **observation** is what it actually receives at a particular step. Access to a library of lemmas does not mean every lemma has been read. For an LLM agent, the **active context** is the input assembled for one model call, including the selected observations and relevant history. A **context policy** determines that selection. These distinctions explain why an available lemma can still be absent from a model's current input.
+We keep four execution units throughout the article. They may share model weights while using different instructions and access. Each has a changing history; the table fixes its initial responsibility, not its trajectory.
 
-Large systems may keep additional working state in files or a persistent kernel. Such storage helps carry information across calls; it is an implementation choice, not another required layer in the minimum Environment definition.
+| Agent          | Assigned task                                            | Capacity emphasis                                       | Default view                                                                   |
+| -------------- | -------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Integrator** | Fix interfaces; combine returned results into the target | Decomposition, type inspection, theorem application     | Original target, complete returned types, integration module and build reports |
+| **Builder**    | Construct N and prove its required properties            | Finite-product arithmetic and local proof search        | S and its assumptions, arithmetic library search, its working module           |
+| **Factor**     | Obtain the general residue-to-prime-factor lemma         | Factorization reasoning and theorem retrieval           | Factorization and residue search results, full types, its working module       |
+| **Auditor**    | Decide whether the final artifact establishes the target | Target comparison, kernel checking and axiom inspection | Preserved target, final declaration and dependencies, pinned acceptance policy |
 
-### 3.3 Capacity: how the unit chooses and performs actions
+Access can be expanded by an explicit operation. Giving every unit a search interface still does not make every library theorem an observation in every run.
 
-Capacity describes the reusable means of acting. The proof attempt needs:
+For example, Builder may initially reuse the familiar Euclid construction 4P + 1. A check then exposes the missing residue condition. Builder revises the candidate to 4P − 1 and proves the required properties. The task, model and tools can stay fixed across this sequence. The workspace and execution history change, and those changes affect the next action. **That evolving observation–action loop is the agent.** [D]
 
-- **A way to select the next action** from the task, observations and execution history. In an LLM agent, a model and its instructions perform this role. Without it, access to definitions does not determine which proof strategy to try.
-- **Available actions:** for this example, reading definitions, writing a proof step and requesting review. Without a way to record or communicate an argument, the unit cannot deliver the requested proof.
+### 3.4 Five operators organize these executions
 
-Capacity and Environment meet at an interface. Capacity determines which action the unit can select; the Environment determines what that action does to the current state and what result comes back. An operation for writing a proof step is part of the agent's action repertoire, while the recorded argument belongs to the Environment.
+TEC names five organizational operations:
 
-Prompts, reusable skills and tool implementations can supply this capacity. They are not each mandatory: a simple controller can act without a skill library. Similarly, a version number, a task signature or a performance record helps a system choose between capacities or evaluate updates; none is required for a capacity to exist. Those records become valuable when matching work to demonstrated ability, but their meaning depends on the environment in which ability was measured (Section 6.5).
-
-### 3.4 Agent: the execution that unfolds under those conditions
-
-Once the Task, Environment access and Capacity are bound, the system can instantiate an **Agent**, the execution unit that repeatedly observes and acts. Here, **runtime** refers to that running instance. The triple describes its setup; the Agent is the dynamic interaction process carried out under that setup. [D]
-
-For the theorem, one possible run is:
-
-1. The agent reads the definitions: an even integer has the form 2k, and an odd integer has the form 2k + 1, for an integer k.
-2. It drafts “n² = 2k, therefore n is even” and submits the argument for review. Writing the draft changes the workspace.
-3. The reviewer identifies the gap: the conclusion has been asserted without showing why it follows. Rewriting the hypothesis as n² = 2k does not supply that missing inference.
-4. The agent uses this feedback to try the contrapositive. If n is odd, write n = 2m + 1. Then n² = 4m² + 4m + 1 = 2(2m² + 2m) + 1, which is odd because 2m² + 2m is an integer. Thus an odd integer cannot have an even square. Since every integer is either even or odd, an even square implies an even n.
-5. The agent returns this complete argument for review. The reviewer can now inspect the parity classification and each algebraic step; if a gap remains, execution can continue or report the unresolved obligation.
-
-The task can stay the same throughout this run, and so can the model and available tools. What changes is the environment, the accumulated history and the next action selected from them. Fixing the setup therefore does not fix the trajectory in advance. A single model call is one decision within this process, not the whole agent.
-
-Multiple agents can start from the same setup and still have separate histories. Continuing an agent across a pause requires preserving enough execution state to resume its work; keeping only a reusable capacity starts another instance. This separates the means of acting from a particular ongoing execution.
-
-### 3.5 Five operators organize execution
-
-The observation–action loop describes how the agent runs. TEC uses five additional names to describe how a system organizes that execution:
-
-- **generate** creates or refines a task request. In the example, it states the proposition, its integer domain and the requirement for a general proof.
-- **match** selects a capacity and arranges the environment access needed to instantiate the execution unit.
-- **assemble** selects observations and history for the next model call. It can run repeatedly as new feedback arrives.
-- **verify** assesses a candidate result. A missing inference can send the running agent back to revise its proof; a complete argument can support acceptance. Verification does not precede every environmental change: the workspace already changed when the draft was written.
-- **evolve** changes reusable capacity or configuration based on run records. It affects how later execution proceeds, and its benefits require the comparisons in Section 6.6.
-
-These are organizational operations, not an exhaustive list of state transitions. They need not be five separate services or occur exactly once in a fixed sequence. In particular, assemble, action and feedback can repeat many times before a result is accepted.
+- **generate** states or refines obligations, including the two branches of the constructive proof.
+- **match** selects a capacity with the access needed for an obligation.
+- **assemble** selects observations and history for a model call.
+- **verify** judges an artifact against an obligation, locally or at the root.
+- **evolve** changes reusable capacity or configuration from execution evidence.
 
 <TecFigure
   mode="operators"
   fallback="/assets/img/blog/tec-essence-precedes-existence/fig2_operators.svg"
-  alt="Five organizational operators around an agent's repeated observation and action."
+  alt="Five operators organize the prime-proof executions, with repeated assembly and checking and a separate future-configuration update."
 />
 
-_Figure 2. The steps show one possible proof workflow. During execution, observations inform actions and their results inform the next call. Verify assesses the resulting argument; evolve proposes a reusable update. The final gate represents evaluation and version checks, not an actual experiment._
+_Figure 2. Follow the constructive plan from its target to a proposed reusable update. Actions change the workspace throughout execution; verification gates acceptance, including admission to a trusted shared library._
 
-When comparing systems, measure task success, elapsed time and resource use separately (Kapoor et al., 2024), and repeat attempts to assess reliability (Yao et al., 2024). A faster loop can produce weaker arguments, and a higher success rate can require more compute. These measurements evaluate the execution; they are not extra constituents of Task, Environment or Capacity.
-
----
+These operators need not be separate services or a single linear pipeline. Integrator can generate a replacement obligation after an unsuccessful check. Assembly recurs at each call. Evolve may propose a new retrieval procedure for future tasks; it is distinct from fixing the current proof.
 
 ## 4. Reinterpreting the objects of MAS research
 
-MAS work often takes a topology, a team of roles, a communication protocol or a memory mechanism as its object of study. TEC asks what each of these changes in the execution of a task. The distinction matters for explaining results: a better score after changing a graph could come from a different division of work, different information reaching a model call, or different instructions at its nodes. Those are different interventions, even when one method packages them together. Related work on agent memory and automatic design helps identify mechanisms that a multi-agent system may also use; these mechanisms do not themselves require multiple agents.
+TEC asks what a familiar research object changes in an execution. This makes topology, roles, communication, memory and workflow search comparable without pretending they are the same intervention.
 
-### 4.1 Topology: which relation does an edge represent?
+### 4.1 Topology records a relation chosen by the designer
 
-An agent topology is a graph that records a chosen relation between execution units. Before interpreting it, we must specify what its edges mean. “A must finish before B starts,” “B may read A's messages,” and “A may assign work to B” describe dependency, information access and control, respectively. They need not produce the same graph.
+In the constructive plan, Integrator first fixes the interfaces. Builder and Factor then work independently. Integrator joins their outputs, and Auditor checks the result. Draw an edge whenever an obligation requires another's output. The resulting graph has **five obligation nodes and four agents**: Integrator owns both the first and the join node.
 
-For the parity theorem, suppose one agent drafts the proof, two others review it, and a fourth prepares the final argument. One reviewer checks the algebraic expansion; the other checks the logical implication and integer assumptions. Both reviews need the draft, and finalization needs both reviews. Each review returns an annotated copy of the draft, so the finalizer receives the argument together with the findings. If an edge means **the next unit needs this unit's output**, the graph has four edges: Draft → Check A, Draft → Check B, Check A → Finalize, and Check B → Finalize.
-
-TEC explains the design decisions behind that drawing:
-
-- **Task:** the proof request has been split into drafting, two review obligations and finalization. This decomposition creates the dependencies.
-- **Environment:** the reviewers can read the draft, and the finalizer can read their findings. Permission to read a result makes the handoff possible; **assemble** determines which parts actually enter a model call.
-- **Capacity and operator policy:** **match** assigns capacities to these requests. Instructions can specialize one reviewer in algebra and the other in logic. The coordination policy decides who may request another review or accept the result through **verify**.
-
-Now keep all four edges and change the reviewers. They might use identical instructions and receive the whole draft, or use different instructions and receive material selected for their review obligations. The handoff graph stays the same, but the computations and available evidence differ. Conversely, letting Check B inspect Check A's findings adds a dependency if B must wait for them. That changes both the information available to B and the opportunity for parallel execution.
-
-This is the precise sense in which topology is a **projection** in TEC: select one relation from a fuller execution design and retain its nodes and edges. The graph is useful, but it omits the task content, model instructions, selected observations and other relations unless these are explicitly attached as annotations. [D] The three primitives alone do not determine a unique graph; decomposition, matching and access policies must also be specified.
+A serial variant makes Factor wait for Builder and solve the factor obligation for the particular N. The parallel variant asks Factor for the general lemma up front. This change in the assigned obligation removes a dependency; it is not accomplished merely by drawing a second branch.
 
 <TecFigure
   mode="topology"
   fallback="/assets/img/blog/tec-essence-precedes-existence/fig3_projection.svg"
-  alt="A proof workflow with explicitly defined output-dependency edges; the same graph can use different reviewer instructions and information."
+  alt="Five proof obligations assigned to four agents; dependency edges differ between serial and parallel plans, while richer handoffs can leave the graph unchanged."
 />
 
-_Figure 3. Each node represents an execution unit. An arrow means that the receiving unit needs the sender's output. Switch from sequential to parallel review to change those dependencies, then to specialist review to change instructions and views while keeping the same graph. A graph with the same shape need not describe the same computation._
+_Figure 3. Change the dependency plan, then change the information in its handoffs. Nodes are obligations; arrows mean “requires this output.” Interface and Join both belong to Integrator._
 
-This distinction also prevents misreading graph-based research. In [GPTSwarm (Zhuge et al., 2024)](https://arxiv.org/abs/2402.16823v3), nodes represent operations such as model calls, rather than necessarily whole agents, and edges represent information flow. The method optimizes node prompts and graph connectivity. TEC reads these as changes to Capacity and to the routing of information into subsequent execution. A gain from their joint optimization cannot be attributed to graph shape alone. A useful comparison therefore records what changed at the nodes and what information changed at the edges, alongside the resulting cost and success rate.
+Now hold the parallel graph fixed. One version delivers only statuses to Integrator; another supplies exact theorem types and assumptions. The graph is identical, but the information available for composition is different. A communication graph would record who can exchange messages; an authority graph would record who can assign work or accept results. Neither is necessarily this dependency graph.
 
-### 4.2 Roles and hierarchies: who does which work, with what authority?
+This is what **projection** means: choose one relation from the complete execution design and retain its nodes and edges. The graph preserves that relation while leaving out other facts. It is a useful representation with a specified meaning, not an independent cause of performance. [D]
 
-A role name such as “prover,” “critic” or “orchestrator” can conceal several different choices. Assigning a critic the obligation to check the parity argument changes its **Task**. Giving it instructions for checking quantifiers changes its **Capacity**. Giving it the proof draft changes its **Environment**. Allowing it to reject the result or request another attempt assigns authority over **verify** or **generate**. Calling it a critic does not tell us which of these choices was made. [D]
+[GPTSwarm](https://arxiv.org/abs/2402.16823v3), for example, represents operations as nodes and optimizes prompts as well as connectivity. A node need not be an entire agent. TEC separates the changed action-selection setup from the changed information flow, so their joint benefit does not get assigned to graph shape alone.
 
-Existing systems combine these choices in different ways. [MetaGPT (Hong et al., 2023)](https://arxiv.org/abs/2308.00352v7) encodes standard operating procedures and uses structured outputs for handoffs. TEC reads its organization as task decomposition plus rules for what downstream executions receive. [Magentic-One (Fourney et al., 2024)](https://arxiv.org/abs/2411.04468v1) gives an Orchestrator responsibility for planning, tracking progress and replanning while directing specialized agents. TEC locates the hierarchy in that allocation of coordination decisions, together with the capacities available to perform the assigned work.
+### 4.2 Roles and hierarchy bundle obligations, instructions and authority
 
-A sub-agent called through a tool interface fits the same account. When the prover requests a review, the request is an action from the caller's perspective. The child is still a complete execution unit with its own task, observations and action sequence. “Tool” describes the calling interface; “agent” describes the execution behind it. Whether that child persists is another design choice.
+“Factor specialist” bundles an assigned lemma, instructions for finding or proving it, and access to relevant material. “Auditor” adds a decision right over acceptance. A role label specifies none of these by itself.
 
-The research question becomes more specific than which role names form the best team: does a gain come from specialized instructions, a better division of obligations, different evidence, or a better allocation of coordination decisions?
+[MetaGPT](https://arxiv.org/abs/2308.00352v7) uses standard operating procedures and structured handoffs; [Magentic-One](https://arxiv.org/abs/2411.04468v1) gives an Orchestrator responsibility for planning, progress tracking and replanning. TEC reads these as allocations of **generate**, **match** and **verify**, supported by particular capacities and views. A hierarchy matters when it changes who can make these decisions or what evidence they receive.
 
-### 4.3 Communication: how does one execution's result reach another?
+If Integrator invokes Factor through a tool interface, the call is one Integrator action. Factor is still an execution unit with its own observations, searches and proof attempts. “Tool” names the calling interface; “agent” names the process behind it. This separates a hierarchy of calls from a claim that one role is intrinsically more capable.
 
-Communication research studies what agents exchange, who receives it and when it arrives. TEC represents this through changes to the Environment and the assembly of later inputs. A message must be recorded or delivered somewhere, become observable to its recipient, and then be used in a decision. These are separate steps; making a message readable does not guarantee that it enters the next model call. [D]
+### 4.3 Communication determines what survives a handoff
 
-In the proof example, a reviewer might send “the implication after n² = 2k is unjustified” through an inbox or attach it to the proof draft. Either can give the prover the same observation. Sending only “incorrect” delivers less useful evidence even if the graph and number of messages are unchanged. Giving both reviewers access to each other's comments also changes their information, potentially sacrificing independent assessment.
+A communication mechanism writes information into an inbox, a shared module or another observable part of Environment. Assembly determines what reaches the recipient's next decision. Delivery, accessibility and inclusion in context are separate events.
 
-MetaGPT's structured handoffs provide one concrete example of communication whose content and format are part of the design. The older blackboard and tuple-space approaches likewise organize how partial results become available to other problem solvers (Erman et al., 1980; Gelernter, 1985). TEC groups these mechanisms by the information they expose and the rules governing its use, rather than by whether the interface looks like chat or shared storage.
+For our team, a useful handoff from Factor preserves a statement of the form “for every n with n ≡ 3 modulo 4, there exists a prime divisor q with q ≡ 3 modulo 4.” Replacing it with “factor step verified” removes the premise Integrator must discharge. The message becomes cheaper to send while the integration problem becomes harder to solve.
 
-This representation does not make implementations equivalent in cost. An inbox and a shared document may differ in delivery delay, ordering, concurrency and retrieval overhead. The comparison should ask whether they deliver the needed evidence at the needed step, at what cost, and with what effect on the resulting proof. Section 6.1 derives the limit that appears when this process loses a distinction the task requires.
+Structured outputs, shared workspaces and message routing therefore deserve evaluation at the level of retained obligations and evidence. A message-count comparison misses this difference. The same content can also have different delivery and synchronization costs across implementations; those costs belong in the execution record.
 
-### 4.4 Memory: what is retained, and how does it affect later execution?
+### 4.4 Memory changes what later executions can use
 
-Memory research concerns both the information retained from earlier activity and the mechanism that makes it useful later. [MemGPT (Packer et al., 2023)](https://arxiv.org/abs/2310.08560v2) manages movement between memory tiers and the limited model context. [A-MEM (Xu et al., 2025)](https://arxiv.org/abs/2502.12110v11) organizes notes with attributes and links, and updates existing notes as new material arrives. These approaches change more than the amount stored: they change how information is organized and made available.
+[MemGPT](https://arxiv.org/abs/2310.08560v2) manages movement between stored information and model context. [A-MEM](https://arxiv.org/abs/2502.12110v11) organizes and links retained notes. [Agent Workflow Memory](https://arxiv.org/abs/2409.07429v1) derives reusable workflows from earlier activity. These research objects cross different TEC boundaries:
 
-TEC separates three interventions:
+- Saving Factor's checked lemma, complete type and source version changes **Environment**.
+- Making that lemma discoverable under a later residue obligation changes retrieval and **assemble**.
+- Loading a reusable procedure that searches for a matching declaration before deriving it changes **Capacity**.
 
-- **Retain information in the Environment.** Save the parity proof, its assumptions and the reviewer’s objection. A later execution can consult that record without repeating the same discovery.
-- **Change retrieval and assemble.** Index the record under parity or retrieve it when an argument needs an odd/even case split. A saved proof cannot help a model call that never receives the relevant part.
-- **Adopt a reusable procedure in Capacity.** Turn experience into an instruction such as “identify the justification for each implication before submitting a proof,” and load it as part of how later runs act. This changes the reusable means of reasoning, rather than merely adding another fact to consult.
+This classification is functional. A workflow can be stored as data and later loaded as a procedure; its filename does not settle its role. The corresponding experiments differ: retain the store but disable retrieval, preserve retrieval but remove the useful lemma, or change the procedure while holding both fixed.
 
-[Agent Workflow Memory (Wang et al., 2024c)](https://arxiv.org/abs/2409.07429v1) illustrates procedural reuse: it derives reusable workflows from past experiences and supplies them to guide later tasks. In TEC, storing such a workflow concerns the Environment; retrieving it concerns **assemble**; adopting it as a reusable action procedure can change Capacity. The mapping depends on how the system uses it, not on the word “memory” in its name. [D]
+The distinction has a substantive consequence. One agent can contribute a lemma that reduces another agent's future work without either model changing. The gain belongs to shared accumulation. Section 6.4 asks what happens when the same mechanism also distributes mistakes.
 
-These distinctions identify what an evaluation should isolate. Did the system improve because it retained a useful lemma, retrieved it at the right moment, or changed its proof strategy? Persistence across runs alone does not answer that question. Nor does every new observation constitute a capacity update: feedback on the current draft can change the next action while the model, instructions and available actions stay fixed.
+### 4.5 Automatic design searches choices, not an indivisible “agent”
 
-### 4.5 Workflow search and self-improvement: what is being optimized?
+[DSPy](https://arxiv.org/abs/2310.03714v1) optimizes components of language-model programs; [ADAS](https://arxiv.org/abs/2408.08435v2) searches agent code; [AFlow](https://arxiv.org/abs/2410.10762v3) searches executable workflows. These search spaces can change prompts, control flow, tool use and information routing in different combinations.
 
-Automatic agent-design methods search different parts of the execution setup. [DSPy (Khattab et al., 2023)](https://arxiv.org/abs/2310.03714v1) compiles declarative language-model programs and optimizes their components against a metric. GPTSwarm searches prompts and connectivity. [ADAS (Hu et al., 2024)](https://arxiv.org/abs/2408.08435v2) uses a meta-agent to propose agent code, evaluates candidates and maintains an archive of designs. Their common object is a configurable procedure for solving tasks, but their search spaces are different.
+In our scene, a candidate could give Factor better retrieval instructions, change its library view, or replace the constructive plan with direct theorem application. These are different interventions even if each is saved as one program. TEC describes the candidate by the relationships it changes; **evolve** adopts reusable changes after evaluation. Section 6.5 explains why the search must sometimes retain a change whose value appears only alongside another component.
 
-TEC describes a candidate by the choices it changes: task-generation rules, matching, context assembly, the capacities used, or the procedure for evaluating results. Search proposes changes to some of these choices; evaluation determines which candidates are retained. When an accepted change becomes reusable configuration, that is the operation called **evolve**. This description separates the object being optimized from the optimizer that proposes the change. [D]
+## 5. Where TEC sits among earlier ideas
 
-For theorem proving, one search might change only the prover's instructions. Another might introduce separate algebra and logic reviews. A third might change which lemmas are retrieved. All could improve the final proof, but they intervene on different parts of TEC and incur different costs. Calling all three “a better agent” hides the explanation that the experiment should establish.
+Simon gives the philosophical connection a design interpretation. In _The Sciences of the Artificial_, an artifact's behavior depends on its purpose, its internal organization and the external conditions in which it operates. Its design joins an inner and an outer environment. These correspond closely to Task, Capacity and Environment in TEC ([Simon, 1996, pp. 5–6](https://andymatuschak.org/files/papers/Simon%20-%201996%20-%20The%20Sciences%20of%20the%20Artificial.pdf); first edition 1969). Sartre locates the artifact in relation to its design; Simon explains why that design must be understood in relation to a purpose and a world.
 
-The same distinction clarifies self-improvement. An external search process can optimize an agent design. A system claiming to improve itself must also show how its own execution records inform changes that later runs actually use. Neither process guarantees improvement merely by producing a new configuration. Section 6.6 asks whether the retained change helps on tasks that did not guide its selection, and whether the gain survives accounting for cost and regressions.
+The connection to earlier technical fields is equally specific. LLM agents make instructions, context selection and the creation of new execution units unusually easy to vary. **This enlarges the design space while leaving computation, access and coordination costly.** The useful question is which variables each field teaches us to keep separate.
 
----
+### 5.1 Distributed AI: suitability belongs to a worker in a situation
 
-## 5. What other fields teach us about agent organization
+The contract net addresses allocation when participants hold information the coordinator lacks. A manager announces an obligation, potential contractors assess their suitability, and the manager chooses from their replies. This was already about capabilities and local information, not simply who was idle ([Smith, 1980](https://www.reidgsmith.com/The_Contract_Net_Protocol_Dec-1980.pdf)). Blackboard systems organize contributions around a shared evolving problem state, with a control mechanism deciding which applicable contribution to run ([Erman et al., 1980](https://mas.cs.umass.edu/Documents/Erman_Hearsay80.pdf)).
 
-A team of agents faces several different problems: finding someone to do the work, coordinating dependent decisions, combining imperfect answers, and deciding which changes to retain. Other fields have studied these problems with models that make different assumptions explicit. Their mechanisms help explain what the choices in TEC actually do.
+For an LLM team, launching another copy of the model supplies another execution, but does not automatically supply a useful theorem, search procedure or view. Factor's suitability depends on both its capacity to retrieve and apply declarations and its access to a relevant library. That makes **the capacity–environment pair the object of matching**. A leaderboard score for the model alone leaves out part of the allocation problem. P5 turns this dependence into a concrete failure mode of component-wise optimization.
 
-### 5.1 Distributed problem solving: allocate work using information held by the participants
+### 5.2 Organization theory: moving information is part of doing the work
 
-A coordinator rarely knows everything needed to assign work well. A potential worker may know more about its available methods, current load or access to a relevant result. The **contract net** turns this information gap into a protocol: a manager announces a task, potential contractors decide whether to bid, and the manager selects a contractor from the replies. Both sides make a selection. A bid communicates suitability; the protocol does not require money or a market price ([Smith, 1980](https://www.reidgsmith.com/The_Contract_Net_Protocol_Dec-1980.pdf)).
+Coordination theory distinguishes dependencies such as producer–consumer relations, shared resources and the reconciliation of contributions ([Malone and Crowston, 1994](https://crowston.syr.edu/sites/default/files/acmcs94.pdf)). Galbraith's information-processing account explains why uncertain work requires information exchange that cannot all be prescribed in advance ([Galbraith, 1974](https://jaygalbraith.com/wp-content/uploads/2024/03/infoprocess1974.pdf)).
 
-For the parity proof, an announcement could request the odd-square lemma. One execution unit can offer to derive it from definitions; another can offer an already checked argument available through its environment. The useful comparison includes the cost of obtaining and checking each result. The protocol puts those alternatives in front of the coordinator. It does not establish that the bids are accurate or that negotiation is cheaper than assigning the task directly.
+An LLM system makes one part of this cost unusually concrete: a retained result must compete for finite model input before it can influence a decision. Context carries selected evidence and recalled history while consuming inference resources. Keeping a theorem in storage and putting its useful type into Integrator's current input are different organizational achievements.
 
-The **blackboard** approach addresses how further work becomes apparent. Problem-solving modules inspect a shared record of partial results; a new entry can make a module's operation applicable, and a control mechanism chooses what to run ([Erman et al., 1980](https://mas.cs.umass.edu/Documents/Erman_Hearsay80.pdf)). In a proof workspace, an unresolved implication could trigger a search for an applicable lemma, whose result then enables the final inference. This is a way to organize contributions around the state of the problem.
+This links P1 and P4. Discarding a premise to save context can make the current task undecidable from the available evidence. Retaining and retrieving a checked premise can eliminate future work. The design problem is to preserve the distinctions future decisions need at an acceptable cost. An archive's size is a poor substitute for that measurement.
 
-TEC separates the two mechanisms: contract-net negotiation informs **match**; the blackboard organizes **Environment**, while rules for proposing follow-up obligations inform **generate**. A system can combine them. A shared workspace does not by itself decide who should act next, and a task-allocation protocol does not decide which tasks are worth creating.
+### 5.3 Ensembles: answer diversity and evidence diversity are different resources
 
-### 5.2 Organization theory: the cost of doing the work depends on the cost of coordinating it
+Ensemble analysis relates combined error to individual errors, their dependence and the combining rule. Under squared loss, the familiar ambiguity decomposition quantifies the benefit of disagreement among numerical predictors ([Krogh and Vedelsby, 1995](https://proceedings.neurips.cc/paper_files/paper/1994/file/b8c37e33defde51cf91e1e03e51657da-Paper.pdf)). A proof system needs a different combining rule, but it still needs this separation of mechanisms.
 
-Coordination theory studies dependencies between activities. If one activity produces what another consumes, their interface and ordering matter. If several activities share a scarce resource, they need an allocation rule. If several contributions must become one result, someone must reconcile them. These are different coordination problems even when the same people perform the activities ([Malone and Crowston, 1994](https://crowston.syr.edu/sites/default/files/acmcs94.pdf)).
+Same-weight instances can disagree: stochastic sampling from one model produces different reasoning paths, as self-consistency demonstrates ([Wang et al., 2023](https://arxiv.org/abs/2203.11171)). More candidates can improve the chance of finding a correct proof. They do not reveal which theorem a hidden build artifact actually declares. Repeated sampling changes the distribution of explored answers; obtaining the declaration changes the evidence on which an answer can depend.
 
-For the proof, separate algebra and logic reviews can proceed together after a draft exists. But if each reviewer changes the draft while the other is checking it, their conclusions may apply to different arguments. Freezing a version, exchanging annotations or assigning one editor are different ways to manage that dependency. Their costs belong in the comparison with a single prover.
+TEC therefore separates changes to Capacity, observations supplied by **assemble**, and the selection or composition performed by **verify** and Integrator. P1 bounds the second resource; P2 examines what the combining procedure must establish. Neither requires independently trained models, and neither follows from agent count alone.
 
-Organization design also asks how much can be settled in advance. In Galbraith's information-processing account, greater task uncertainty means that more information must be processed during execution, because fewer decisions can be settled in advance. A routine can prescribe responses to anticipated cases. As execution uncovers unanticipated dependencies, the organization needs further information exchange or a different division of work ([Galbraith, 1974](https://jaygalbraith.com/wp-content/uploads/2024/03/infoprocess1974.pdf)). A fixed proof workflow might handle familiar parity arguments well but need to create a new obligation when a draft relies on an unfamiliar lemma.
+### 5.4 Evolutionary computation: search needs a reference for what survives
 
-Two responses are to reduce the need for coordination or to increase the organization's ability to handle it. Giving one unit responsibility for the complete proof can remove handoffs; retaining specialists requires a way to exchange revisions and reconcile their findings. In TEC, these become choices about decomposition through **generate**, assignment through **match**, and the information exposed by the Environment and **assemble**. The same amount of reasoning work can entail different coordination work. Organization theory gives a way to analyze that difference; it does not prescribe a universally superior hierarchy or graph.
+Evolutionary methods distinguish producing candidates, evaluating them and retaining useful alternatives. MAP-Elites preserves high-quality candidates across chosen behavioral categories instead of keeping only one overall winner ([Mouret and Clune, 2015](https://arxiv.org/abs/1504.04909)). For agent design, an archive can retain a retrieval-heavy capacity and a derivation-heavy capacity for different library conditions. That is a mechanism for preserving alternatives that **match** may later exploit.
 
-### 5.3 Ensemble theory: extra answers help through the errors they change
+Evaluation can also change during search; this is not an LLM novelty. Hillis coevolved sorting networks and test cases while retaining the external objective of correct sorting ([Hillis, 1990](https://www.cse.unr.edu/~sushil/class/gas/papers/DannyHillisCoevolution.pdf)). What editable agent harnesses make convenient is changing the candidate, its task generator and its evaluator in the same medium, sometimes through the same execution.
 
-Ensemble theory studies how combining imperfect predictors changes error. For numerical predictors of the same target, under squared loss, the error of an equally weighted average equals the average individual error minus the predictors' disagreement around their average. Holding individual error fixed, that disagreement benefits the average. Errors shared by every predictor survive averaging. This is a specific result about numerical predictions and a specific combining rule ([Krogh and Vedelsby, 1995](https://proceedings.neurips.cc/paper_files/paper/1994/file/b8c37e33defde51cf91e1e03e51657da-Paper.pdf)).
+The TEC question is therefore about authority: which of **generate**, **verify** and **evolve** can the candidate alter, and what remains outside that authority to assess improvement? P6 measures the resulting gap between internal claims and a preserved objective. This puts self-modification in an existing tradition while identifying the boundary an agent evaluation must expose.
 
-A proof cannot be checked by averaging its sentences. Ten reviewers may all accept “n² = 2k, therefore n is even” because they know the theorem is true, while every one misses the gap in the submitted argument. A majority vote preserves that shared failure. Asking one reviewer to test each implication and another to check domains and quantifiers changes what they examine; whether their findings produce a better final proof depends on how those findings are used.
+## 6. Six propositions about improvement
 
-The connection to TEC is that diversity has to be described through **Capacity**, the evidence supplied by **assemble**, and the result judged by **verify**. Different role names establish none of these differences. Different views may expose a missed premise, or hide one. A selector may choose a valid candidate; an integrator may construct a new argument from several partial ones. Those are different computations with different failure modes. Ensemble theory supplies a reason to inspect error dependence and the combining rule before attributing a gain to the size of the team.
+The propositions form a connected account of execution. P1 concerns evidence. P2 and P3 concern a plan's logical and temporal dependencies. P4 connects reusable results to both: their contracts must remain valid, and their use changes future plans. P5 concerns the joint feasibility of an environment and a capacity. P6 asks whether the criterion used to accept these improvements still measures the intended task.
 
-### 5.4 Evolutionary search and continual learning: retain useful alternatives and check what an update loses
+<TecFigure mode="implications" />
 
-Evolutionary search separates producing a variant, evaluating it and retaining it for further use. A candidate might be a new proof procedure or a revised set of instructions. Its production is a search step; its measured consequences determine whether it deserves to replace or complement an existing procedure.
+_Figure 4. Select a proposition to trace its premises and its connection to the others. These links identify shared assumptions and mechanisms; they do not turn every proposition into a logical consequence of the previous one._
 
-Keeping only the highest-scoring candidate is one retention rule. **MAP-Elites** uses another: it divides a space of chosen behavioral descriptors into cells and retains the best evaluated candidate found in each cell. Quality decides who survives within a cell; the descriptors decide which kinds of candidate have separate places in the archive ([Mouret and Clune, 2015](https://arxiv.org/abs/1504.04909v1)). A prover archive could distinguish procedures by their use of external lemmas and formal checking, then retain the best evaluated procedure found in each group. Matching could then consider procedures with different resource requirements. The choice of groups and the quality measure still need justification; a populated archive is not evidence that its alternatives will help.
+### 6.1 P1 — An evidence bottleneck can masquerade as a capability limit
 
-Continual learning adds the problem of interference across tasks. Changing model weights to improve performance on new tasks can damage earlier performance. Elastic weight consolidation addresses this by penalizing changes to weights estimated to be important for earlier tasks ([Kirkpatrick et al., 2017](https://arxiv.org/abs/1612.00796v2)). This is a mechanism for weight updates, not a ready-made guarantee for prompt or workflow changes. A prover that revises its instructions still needs to check which earlier proof tasks it can solve afterward.
+Consider two build artifacts. One proves our unbounded-prime target; the other proves only that there exists a prime congruent to 3 modulo 4. Both files compile. A wrapper that reports only “Lean: success” gives Auditor the same observation for results that require different acceptance decisions. A familiar automation shortcut has removed the exact distinction the task requires.
 
-In TEC, **evolve** changes reusable configuration, **verify** provides evidence for selection, and **match** can reuse retained alternatives under suitable conditions. An archive of procedures concerns which capacities remain available; a library of proved lemmas concerns information in the Environment. Both may support future work, through different mechanisms. This distinction connects evolutionary search to the separate questions in Section 6: what improved, under which conditions, and compared with which previous system?
+The information bound is precise. Fix the team's capacities, policies and joint prior information, including private memories. Suppose the two cases induce the same initial information and, after every possible visible history, every permitted action has the same conditional observation distribution. Their distributions over final decisions must then also be identical: at each step, the same available information produces the same distribution of actions and subsequent observations. For a balanced pair requiring opposite binary verdicts, average accuracy is at most one half. [D]
 
----
+Retrieving the declaration breaks this premise and can solve the problem. More debate over the build status cannot. The relevant unit is the **joint evidence available to the team**, not whether its members have different role names. More computation may extract implications from evidence already present; it cannot correlate a verdict with a hidden difference that no allowed observation exposes.
 
-## 6. What TEC implies about the limits and sources of improvement
+This gives a testable diagnostic: **how much reported “model failure” is actually a missing observation?** Take held-out failures labeled as verification problems in a trace corpus such as MAST, preserve the model and candidate, and restore task-relevant evidence omitted by the original context policy. Compare against both the original input and an equal-token irrelevant addition, with matched budgets. Measure the fraction repaired and the change in false acceptance. The prediction is that evidence restoration repairs a meaningful subset without a model upgrade. [C] Cemri et al. supply a taxonomy and traces; they do not establish this counterfactual repair rate.
 
-An agent's result depends on the interaction of its task, the information and actions its environment permits, and the capacity operating on them. This has consequences that cannot be read from agent count or graph shape alone. The deductions below make their assumptions explicit. Their logical ingredients are familiar; TEC connects them to particular choices of **generate**, **match**, **assemble**, **verify** and **evolve**.
+### 6.2 P2 — Every decomposition incurs a composition obligation
 
-### 6.1 More computation cannot recover a distinction that every view removes
+Builder can return a locally correct result that does not meet Factor's needs. Suppose its assigned contract asks only for a number divisible by no member of S. Reusing the ordinary Euclid pattern, Builder returns N = 4P + 1 and proves that nondivisibility claim. Factor separately proves the correct lemma conditional on N being 3 modulo 4. Both local checks pass. Their results do not compose.
 
-Consider two submissions of the parity proof. One contains the valid contrapositive argument from Section 3.4. The other assumes n is even and then presents that assumption as its conclusion. The review task is to assess the submitted argument, not to produce a new proof of a theorem already known to be true.
+The mismatch is numerical as well as logical. For S = \{3, 7\}, P = 21. Builder's candidate is 85 = 5 × 17; neither 3 nor 7 divides it, but both its prime factors are 1 modulo 4. The intended candidate is 83 = 4P − 1. If Builder's contract already requires N ≡ 3 modulo 4, the wrong construction fails locally. It slips through only when decomposition omitted that obligation or a handoff concealed it.
 
-Suppose **assemble** sends the reviewer only the last line, “therefore n is even,” and no operation available during the review can recover the preceding argument. The visible input is identical, but the correct verdicts differ. A larger model, more reviewers or further debate over that same input cannot reliably tell which submission it came from.
+**Sound local verification guarantees the parent only when a sound composition rule connects the local contracts to the parent goal.** [D] The reasoning has not disappeared through delegation. Part of it has moved into choosing interfaces, preserving assumptions and applying returned results. Lean's kernel will reject the unsupported final application; “all children passed” cannot substitute for that check.
 
-The deduction is direct. Fix the capacities, policies and any prior information. Assume the initial joint information available to the whole team is identical, including private memory and relevant model priors. Further assume that, after any shared visible history, every permitted action returns the same conditional observation distribution in the two cases. The next action then has the same distribution too. Applying that argument at each step gives the same distribution over final verdicts. For an equally likely pair requiring opposite binary verdicts, average accuracy is at most one half. [D] Extra random samples can change which verdict is selected, but cannot correlate it with the hidden difference.
+An experiment can hold local theorem validity at 100% while progressively removing necessary type and hypothesis information from the summaries given to Integrator. Measure parent completion, repair calls and cost under a fixed budget. The prediction is that losing essential interface information damages integration even though the child success metric stays perfect. [C] Removing irrelevant text need not hurt. The causal variable is lost obligations, not compression as such.
 
-This is a limit on **missing evidence**, not on reasoning from evidence that is present. More computation can uncover a consequence of a visible argument. Retrieval can reveal a previously hidden premise. A model may have relevant prior knowledge. Each can matter; the bound applies only while the cases remain indistinguishable through every permitted source of information.
+### 6.3 P3 — The critical path belongs to a plan, not to the theorem
 
-The TEC consequence is that some apparent Capacity failures are actually failures of the Task–Environment binding. If the task requires distinguishing two cases that the available views collapse together, replacing or replicating the capacity cannot solve that defect. The intervention must preserve the distinguishing evidence, permit an action that obtains it, or narrow the task. A communication protocol or summary should therefore be assessed by which task-relevant distinctions it preserves, not just by how many tokens it saves.
-
-### 6.2 Decomposition creates a new obligation: local successes must compose
-
-Suppose two child tasks return correct statements:
-
-- If n is even, then n² is even.
-- If n² is odd, then n is odd.
-
-Both are true, but they are contrapositives of each other. Neither supplies the requested direction, “if n² is even, then n is even.” A finalizer cannot establish that direction merely by collecting these two successful outputs. It still needs another argument.
-
-This exposes a distinction between **verify** at a child task and **verify** at the parent. Assume each local check is sound for its assigned claim. Even then, all those checks can pass even when **generate** chose claims that do not establish the parent goal. A decomposition supports a correctness guarantee only if its composition rule also guarantees that accepted child results, with their assumptions satisfied, establish the parent task. [D] This is the familiar requirement of sound composition, applied to the way a multi-agent system creates and combines work.
-
-For the parity theorem, a suitable child could instead establish that every odd integer has an odd square. The finalizer can then use the fact that every integer is either even or odd to derive the requested implication. The child result needs to retain its domain and quantifier. Replacing it with “parity check passed” hides the information needed to justify that composition.
-
-Thus delegation can move reasoning into the handoff and integration stages rather than remove it. A short output can reduce transmission cost while increasing integration cost when it omits evidence the next task needs. The parent must then reconstruct the missing argument or accept an unsupported result. More locally successful agents can therefore increase the amount of integration work without increasing coverage of the original goal.
-
-The useful unit of decomposition is consequently an obligation whose accepted result can be used by its successors. This does not require every task to carry a formal certificate. It requires the strength of the system's overall correctness claim to match the strength of its local checks and its composition procedure.
-
-### 6.3 A task has no single critical path independent of Capacity and Environment
-
-For a fixed execution plan D represented by an acyclic dependency graph of serial operations, with fixed durations and p identical workers, completion time is bounded below by
+For a fixed acyclic plan D of serial operations, with fixed durations and p identical workers,
 
 $$
-\tau(D,p) \geq \max\left(\frac{W_D}{p},\,L_D\right),
+\tau(D,p)\geq\max\left(\frac{W_D}{p},L_D\right),
 $$
 
-where $W_D$ is the total work and $L_D$ is the longest dependency chain. This is a scheduling bound. It says what adding workers can achieve **after the plan has been chosen**.
+where W is total work and L is the longest dependency path. Relative to executing that same work on one worker, speedup cannot exceed the smaller of p and W/L. [D]
 
-The theorem to prove does not uniquely determine that plan. With only definitions available, a prover may need to construct the odd-square argument, check its algebra and justify the final implication. If the Environment supplies a trusted proof of the odd-square lemma, and the Capacity can interpret and apply it, another plan can retrieve the lemma, check that its assumptions match and apply the contrapositive. The target Task stays the same, but the operations and dependencies change.
-
-It follows that the achievable parallelism is a property of a feasible **Task–Environment–Capacity plan**, not of the task statement alone. [D] More workers cannot shorten $L_D$ while D stays fixed. Changing the available lemmas, the action repertoire or the decomposition can replace D with a plan having a different span. Retrieval and checking costs belong in that new plan; reuse is not automatically faster.
+In our constructive plan, Factor can establish its general lemma while Builder constructs N. Integrator must wait for both, and Auditor must wait for integration. More workers eventually leave those dependencies unchanged. But retrieving the existing Mathlib theorem removes both branches and most of the integration work. The Task stays fixed while the feasible plan changes through Environment and Capacity.
 
 <TecFigure mode="parallel" />
 
-_The figure isolates the fixed-plan case: four one-unit operations with zero coordination overhead. Changing worker count keeps the plan fixed; changing the selected structure changes the plan. Neither structure is claimed to be optimal for theorem proving._
+_Figure 5. Vary workers within a plan, then switch plans. The constructive example uses normalized operation costs 1, 2, 4, 1, 1; direct lookup uses 2 and 1. The display keeps total work separate from scheduling speedup._
 
-This also changes how scaling results should be interpreted. If a system replans when more agents become available, its speedup combines a scheduling effect with a change in the work performed. If a system cannot discover a useful decomposition, adding execution capacity can leave its main constraint untouched. Centralized and decentralized generation are alternative ways to find plans; TEC does not establish that either wins without assumptions about discovery, communication and verification costs.
+This supplies a diagnostic for scaling claims. Freeze the plan and operation costs: speedup must respect W/L. A reported violation means at least one comparison assumption changed. Replanning is one explanation; changed work, caching, per-operation speed or an inefficient serial baseline are others. The trace must identify which. A speedup above the worker count cannot come solely from scheduling the same fixed-cost operations.
 
-### 6.4 Shared results can improve the system without improving any individual Capacity
+The stronger research question is consequently **which capacities and environments make better plans discoverable?** In this example, library search can matter more than another worker. A scaling study that silently permits new retrieval or decomposition measures plan discovery together with parallel execution.
 
-Take a sequence of proof tasks that reuse the parity lemma. In the first run, an agent derives the lemma and records a checked argument together with its assumptions. A later run can consult that result instead of deriving it again. The model, instructions and available actions can all remain unchanged.
+### 6.4 P4 — Shared accumulation amplifies the admission policy
 
-The causal sequence is **verify → retain in Environment → assemble for a later task → generate a different plan**. Section 6.3 explains why the final step matters: reusable information can eliminate the need to regenerate an argument and its intermediate artifacts. If the later run substitutes reuse for rederivation, and the result is sound, applicable and cheaper to retrieve and check, it reduces the work spent on that obligation while Capacity stays fixed. [D] Overall latency may remain unchanged if another dependency chain is the limiting one.
+Once Factor's lemma is stored with a checked proof, its full type and version, another proof task can reuse it. If retrieval and application cost less than derivation, that obligation requires less work with every individual Capacity held fixed. [D] The benefit passes through **verify → retain → retrieve → revise the plan**. It belongs to the system's accumulated Environment.
 
-The improvement belongs to the system's accumulated environment. It need not belong to the agent that produced the result, and it is not limited to that agent's future runs. Another execution unit can benefit if its view exposes the result and its capacity can use it. This gives a reason to organize shared knowledge around reusable mathematical claims and their conditions of application, rather than only around the conversations of individual agents.
+The same path also distributes mistakes. A theorem can be valid while its index entry advertises a stronger claim, drops a hypothesis or points to another revision. A formal store that rechecks exact types prevents those mistakes from becoming accepted proofs. A store admitted through summaries or a fallible review procedure can pass them downstream. Verification at the library boundary therefore determines what accumulation amplifies.
 
-It also separates three explanations for a better score. A later system may possess more useful results, retrieve the same results more effectively, or reason better given the same information. These correspond to different changes in TEC. If an evaluation resets all environmental state between tasks, it measures performance without cross-task accumulation. If it retains the state, a gain cannot by itself be attributed to a stronger Capacity.
+Let q be the probability that an accepted, selected artifact fails its advertised contract. This is not the verifier's false-positive rate α. If candidate invalidity has prevalence π and valid candidates are accepted with probability β, then
 
-The converse matters too: more stored results need not help. Inapplicable lemmas, unsupported claims or irrelevant retrieval can add work or mislead execution. The deduction concerns a usable, checked result under the stated cost condition; the practical question is how often an accumulated result meets those conditions on later tasks.
+$$
+q=\frac{\pi\alpha}{\pi\alpha+(1-\pi)\beta}.
+$$
 
-### 6.5 Improving Environment and Capacity separately can miss their joint value
+This expression assumes selected entries follow the accepted population; biased retrieval changes the relevant q. If a later plan relies without further checking on k distinct, independently contaminated necessary artifacts, the probability all those contracts are valid is
 
-Suppose a proof task specifically requires a machine-checked derivation. Consider a restricted system that can produce prose but cannot translate it into a formal proof within its budget. Its environment initially contains only a prose argument.
+$$
+P_{\mathrm{clean}}=(1-q)^k.
+$$
 
-Adding an action that submits formal proofs to a checker does not complete the task: no suitable formal proof is available. Supplying a valid formal proof file while leaving that submission action unavailable does not obtain a checker result either. Together, the file and the action can allow the system to complete the task. This example assumes the two missing steps cannot be supplied by another route within the allowed budget.
+At q = 1%, that probability is about 90% for ten dependencies and 61% for fifty. This is a conditional contamination calculation, not an observed agent failure curve. Reusing the same bad lemma creates correlated exposure; repeated uses cannot be counted as independent draws. Downstream checking can turn contamination into rejection and repair rather than a false accepted proof.
 
-The two interventions are complements. Evaluating either only against the original system can assign it no immediate success benefit, even though their combination has value. A search that rejects every change without an immediate gain can therefore reject both components of a useful redesign. The cost of producing the formal artifact must also be counted when evaluating the redesign end to end. Consequently, there is no general rule that optimizing Capacity at a fixed Environment, then optimizing Environment at a fixed Capacity, finds the best joint setup. [D] The same issue arises when a specialized reasoning procedure needs a particular representation, or a retrieved lemma becomes useful only to a capacity that knows how to apply it.
+**Useful accumulation is limited by the quality of what enters the store and the number of dependencies later work entrusts to it.** [D] Growing a library that nobody uses creates no such exposure. Nor does α alone imply a universal agent-count threshold. A useful experiment fixes admission quality and increases contribution rate, measuring actual reuse, contaminated dependency exposure, repair cost and accepted root proofs. The prediction is that increasing exposure can erase the gains from saved derivations, while exact-contract rechecking shifts the loss toward repair cost. [C] That is a stronger target for a shared proof commons than maximizing the number of stored lemmas.
 
-This makes **match** more than selecting the highest-ranked model for a task label. It selects a capacity together with the observations, representations and actions through which that capacity can do the work. Performance records from one view or interface may not rank capacities correctly under another. A context policy is likewise evaluated relative to the capacity consuming its output.
+### 6.5 P5 — A useful pair can be invisible to one-component search
 
-For research, the implication is a joint comparison: hold the task family and budget fixed, and compare both versions of Capacity with both versions of Environment. Changing one at a time is useful for diagnosis, but testing only the two isolated changes can miss a benefit that appears only when they are combined. Whether such complementarities dominate a particular MAS application remains empirical.
+A typed lemma library helps a capacity that can search and apply its declarations. A search-and-application procedure helps when relevant declarations are available. On proof tasks where neither derivation nor another retrieval route succeeds within the budget, adding only one may leave success unchanged while adding both improves it.
 
-### 6.6 A self-modifying system can change the meaning of its own score
+Write Sᵢⱼ for performance with Capacity version i and Environment version j. The pattern
 
-The **evolve** operator may change Capacity, but it can also change rules for generating tasks, selecting context or verifying results. This creates an identification problem: an increase in the system's reported success rate need not mean that its capacity to solve the original tasks improved.
+$$
+S_{00}=S_{10}=S_{01}<S_{11}
+$$
 
-For example, a prover might revise its reasoning instructions after submitting an unjustified implication. But a system that also controls task generation could make its workload easier, repeatedly requesting lemmas it already knows. A system that changes verification could begin accepting “the conclusion is true” in place of an assessment of the submitted proof. Both changes can raise the fraction of tasks marked successful without making the original reasoning procedure better.
+is enough to defeat a search that changes one component at a time and retains only immediate improvements. Both first steps are rejected. A policy permitting neutral steps, joint edits or retained alternatives can reach the pair. Thus optimizing each component in isolation has no general guarantee of discovering their joint value. [D]
 
-In TEC terms, the observed score is produced by the interaction of the generated Tasks, the supplied Environment, the chosen Capacities and the verification policy. If several change together, the score difference alone does not identify which change caused it. [D] Agreement among updated agents does not resolve this: their agreement is another system output, not an independent standard of proof correctness.
+The corresponding experiment is a 2 × 2 comparison: base or search-capable Capacity crossed with absent or available typed library, with comparable budgets and the library's construction cost reported. Measure the interaction
 
-A comparison must therefore keep a stable meaning for success. To measure a Capacity change, evaluate old and new versions on the same held-out task distribution, with comparable environmental resources, acceptance criteria and budgets. To measure improvement of the whole system, allow its internal organization to change while fixing the external task objective and assessment, and include the cost of obtaining and maintaining its accumulated state. Then vary components separately where attribution matters.
+$$
+\Delta=S_{11}-S_{10}-S_{01}+S_{00}
+$$
 
-This permits internal verifiers and task generators to improve. They need not remain frozen in deployment. But their revisions must be assessed against an external criterion that is not silently relaxed by the candidate being evaluated. Otherwise the system can optimize what gets counted as success instead of becoming better at the task. Section 8.2 turns this consequence into a concrete evaluation procedure.
+on the chosen performance scale. Then plant such a pair in an agent-design search space and test whether the actual proposal and retention policy finds it. ADAS and AFlow can search richer edits; they should not be labeled incapable merely because a constrained greedy policy fails. The empirical question is which search mechanisms preserve enough combinations to discover the planted interaction. [C]
 
----
+This also changes matching: the relevant evidence is performance of a Capacity in a specified Environment. A capacity ranking can reverse when library access or representation changes.
 
-## 7. Limits of the framework
+### 6.6 P6 — A self-modifying system needs a score it cannot redefine
 
-**The boundary between state and configuration needs to be explicit.** Section 4.4 distinguishes retained information, its retrieval, and reusable procedures that change action selection. Systems that edit their own prompts or skills during a run can cross that boundary. Comparing such runs requires recording when the configuration changed; the initial triple alone does not describe the whole history.
+Our proof task exposes the problem with two short declarations. One establishes “there exists a prime that is 3 modulo 4,” using 3 as a witness. The other takes the entire requested theorem as an assumption and returns it. Both can compile without an unproved placeholder. Neither discharges the original task.
 
-**Three regions fit poorly.** Social simulation—Generative Agents (Park et al., 2023) and descendants—is in TEC terms the most thorough study of an environment that exists (memory stream as view, reflection as policy), but it is organized around believability rather than task success; the framework can describe it and cannot evaluate it. Adversarial and mixed-motive settings assume agents whose essence is not the task they were assigned; TEC assumes cooperation and needs extension before it can speak there. And learning that changes model weights rather than harness state is an evolve operation on a different timescale that the framework does not yet distinguish.
+These are executable checks, not hypothetical kernel failures. With Lean 4.25 and `Std`, the [weakened and conditional declarations](/assets/img/blog/tec-essence-precedes-existence/proof-checks/PrimeAudit.lean) compile; submitting them to the [preserved full target](/assets/img/blog/tec-essence-precedes-existence/proof-checks/RejectedTarget.lean) produces type errors. The [run instructions and captured output](/assets/img/blog/tec-essence-precedes-existence/proof-checks/README.md) record the scope and results. The checks use a small local prime definition and do not execute the full Mathlib infinitude proof. Lean checks proof terms against their declared types; [target and axiom inspection](https://lean-lang.org/doc/reference/4.34.0-rc2/ValidatingProofs/) are part of establishing what was actually proved.
 
-**Two assumptions are probably false.** That every runtime attempts its assigned task and reports honestly: multi-agent risk research shows this fails under injected instructions that propagate between runtimes and under correlated failures no single runtime would produce (Hammond et al., 2025). And that capacities are stationary, when models are replaced on a cadence of months and an update can invalidate every record attached to a prompt built for its predecessor; any empirical constant must be pinned to a model version.
+Now let a self-modifying system edit its local task generator or acceptance wrapper. Replacing the root goal with the weaker one can raise its reported success rate. If evaluation reads that report, the system has changed the meaning of its score. **A score increase identifies improvement only relative to a success criterion preserved across the comparison.** [D]
 
-**A minimal model leaves operational questions open.** Access rules do not by themselves specify how to handle adversarial instructions or concurrent writes. Human judgment may supply task clarification and acceptance, but TEC does not model that collaboration in detail. Noisy evaluation, persistent teams and changing deadlines also need explicit treatment when they matter. These are limits on what can be concluded from the minimal model, rather than reasons to place every such concern inside the Task definition.
+We can measure the discrepancy. Score outputs from old and new system versions on the same held-out tasks, using both their internal assessment and a fixed external assessment, with aligned scales and weights. Define
 
-**Repeated updates need evaluation over time.** A new configuration still precedes each run, even when it was produced from earlier runs. There is no contradiction between a designed agent and a system that changes its design. The unresolved question is how to evaluate a long sequence of such updates: whether early gains persist, whether later changes undo earlier ones, and whether accumulated update costs remain worthwhile. Passing one comparison does not settle those questions for the entire sequence.
+$$
+\delta=(S_{\mathrm{in,new}}-S_{\mathrm{in,old}})
+       -(S_{\mathrm{ext,new}}-S_{\mathrm{ext,old}}).
+$$
 
----
+A positive δ means the internally reported gain exceeds the externally measured gain. Zero and negative values are possible. The gap measures divergence in claimed progress; by itself it does not identify intentional gaming or a verifier change. To isolate verifier drift, also cross-score a fixed collection of the same artifacts with the old, new and external verifiers. That removes changes in the artifact mix from the comparison.
 
-## 8. How to test the implications
+The [Darwin Gödel Machine](https://arxiv.org/abs/2505.22954v2) evaluates agent revisions against external benchmarks and examines transfer to held-out settings. This supplies a reference beyond an agent's own completion reports. [E] Its evidence is therefore stronger than persistence or self-editing alone. Attribution still requires component controls: a better library, a better retrieval policy and a better reasoning procedure are different explanations for the same external gain.
 
-Programmable harnesses make it possible to vary these parts separately. The recursive-language-model design of Zhang, Kraska and Khattab (2025a) treats the prompt as data in an external environment that the model can inspect. Prime Intellect's harness (2026) provides persistent kernel state, child runtimes and editable prompts and skills. Such mechanisms can support experiments on retained information, context assembly and configuration changes. Their availability is not evidence that a particular change improves performance.
+## 7. What this account does not determine
 
-### 8.1 Separate information, organization and computation
+TEC is a vocabulary for specifying interventions plus conditional propositions about their consequences. It is not a predictor of the best team size for an arbitrary task. Scheduling needs operation costs; accumulation needs reuse and admission statistics; matching needs evidence about particular capacity–environment pairs. The empirical value of the framework depends on whether measuring these quantities explains failures and improves design decisions better than coarser descriptions do.
 
-A theorem-proving evaluation can distinguish the deductions by changing one relationship at a time:
+Its account of purpose also describes the designer's assignment, not a guarantee of agent obedience. Deceptive reports, conflicting objectives and adversarial inputs require models of incentives and trust beyond the cooperative proof setting. A pinned target is an evaluation boundary; it does not ensure that every participant pursues it.
 
-| Implication                      | Controlled comparison                                                                                                                     | What the result distinguishes                                                                            |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Information limits (6.1)         | Give reviewers either identical summaries of valid and circular drafts or the full arguments; then vary inference compute.                | Missing evidence versus insufficient reasoning about visible evidence.                                   |
-| Composition (6.2)                | Keep child-result correctness fixed while varying whether the returned claims and assumptions establish the parent obligation.            | Local success versus a justified final proof.                                                            |
-| Plan-dependent parallelism (6.3) | Sweep worker count under a fixed plan, then separately permit replanning.                                                                 | Scheduling gains versus changes in the work performed.                                                   |
-| Shared accumulation (6.4)        | Freeze Capacity and compare an empty store, a checked lemma store and irrelevant retained material. Include retrieval and checking costs. | Useful environmental accumulation versus a stronger reasoning procedure or indiscriminate extra context. |
-| Complementarity (6.5)            | Evaluate both Capacity versions with both Environment versions under the same budget.                                                     | Benefits that occur only when the two changes are combined.                                              |
-| Evaluation stability (6.6)       | Compare internal success reports with a fixed external assessment before and after a configuration update.                                | Better task performance versus changed task selection or acceptance.                                     |
+Finally, the boundary between run state and reusable configuration must be recorded when it changes. A system that edits its instructions mid-run can be described as a sequence of configurations and interactions. Its initial triple alone is insufficient to reconstruct the whole execution. Weight updates fit under Capacity changes too, but their dynamics and interference require additional learning theory.
 
-Repeated sampling remains an important control. With identical capacities and active contexts, independent calls produce the same candidate distribution as repeated calls to one model. A selector restricted to choosing an existing candidate cannot succeed unless the set contains a correct answer; a synthesizing aggregator is not subject to that candidate-selection bound and its computation must be counted (Chen et al., 2021). Multi-round debate needs a richer baseline: a single process can reproduce its output distribution only if it preserves participant histories and matches each call's conditional distribution, tools, observations, scheduling and aggregation. Sequential simulation need not match parallel latency. [D] These controls prevent improvements due to extra computation from being credited to organization alone.
+## 8. Experiments that could change the argument
 
-### 8.2 Evaluate an update against a stable task objective
+### 8.1 Start with the cheapest discriminating tests
 
-For a prover that changes its instructions after an unjustified inference, use the following procedure:
+The logical bounds follow from their premises. Experiments test whether those premises describe consequential failures in actual systems, and whether TEC's proposed interventions help. The following order is an approximate implementation-cost order, from small artifact checks to repeated multi-task runs.
 
-1. Record the changed component and the runs or feedback that led to the change.
-2. Confirm that later runs actually load the saved version. A correction confined to the current conversation does not establish a persistent update.
-3. Compare old and new versions on held-out proof tasks that did not guide generation or selection of the update, using the same external assessment and comparable budgets.
-4. Run repeated attempts and report both success and cost. Include the cost of generating, evaluating and maintaining the update or its supporting store.
-5. Check previously successful tasks for regressions. If the Environment changed too, compare versions under controlled store and retrieval conditions to identify the source of the gain.
-6. Restore individual components where possible to test attribution. A gain from a prompt, retrieval policy and verifier changed together is not automatically a prompt gain.
-7. Keep the previous version and a way to restore it. Rollback makes adoption reversible; it is not evidence of improvement.
+| Cost        | Test                                                                                                                                 | What to measure                                                                            | What would weaken the TEC explanation?                                                                                                 |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Lowest      | **Target audit — P1, P6.** Cross-check compiled artifacts against preserved theorem types; run the linked Lean probes.               | False acceptance by status-only versus exact-target wrappers; internal/external score gap. | Existing wrappers already preserve and check the target in the relevant failures, leaving no target-loss explanation.                  |
+| Low         | **Composition — P2.** Use the 85 counterexample; keep child statements valid while removing essential handoff information.           | Root completion and repair cost at fixed child validity and budget.                        | Integrator reliably reconstructs the missing interface at negligible cost across the tested tasks.                                     |
+| Low–medium  | **Plan and schedule — P3.** Replay a fixed operation DAG at different worker counts; separately allow theorem lookup and replanning. | Work, span, operation times, retrieval cost and latency.                                   | The apparent extra scaling is explained by baseline or operation-cost changes, with no contribution from discovering a different plan. |
+| Medium      | **Planted complements — P5.** Cross two capacities with two library conditions, then test search policies.                           | Interaction Δ, pair-discovery rate and total search cost.                                  | No positive interaction remains under matched resources, or restricted search reaches the pair through other effective steps.          |
+| Medium–high | **Evidence restoration — P1.** Revisit held-out verification failures with the same model and candidate.                             | Repair rate and false acceptance against original and equal-token control contexts.        | Relevant evidence was already accessible and used, or restoring it performs no better than the controls.                               |
+| Highest     | **Shared accumulation — P4.** Freeze capacities; vary store admission quality and contribution rate across related proof tasks.      | Net work saved, reused dependencies, contamination, repair and final accepted proofs.      | Stored contamination rarely reaches later obligations, or its measured cost is negligible compared with reuse gains in this regime.    |
 
-The Darwin Gödel Machine (Zhang et al., 2025e), with its archive of agent-code versions, illustrates why version retention and evidence of improvement are separate questions. The archive establishes that candidates and earlier versions remain available. Their benefits, costs, transfer and causal explanation require evaluation. These checks operationalize Section 6.6; they are an experimental procedure rather than additional primitives or a theorem that every useful update must satisfy all seven to work.
+The [composition check](/assets/img/blog/tec-essence-precedes-existence/proof-checks/Composition.lean) and target probes are executed demonstrations. The larger experiments above are a research agenda, not results claimed by this article.
 
----
+### 8.2 Keep the comparison interpretable
 
-## 9. Closing
+Each experiment needs a budget-matched single-agent or repeated-sampling baseline. Several instances of the same model with the same inputs may buy useful candidate diversity; that benefit should be measured before it is credited to organization. A synthesizing Integrator does additional work beyond selecting a candidate, and its cost belongs in the comparison.
 
-Task specifies the intended outcome, Environment supplies the state and interaction boundary, and Capacity supplies the means of selecting and performing actions. Once these are bound, an agent is the execution unit that repeatedly observes, acts and uses feedback. Its setup can remain stable while its history and environment change.
+For configuration updates, retain the old version and record what later runs actually load. Compare on tasks that did not guide generation or selection of the update, measure both success and total cost, and revisit earlier successes for regressions. If Environment and Capacity changed together, cross their versions where feasible. If the evaluator changed, cross-score artifacts as in P6. These controls distinguish a useful whole-system improvement from an unsupported explanation of why it occurred.
 
-Improving a multi-agent system therefore requires more than choosing its graph or increasing its population. The available evidence must support the distinctions the task demands; local results must support the claims their successors make; and a capacity must be evaluated with the environment through which it acts. Changing those relations can improve the system even when no individual model changes. Demonstrating that improvement requires an objective that remains comparable across the versions being judged.
+## 9. What should count as progress
 
----
+The proof team makes three failures of interpretation concrete. A compiler-success message can conceal a changed target. A retrieved theorem can remove work that extra workers could only schedule. A shared lemma can improve every later execution without changing any model.
 
-## Appendix A. The literature, placed
+These are different routes to a higher score, and they require different evidence. Treating them all as “more capable agents” conceals the design decision worth keeping.
 
-Table A1 places the main families on seven design questions derived from the primitives and operators in Section 3.5. Table A2 records a TEC reading of their evidence and remaining questions. Its judgments about saturation and open problems are the author's assessment of the cited work, not claims that no counterexample exists anywhere in the literature.
-
-**Table A1. Families of the literature on the seven questions.**
-
-| Family (examples)                                                                                               | Who generates tasks             | Context                              | Capacity                | Projection (topology)           | Persistence         | Who verifies             | What evolves               |
-| --------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------ | ----------------------- | ------------------------------- | ------------------- | ------------------------ | -------------------------- |
-| Sub-agent-as-tool (coding assistants; Anthropic, 2025a; Magentic-One, Fourney et al., 2024)                     | Root runtime                    | Progressively disclosed              | Fixed                   | Fixed at design                 | Ephemeral children  | Root                     | Nothing                    |
-| Fixed workflow / role-play (MetaGPT; ChatDev; CAMEL; AutoGen)                                                   | Designer, at design time        | Partitioned by stage                 | Fixed                   | Fixed                           | Episode             | Designated stage or none | Nothing                    |
-| Debate / sampling-and-voting (Li et al., 2024; Zhang et al., 2025g)                                             | Designer                        | Shared, then cross-read              | Fixed, homogeneous      | Fixed                           | Ephemeral           | Vote                     | Nothing                    |
-| Topology search (DyLAN; GPTSwarm; ADAS; AFlow; MaAS; AgentSquare)                                               | Benchmark                       | Prompt                               | Prompts                 | Searched offline                | Ephemeral           | Benchmark metric         | Prompts and organization   |
-| Prompt optimization (DSPy, Khattab et al., 2023; OPRO, Yang et al., 2023; PromptBreeder, Fernando et al., 2023) | Benchmark                       | Prompt                               | Prompts                 | Single agent                    | Ephemeral           | Benchmark metric         | Prompts, on-distribution   |
-| Memory systems (MemGPT; A-MEM; Mem0; Agent Workflow Memory; ACE)                                                | External                        | Single agent; store structure varies | Varies by mechanism     | Single agent                    | Cross-episode store | External                 | Store and reused workflows |
-| Dynamic-task discovery (FunSearch; AI Scientist)                                                                | Executing capacities            | Shared archive                       | Fixed                   | Fixed loop                      | Archive persists    | Fixed program verifier   | The archive                |
-| Self-modifying agents (Darwin Gödel Machine; continual harnesses)                                               | External benchmark              | Single agent                         | Dynamic                 | Single agent                    | Archive of parents  | Benchmark                | Code, prompts, skills      |
-| Programmable recursive harnesses (RLM, Zhang et al., 2025a; Prime Intellect, 2026)                              | Root runtime, at execution time | Externalized in kernel; progressive  | Dynamic (harness state) | Adaptive at runtime             | Persistent tree     | Root, informal           | Harness state, unvalidated |
-| Agent societies (Generative Agents, Park et al., 2023)                                                          | Nobody / the agents             | Per-agent memory stream              | Fixed                   | Emergent                        | Persistent          | Nobody                   | Memory                     |
-| Classical DAI (contract net; blackboard), for contrast                                                          | Manager node                    | Shared structured store              | Heterogeneous nodes     | Emergent from bids or scheduler | Persistent          | Manager / scheduler      | Nothing                    |
-
-**Table A2. What is validated, what is saturated, what is open.**
-
-| Region                                                       | Status                 | Evidence                                                                                                                                                      | Reading through TEC                                                                                                         |
-| ------------------------------------------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Decomposition at runtime                                     | Validated              | ReAct (Yao et al., 2022); Tree of Thoughts (Yao et al., 2023); Reflexion (Shinn et al., 2023)                                                                 | Generation became an operator the executing capacity can invoke                                                             |
-| Structured artifacts as handoff medium                       | Validated, conditional | MetaGPT (Hong et al., 2023)                                                                                                                                   | Works when the task matches the encoded dependency structure                                                                |
-| Interface and view in coding                                 | Validated              | SWE-agent (Yang et al., 2024); Agentless (Xia et al., 2024)                                                                                                   | With verifiers free, view and verifier determine the frontier; autonomy is not required                                     |
-| Persistent memory and store structure                        | Validated              | MemGPT (Packer et al., 2023); A-MEM (Xu et al., 2025); Mem0 (Chhikara et al., 2025); AWM (Wang et al., 2024c); ACE (Zhang et al., 2025b)                      | Separate storage, retrieval, visibility and procedural reuse (4.4)                                                          |
-| Tool use                                                     | Validated              | Toolformer (Schick et al., 2023); ToolLLM (Qin et al., 2023); Gorilla (Patil et al., 2023)                                                                    | Solved as capacity acquisition                                                                                              |
-| Heterogeneous capacity                                       | Validated              | Mixture-of-Agents (Wang et al., 2024d); heterogeneous debate (Zhang et al., 2025g)                                                                            | Evaluate capacity diversity together with views and interfaces (6.5)                                                        |
-| Homogeneous scaling saturates                                | Validated              | Li et al. (2024); Qian et al. (2024)                                                                                                                          | Separate a fixed-plan scheduling ceiling from gains due to replanning (6.3)                                                 |
-| Role-play scaffolds and fixed workflows                      | Saturated              | CAMEL; ChatDev; AutoGen                                                                                                                                       | Generation at design time, nothing evolving, little left to learn from role choice                                          |
-| Debate among instances of one model                          | Saturated              | Huang et al. (2023); Wang et al. (2024a); Zhang et al. (2025g)                                                                                                | Often fails to beat strong baselines in the cited evaluations; compare with a simulator matching per-call contexts (8.1)    |
-| Prompt optimization                                          | Saturated              | DSPy; OPRO; PromptBreeder                                                                                                                                     | Prompts optimized on a benchmark distribution                                                                               |
-| Offline topology search                                      | Saturated              | DyLAN; GPTSwarm; ADAS; AFlow; MaAS; AgentSquare                                                                                                               | Searches prompts and organization within a benchmark-defined design space (4.1, 4.5)                                        |
-| Task handoffs, scheduling and evaluation records             | Open                   | Design question                                                                                                                                               | Add contracts, checks and dependencies when the coordination problem requires them                                          |
-| Visibility as a design variable; reuse rate of stored memory | Open                   | The cited memory systems vary storage and retrieval mechanisms                                                                                                | Measure which retained information reaches which execution and contributes to success                                       |
-| Capacity records for matching and evaluation                 | Open                   | Voyager (Wang et al., 2023) provides a skill-library example                                                                                                  | Performance records help select capacities; they are not part of the minimum definition                                     |
-| Runtime matching per task                                    | Open                   | Task-allocation mechanisms vary; no universal matching advantage is assumed                                                                                   | Matching selects a feasible capacity–environment combination (6.5)                                                          |
-| Decentralized generation via a shared task list              | Open                   | FunSearch and AI Scientist provide different mechanisms for proposing work                                                                                    | Compare plan discovery and downstream composition costs (6.2, 6.3)                                                          |
-| Evidence of self-improvement                                 | Open                   | DGM (Zhang et al., 2025e); harnesses that retain configuration updates                                                                                        | Keep the success criterion stable and isolate the changed component (6.6, 8.2)                                              |
-| Credit assignment                                            | Open                   | Zhang et al. (2025f): responsible agent identified under 20% of the time; MAST (Cemri et al., 2025) supplies vocabulary                                       | Attribution uses execution traces linked to the relevant task, proof and configuration                                      |
-| Evaluation                                                   | Open                   | Cost-aware leaderboards exist (Kapoor et al., 2025); no benchmark with known dependency structure, graded verifiers, controlled relevant-information fraction | Without it, architecture comparisons confound organization with sample count, model, context size, verifier and parallelism |
+An agent's essence precedes its existence: a purpose, an interaction boundary and a means of acting make the run possible. The run then produces a history that can inform the next design. The research task is to explain which changes in that design preserve evidence, support composition, reduce work and improve performance on an objective that still means the same thing.
 
 ---
+
+## Appendix A. A compact map of the literature
+
+These are mechanisms described in representative works, not exclusive categories or judgments that a research direction is exhausted.
+
+| Research object                            | Representative work                  | What TEC separates                                                                        |
+| ------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Task allocation and shared problem solving | Contract net; Hearsay-II blackboard  | Suitability information for **match**; shared Environment and scheduling of contributions |
+| Roles and hierarchical control             | MetaGPT; Magentic-One                | Assigned obligations, instructions, views and authority over organizational operators     |
+| Graph optimization                         | GPTSwarm                             | Operation prompts and information-flow edges; neither node count nor shape alone          |
+| Sampling and aggregation                   | Self-consistency; multi-agent debate | Candidate diversity, observation diversity, selection and synthesis                       |
+| Persistent information and procedures      | MemGPT; A-MEM; Agent Workflow Memory | Storage, retrieval, context assembly and adopted reusable procedures                      |
+| Program and workflow search                | DSPy; ADAS; AFlow                    | Candidate search space, proposal policy, retention policy and changed TEC relationships   |
+| Self-modification                          | Darwin Gödel Machine                 | Adopted configuration changes, external performance and causal attribution                |
+| Failure analysis and evaluation            | MAST; AI Agents That Matter          | Missing evidence, failed composition and criterion drift, alongside resource use          |
 
 ## References
 
-Amdahl, G. M. (1967). Validity of the single processor approach to achieving large scale computing capabilities. _AFIPS Spring Joint Computer Conference_, 483–485.
-
 Anthropic (2025a). How we built our multi-agent research system. Anthropic Engineering Blog.
 
-Bernstein, D. S., Givan, R., Immerman, N., and Zilberstein, S. (2002). The complexity of decentralized control of Markov decision processes. _Mathematics of Operations Research_, 27(4), 819–840.
-
-Brooks, F. P. (1975). _The Mythical Man-Month_. Addison-Wesley.
-
-Brown, B., Juravsky, J., Ehrlich, R., Clark, R., Le, Q. V., Ré, C., and Mirhoseini, A. (2024). Large language monkeys: Scaling inference compute with repeated sampling. [arXiv:2407.21787](https://arxiv.org/abs/2407.21787).
+Avigad, J., and Massot, P., with contributors. _Mathematics in Lean_, Chapter 5. [Pinned solution source](https://github.com/leanprover-community/mathematics_in_lean/blob/dd6d752fedb14082f557913c2dccb2d4851e5173/MIL/C05_Elementary_Number_Theory/solutions/Solutions_S03_Infinitely_Many_Primes.lean), checked September 8, 2026. Its project pins Lean 4.30 and Mathlib commit `c5ea00351c28e24afc9f0f84379aa41082b1188f`.
 
 Cemri, M., et al. (2025). Why do multi-agent LLM systems fail? _NeurIPS 2025 Datasets and Benchmarks_. [arXiv:2503.13657](https://arxiv.org/abs/2503.13657).
 
-Chen, M., et al. (2021). Evaluating large language models trained on code. [arXiv:2107.03374](https://arxiv.org/abs/2107.03374).
-
-Chhikara, P., Khant, D., Aryan, S., Singh, T., and Yadav, D. (2025). Mem0: Building production-ready AI agents with scalable long-term memory. [arXiv:2504.19413](https://arxiv.org/abs/2504.19413).
-
-Coase, R. H. (1937). The nature of the firm. _Economica_, 4(16), 386–405.
-
 Cognition (2025). Don't build multi-agents. Cognition Engineering Blog.
 
-Das, A., Gervet, T., Romoff, J., Batra, D., Parikh, D., Rabbat, M., and Pineau, J. (2019). TarMAC: Targeted multi-agent communication. _ICML 2019_.
-
 Erman, L. D., Hayes-Roth, F., Lesser, V. R., and Reddy, D. R. (1980). The Hearsay-II speech-understanding system. _ACM Computing Surveys_, 12(2), 213–253.
-
-Erol, K., Hendler, J., and Nau, D. S. (1994). HTN planning: Complexity and expressivity. _AAAI_, 1123–1128.
-
-Fernando, C., Banarse, D., Michalewski, H., Osindero, S., and Rocktäschel, T. (2023). Promptbreeder: Self-referential self-improvement via prompt evolution. [arXiv:2309.16797](https://arxiv.org/abs/2309.16797).
-
-Foerster, J., Assael, Y. M., de Freitas, N., and Whiteson, S. (2016). Learning to communicate with deep multi-agent reinforcement learning. _NeurIPS 2016_.
 
 Fourney, A., et al. (2024). Magentic-One: A generalist multi-agent system for solving complex tasks. [arXiv:2411.04468](https://arxiv.org/abs/2411.04468).
 
 Galbraith, J. R. (1974). Organization design: An information processing view. _Interfaces_, 4(3), 28–36.
 
-Gelernter, D. (1985). Generative communication in Linda. _ACM TOPLAS_, 7(1), 80–112.
-
-Gerkey, B. P., and Matarić, M. J. (2004). A formal analysis and taxonomy of task allocation in multi-robot systems. _IJRR_, 23(9), 939–954.
-
-Hammond, L., et al. (2025). Multi-agent risks from advanced AI. Cooperative AI Foundation. [arXiv:2502.14143](https://arxiv.org/abs/2502.14143).
-
-Hewitt, C., Bishop, P., and Steiger, R. (1973). A universal modular ACTOR formalism for artificial intelligence. _IJCAI_, 235–245.
-
-Holland, J. H. (1975). _Adaptation in Natural and Artificial Systems_. University of Michigan Press.
-
-Hong, L., and Page, S. E. (2004). Groups of diverse problem solvers can outperform groups of high-ability problem solvers. _PNAS_, 101(46), 16385–16389.
+Hillis, W. D. (1990). Co-evolving parasites improve simulated evolution as an optimization procedure. _Physica D_, 42, 228–234. [Author paper](https://www.cse.unr.edu/~sushil/class/gas/papers/DannyHillisCoevolution.pdf).
 
 Hong, S., et al. (2023). MetaGPT: Meta programming for a multi-agent collaborative framework. _ICLR 2024_. [arXiv:2308.00352](https://arxiv.org/abs/2308.00352v7).
 
 Hu, S., Lu, C., and Clune, J. (2024). Automated design of agentic systems. _ICLR 2025_. [arXiv:2408.08435](https://arxiv.org/abs/2408.08435v2).
 
-Huang, J., et al. (2023). Large language models cannot self-correct reasoning yet. _ICLR 2024_. [arXiv:2310.01798](https://arxiv.org/abs/2310.01798).
-
-Hughes, E., et al. (2024). Open-endedness is essential for artificial superhuman intelligence. _ICML 2024_. [arXiv:2406.04268](https://arxiv.org/abs/2406.04268).
-
 Kapoor, S., Stroebl, B., Siegel, Z. S., Nadgir, N., and Narayanan, A. (2024). AI agents that matter. _TMLR_. [arXiv:2407.01502](https://arxiv.org/abs/2407.01502).
-
-Kapoor, S., et al. (2025). Holistic Agent Leaderboard: The Missing Infrastructure for AI Agent Evaluation. [arXiv:2510.11977v1](https://arxiv.org/abs/2510.11977v1).
 
 Khattab, O., et al. (2023). DSPy: Compiling declarative language model calls into self-improving pipelines. _ICLR 2024_. [arXiv:2310.03714](https://arxiv.org/abs/2310.03714v1).
 
-Kirkpatrick, J., et al. (2017). Overcoming catastrophic forgetting in neural networks. _PNAS_, 114(13), 3521–3526.
-
 Krogh, A., and Vedelsby, J. (1995). Neural network ensembles, cross validation, and active learning. _NeurIPS 7_, 231–238.
 
-Lehman, J., and Stanley, K. O. (2011). Abandoning objectives: Evolution through the search for novelty alone. _Evolutionary Computation_, 19(2), 189–223.
-
-Li, G., Hammoud, H. A. A. K., Itani, H., Khizbullin, D., and Ghanem, B. (2023). CAMEL: Communicative agents for "mind" exploration of large language model society. _NeurIPS 2023_. [arXiv:2303.17760](https://arxiv.org/abs/2303.17760).
-
-Li, J., Zhang, Q., Yu, Y., Fu, Q., and Ye, D. (2024). More agents is all you need. _TMLR_. [arXiv:2402.05120](https://arxiv.org/abs/2402.05120).
-
-Liu, N. F., et al. (2023). Lost in the middle: How language models use long contexts. _TACL_, 12, 157–173.
-
-Liu, Z., Zhang, Y., Li, P., Liu, Y., and Yang, D. (2023b). A dynamic LLM-powered agent network for task-oriented agent collaboration. _COLM 2024_. [arXiv:2310.02170](https://arxiv.org/abs/2310.02170).
-
-Lu, C., et al. (2024). The AI Scientist: Towards fully automated open-ended scientific discovery. [arXiv:2408.06292](https://arxiv.org/abs/2408.06292).
+Lean community. [Mathlib primes in arithmetic progressions](https://github.com/leanprover-community/mathlib4/blob/c5ea00351c28e24afc9f0f84379aa41082b1188f/Mathlib/NumberTheory/LSeries/PrimesInAP.lean#L504), same pinned Mathlib revision. [Lean proof-validation reference](https://lean-lang.org/doc/reference/4.34.0-rc2/ValidatingProofs/). These library sources were inspected; the separate downloadable core-only audit examples were executed with Lean 4.25.
 
 Malone, T. W., and Crowston, K. (1994). The interdisciplinary study of coordination. _ACM Computing Surveys_, 26(1), 87–119.
 
-McCloskey, M., and Cohen, N. J. (1989). Catastrophic interference in connectionist networks. _Psychology of Learning and Motivation_, 24, 109–165.
-
 Mouret, J.-B., and Clune, J. (2015). Illuminating search spaces by mapping elites. [arXiv:1504.04909](https://arxiv.org/abs/1504.04909).
-
-Nii, H. P. (1986). Blackboard systems. _AI Magazine_, 7(2), 38–53.
 
 Packer, C., et al. (2023). MemGPT: Towards LLMs as operating systems. [arXiv:2310.08560](https://arxiv.org/abs/2310.08560).
 
-Pan, S. J., and Yang, Q. (2010). A survey on transfer learning. _IEEE TKDE_, 22(10), 1345–1359.
-
-Park, J. S., et al. (2023). Generative agents: Interactive simulacra of human behavior. _UIST 2023_. [arXiv:2304.03442](https://arxiv.org/abs/2304.03442).
-
-Patil, S. G., Zhang, T., Wang, X., and Gonzalez, J. E. (2023). Gorilla: Large language model connected with massive APIs. [arXiv:2305.15334](https://arxiv.org/abs/2305.15334).
-
-Prime Intellect (2026). Prime Agent: A self-improving RLM agent for coding workflows and long-running autonomous tasks. [Official introduction](https://www.primeintellect.ai/blog/prime-agent), August 5, 2026; [repository snapshot](https://github.com/PrimeIntellect-ai/prime-agent/tree/9c54a35dac3a2ad17910074d66664859ea175666), checked September 5, 2026.
-
-Qian, C., et al. (2023). ChatDev: Communicative agents for software development. _ACL 2024_. [arXiv:2307.07924](https://arxiv.org/abs/2307.07924).
-
-Qian, C., et al. (2024). Scaling large-language-model-based multi-agent collaboration. _ICLR 2025_. [arXiv:2406.07155](https://arxiv.org/abs/2406.07155).
-
-Qin, Y., et al. (2023). ToolLLM: Facilitating large language models to master 16000+ real-world APIs. _ICLR 2024_. [arXiv:2307.16789](https://arxiv.org/abs/2307.16789).
-
-Romera-Paredes, B., et al. (2024). Mathematical discoveries from program search with large language models. _Nature_, 625, 468–475.
-
 Sartre, J.-P. (1946). _L'existentialisme est un humanisme_. Nagel. (English: _Existentialism Is a Humanism_, Yale University Press, 2007.)
 
-Schick, T., et al. (2023). Toolformer: Language models can teach themselves to use tools. _NeurIPS 2023_. [arXiv:2302.04761](https://arxiv.org/abs/2302.04761).
-
-Shang, Y., et al. (2024). AgentSquare: Automatic LLM agent search in modular design space. _ACL 2025_. [arXiv:2410.06153](https://arxiv.org/abs/2410.06153).
-
-Shinn, N., et al. (2023). Reflexion: Language agents with verbal reinforcement learning. _NeurIPS 2023_. [arXiv:2303.11366](https://arxiv.org/abs/2303.11366).
-
-Si, C., Yang, D., and Hashimoto, T. (2024). Can LLMs generate novel research ideas? _ICLR 2025_. [arXiv:2409.04109](https://arxiv.org/abs/2409.04109).
-
-Simon, H. A. (1955). A behavioral model of rational choice. _Quarterly Journal of Economics_, 69(1), 99–118.
-
-Zhang, H., et al. (2025g). Stop Overvaluing Multi-Agent Debate — We Must Rethink Evaluation and Embrace Model Heterogeneity. [arXiv:2502.08788v3](https://arxiv.org/abs/2502.08788v3).
+Simon, H. A. (1996). _The Sciences of the Artificial_, 3rd ed. MIT Press, pp. 5–6. First published 1969. [Checked edition](https://andymatuschak.org/files/papers/Simon%20-%201996%20-%20The%20Sciences%20of%20the%20Artificial.pdf).
 
 Smith, R. G. (1980). The contract net protocol. _IEEE Transactions on Computers_, C-29(12), 1104–1113.
-
-Snell, C., Lee, J., Xu, K., and Kumar, A. (2024). Scaling LLM test-time compute optimally can be more effective than scaling model parameters. [arXiv:2408.03314](https://arxiv.org/abs/2408.03314).
-
-Sukhbaatar, S., Szlam, A., and Fergus, R. (2016). Learning multiagent communication with backpropagation. _NeurIPS 2016_.
-
-Theraulaz, G., and Bonabeau, E. (1999). A brief history of stigmergy. _Artificial Life_, 5(2), 97–116.
-
-Tishby, N., Pereira, F. C., and Bialek, W. (1999). The information bottleneck method. _Allerton Conference_, 368–377.
-
-Wang, G., et al. (2023). Voyager: An open-ended embodied agent with large language models. _TMLR_. [arXiv:2305.16291](https://arxiv.org/abs/2305.16291).
-
-Wang, J., et al. (2024d). Mixture-of-agents enhances large language model capabilities. _ICLR 2025_. [arXiv:2406.04692](https://arxiv.org/abs/2406.04692).
-
-Wang, Q., Wang, Z., Su, Y., Tong, H., and Song, Y. (2024a). Rethinking the bounds of LLM reasoning: Are multi-agent discussions the key? _ACL 2024_. [arXiv:2402.18272](https://arxiv.org/abs/2402.18272).
-
-Wang, R., Lehman, J., Clune, J., and Stanley, K. O. (2019). POET: Endlessly generating increasingly complex and diverse learning environments and their solutions. [arXiv:1901.01753](https://arxiv.org/abs/1901.01753).
 
 Wang, X., et al. (2023). Self-consistency improves chain of thought reasoning in language models. _ICLR 2023_. [arXiv:2203.11171](https://arxiv.org/abs/2203.11171).
 
 Wang, Z. Z., Mao, J., Fried, D., and Neubig, G. (2024c). Agent workflow memory. [arXiv:2409.07429](https://arxiv.org/abs/2409.07429v1).
 
-Wellman, M. P. (1993). A market-oriented programming environment and its application to distributed multicommodity flow problems. _JAIR_, 1, 1–23.
-
-Williamson, O. E. (1975). _Markets and Hierarchies_. Free Press.
-
-Wu, Q., et al. (2023). AutoGen: Enabling next-gen LLM applications via multi-agent conversation. _COLM 2024_. [arXiv:2308.08155](https://arxiv.org/abs/2308.08155).
-
-Xia, C. S., Deng, Y., Dunn, S., and Zhang, L. (2024). Agentless: Demystifying LLM-based software engineering agents. [arXiv:2407.01489](https://arxiv.org/abs/2407.01489).
-
 Xu, W., et al. (2025). A-MEM: Agentic memory for LLM agents. [arXiv:2502.12110](https://arxiv.org/abs/2502.12110).
-
-Yang, C., et al. (2023). Large language models as optimizers. _ICLR 2024_. [arXiv:2309.03409](https://arxiv.org/abs/2309.03409).
-
-Yang, J., et al. (2024). SWE-agent: Agent-computer interfaces enable automated software engineering. _NeurIPS 2024_. [arXiv:2405.15793](https://arxiv.org/abs/2405.15793).
-
-Yao, S., et al. (2022). ReAct: Synergizing reasoning and acting in language models. _ICLR 2023_. [arXiv:2210.03629](https://arxiv.org/abs/2210.03629).
-
-Yao, S., et al. (2023). Tree of thoughts: Deliberate problem solving with large language models. _NeurIPS 2023_. [arXiv:2305.10601](https://arxiv.org/abs/2305.10601).
-
-Yao, S., Shinn, N., Razavi, P., and Narasimhan, K. (2024). τ-bench: A benchmark for tool-agent-user interaction in real-world domains. [arXiv:2406.12045](https://arxiv.org/abs/2406.12045).
-
-Zhang, A., Kraska, T., and Khattab, O. (2025a). Recursive language models. [arXiv:2512.24601](https://arxiv.org/abs/2512.24601).
-
-Zhang, Q., et al. (2025b). Agentic context engineering: Evolving contexts for self-improving language models. _ICLR 2026_. [arXiv:2510.04618](https://arxiv.org/abs/2510.04618).
-
-Zhang, J., et al. (2025c). AFlow: Automating agentic workflow generation. _ICLR 2025_. [arXiv:2410.10762](https://arxiv.org/abs/2410.10762).
-
-Zhang, G., et al. (2025d). Multi-agent architecture search via agentic supernet. _ICML 2025_. [arXiv:2502.04180](https://arxiv.org/abs/2502.04180).
 
 Zhang, J., Hu, S., Lu, C., Lange, R., and Clune, J. (2025e). Darwin Gödel Machine: Open-ended evolution of self-improving agents. _ICLR 2026_. [arXiv:2505.22954](https://arxiv.org/abs/2505.22954).
 
-Zhang, S., et al. (2025f). Which agent causes task failures and when? _ICML 2025_. [arXiv:2505.00212](https://arxiv.org/abs/2505.00212).
+Zhang, J., et al. (2025c). AFlow: Automating agentic workflow generation. _ICLR 2025_. [arXiv:2410.10762](https://arxiv.org/abs/2410.10762).
 
 Zhuge, M., et al. (2024). GPTSwarm: Language agents as optimizable graphs. _ICML 2024_. [arXiv:2402.16823](https://arxiv.org/abs/2402.16823).

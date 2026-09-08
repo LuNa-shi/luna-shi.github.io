@@ -871,10 +871,12 @@ Before publishing, edit the generated MDX so the overview is scannable, core pos
 `site.features.tecVisuals` enables the article-embedded TEC illustrations. Their titles,
 labels and explanatory copy live in `site.tec`. An MDX article can import
 `src/components/blog/TecFigure.astro` and select `mode="triple"`, `"operators"`,
-`"topology"` or `"parallel"`. These components hydrate only when visible.
+`"topology"`, `"parallel"` or `"implications"`. These components hydrate only when visible.
+The implications figure links P1–P6 through their premises and mechanisms.
 
 The first three figures retain a full-size static diagram link; disabling the flag
 uses the supplied `fallback` image. The scheduling figure is a teaching model with
-four unit-duration tasks, explicit dependencies and zero overhead, not benchmark
-evidence. Animation respects reduced-motion preferences; sequence playback starts
+five obligations owned by four agents and an alternative direct-lookup plan.
+It reports total work, span and within-plan scheduling speedup separately, using
+explicit normalized durations and zero coordination overhead. Animation respects reduced-motion preferences; sequence playback starts
 only on reader request. Controls support keyboard and touch.

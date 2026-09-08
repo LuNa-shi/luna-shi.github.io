@@ -1,53 +1,107 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="960"
-  height="460"
-  viewBox="0 0 960 460"
-  font-family="Arial, sans-serif"
->
-  <rect width="960" height="460" fill="#fff" />
-  <text x="32" y="38" font-size="23" fill="#333">Five operators organize execution</text>
-  <text x="32" y="68" font-size="15" fill="#333">
-    These are organizational operations, not every transition or a mandatory linear sequence.
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img">
+  <title>Five operators organize execution.</title>
+  <desc>
+    Assembly and checking recur within the proof; evolve changes reusable future configuration.
+  </desc>
+  <rect width="960" height="560" fill="#fff" />
+  <style>
+    text {
+      font-family: Arial, sans-serif;
+      fill: #27312f;
+    }
+    .muted {
+      fill: #52645e;
+    }
+    .accent {
+      fill: #aa501e;
+    }
+  </style>
+  <defs>
+    <marker
+      id="arrow"
+      viewBox="0 0 10 10"
+      refX="9"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto"
+    >
+      <path d="M0 0L10 5L0 10Z" fill="#aa501e" />
+    </marker>
+  </defs>
+  <text x="32" y="42" font-size="25" class="">Five operators organize execution.</text>
+  <text x="32" y="73" font-size="16" class="muted">
+    Assembly and checking recur within the proof; evolve changes reusable future configuration.
   </text>
-  <rect x="32.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
-  <text x="46.0" y="123" font-size="19" fill="#333">generate</text>
-  <text x="46.0" y="150" font-size="14" fill="#333">Create or refine</text>
-  <text x="46.0" y="172" font-size="14" fill="#333">the request</text>
-  <rect x="216.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
-  <text x="230.0" y="123" font-size="19" fill="#333">match</text>
-  <text x="230.0" y="150" font-size="14" fill="#333">Choose capacity</text>
-  <text x="230.0" y="172" font-size="14" fill="#333">and access</text>
-  <rect x="400.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
-  <text x="414.0" y="123" font-size="19" fill="#333">assemble</text>
-  <text x="414.0" y="150" font-size="14" fill="#333">Select observations</text>
-  <text x="414.0" y="172" font-size="14" fill="#333">and history</text>
-  <rect x="584.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
-  <text x="598.0" y="123" font-size="19" fill="#333">verify</text>
-  <text x="598.0" y="150" font-size="14" fill="#333">Assess a</text>
-  <text x="598.0" y="172" font-size="14" fill="#333">candidate result</text>
-  <rect x="768.0" y="95" width="172.0" height="104" rx="8" fill="#f3f6f7" stroke="#aebdc3" />
-  <text x="782.0" y="123" font-size="19" fill="#333">evolve</text>
-  <text x="782.0" y="150" font-size="14" fill="#333">Revise reusable</text>
-  <text x="782.0" y="172" font-size="14" fill="#333">configuration</text>
-  <text x="32" y="238" font-size="19" fill="#333">Agent execution: repeated interaction</text>
-  <rect x="32" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="50" y="294" font-size="18" fill="#333">Observe</text>
-  <text x="241" y="293" font-size="20" fill="#333">→</text>
-  <rect x="260" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="278" y="294" font-size="18" fill="#333">Choose</text>
-  <text x="469" y="293" font-size="20" fill="#333">→</text>
-  <rect x="488" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="506" y="294" font-size="18" fill="#333">Act</text>
-  <text x="697" y="293" font-size="20" fill="#333">→</text>
-  <rect x="716" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="734" y="294" font-size="18" fill="#333">Feedback</text>
-  <path d="M 890 321 L 890 339 L 50 339 L 50 321" fill="none" stroke="#b5541c" stroke-width="2" />
-  <text x="405" y="363" font-size="14" fill="#b5541c">repeat as needed</text>
-  <text x="32" y="400" font-size="15" fill="#333">
-    Assembly and checking can recur; writing a draft already changes the workspace.
+  <rect x="32" y="113" width="172" height="122" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="48" y="141" font-size="19" class="">generate</text>
+  <text x="48" y="168" font-size="15" class="muted">Fix the target</text>
+  <text x="48" y="191" font-size="15" class="muted">and branch interfaces.</text>
+  <line
+    x1="206"
+    y1="169"
+    x2="211"
+    y2="169"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+  <rect x="213" y="113" width="172" height="122" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="229" y="141" font-size="19" class="">match</text>
+  <text x="229" y="168" font-size="15" class="muted">Assign capacities</text>
+  <text x="229" y="191" font-size="15" class="muted">with needed access.</text>
+  <line
+    x1="387"
+    y1="169"
+    x2="392"
+    y2="169"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+  <rect x="394" y="113" width="172" height="122" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="410" y="141" font-size="19" class="">assemble</text>
+  <text x="410" y="168" font-size="15" class="muted">Select theorem types</text>
+  <text x="410" y="191" font-size="15" class="muted">and current feedback.</text>
+  <line
+    x1="568"
+    y1="169"
+    x2="573"
+    y2="169"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+  <rect x="575" y="113" width="172" height="122" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="591" y="141" font-size="19" class="">verify</text>
+  <text x="591" y="168" font-size="15" class="muted">Check contracts</text>
+  <text x="591" y="191" font-size="15" class="muted">and the root target.</text>
+  <line
+    x1="749"
+    y1="169"
+    x2="754"
+    y2="169"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+  <rect x="756" y="113" width="172" height="122" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="772" y="141" font-size="19" class="">evolve</text>
+  <text x="772" y="168" font-size="15" class="muted">Evaluate and retain</text>
+  <text x="772" y="191" font-size="15" class="muted">a reusable procedure.</text>
+  <rect x="32" y="276" width="896" height="96" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="48" y="304" font-size="19" class="">
+    Current proof: Integrator · Builder · Factor · Auditor
   </text>
-  <text x="32" y="424" font-size="15" fill="#333">
-    Evolve uses run records to change later setups. Evaluate improvement separately (§6.6).
+  <text x="48" y="331" font-size="15" class="muted">
+    Observe → choose → act → feedback → repeat. Work changes the shared environment.
+  </text>
+  <rect x="32" y="397" width="896" height="105" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="48" y="425" font-size="19" class="">Future execution: a saved retrieval procedure</text>
+  <text x="48" y="452" font-size="15" class="muted">
+    Use the trace to propose a change. Compare old and new versions on held-out tasks.
+  </text>
+  <text x="48" y="475" font-size="15" class="muted">
+    Preserve the external objective, report costs and regressions, then adopt a version.
   </text>
 </svg>

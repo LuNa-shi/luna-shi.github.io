@@ -3,10 +3,11 @@ import './tec-explorer.css';
 import { useEffect, useId, useState } from 'react';
 
 import type { site } from '../../config/site';
+import type { TecPlan } from '../../utils/tec-schedule';
 import { scheduleTecTasks } from '../../utils/tec-schedule';
 
 type Copy = typeof site.tec;
-type Mode = 'triple' | 'operators' | 'topology' | 'parallel';
+type Mode = 'triple' | 'operators' | 'topology' | 'parallel' | 'implications';
 
 function Choices({
   labels,
@@ -146,16 +147,18 @@ function Topology({ copy }: { copy: Copy }) {
   const points =
     preset === 0
       ? [
-          [60, 60],
-          [210, 60],
-          [210, 200],
-          [60, 200],
+          [60, 40],
+          [230, 110],
+          [60, 180],
+          [230, 250],
+          [145, 320],
         ]
       : [
-          [135, 40],
-          [50, 130],
-          [220, 130],
-          [135, 220],
+          [145, 40],
+          [60, 135],
+          [230, 135],
+          [145, 230],
+          [145, 320],
         ];
   const edges =
     preset === 0
@@ -163,12 +166,14 @@ function Topology({ copy }: { copy: Copy }) {
           [0, 1],
           [1, 2],
           [2, 3],
+          [3, 4],
         ]
       : [
           [0, 1],
           [0, 2],
           [1, 3],
           [2, 3],
+          [3, 4],
         ];
   return (
     <>
@@ -184,7 +189,7 @@ function Topology({ copy }: { copy: Copy }) {
         </dl>
         <div className="tec-graph">
           <svg
-            viewBox="0 0 270 260"
+            viewBox="0 0 290 365"
             role="img"
             aria-label={`${c.presets[preset]}. ${c.captions[preset]}`}
           >
@@ -217,7 +222,7 @@ function Topology({ copy }: { copy: Copy }) {
               );
             })}
             {points.map(([x, y], i) => (
-              <g key={i} className={preset === 2 && i === 2 ? 'tec-specialist' : ''}>
+              <g key={i} className={preset === 2 && (i === 1 || i === 2) ? 'tec-specialist' : ''}>
                 <circle cx={x} cy={y} r="30" />
                 <text x={x} y={y} dy="0.35em" textAnchor="middle">
                   {c.nodes[i]}
@@ -245,7 +250,8 @@ function Parallel({ copy }: { copy: Copy }) {
   const [replay, setReplay] = useState(0);
   const c = copy.parallel;
   const inputId = useId();
-  const result = scheduleTecTasks(structure === 0 ? 'chain' : 'fork', workers);
+  const plans: TecPlan[] = ['chain', 'fork', 'lookup'];
+  const result = scheduleTecTasks(plans[structure], workers);
   return (
     <>
       <Choices
@@ -271,8 +277,8 @@ function Parallel({ copy }: { copy: Copy }) {
       </label>
       <div className="tec-timeline" key={`${structure}-${workers}-${replay}`}>
         <div className="tec-axis">
-          {[0, 1, 2, 3, 4].map((time) => (
-            <span key={time} style={{ left: `${time * 25}%` }}>
+          {[0, 3, 6, 9].map((time) => (
+            <span key={time} style={{ left: `${(time / 9) * 100}%` }}>
               {time}
             </span>
           ))}
@@ -290,8 +296,8 @@ function Parallel({ copy }: { copy: Copy }) {
                     className="tec-task-block"
                     key={task.id}
                     style={{
-                      left: `${task.start * 25}%`,
-                      width: '25%',
+                      left: `${(task.start / 9) * 100}%`,
+                      width: `${(task.duration / 9) * 100}%`,
                       animationDelay: `${task.start * 300}ms`,
                     }}
                   >
@@ -303,6 +309,7 @@ function Parallel({ copy }: { copy: Copy }) {
         ))}
         <span className="tec-time-label">{c.timeAxis}</span>
       </div>
+      <p className="tec-runtime-note">{c.legend}</p>
       <div className="tec-results" aria-live="polite">
         <span>
           {c.duration}
@@ -311,21 +318,126 @@ function Parallel({ copy }: { copy: Copy }) {
           </b>
         </span>
         <span>
+          {c.totalWork}
+          <b>
+            {result.work} <small>{c.unit}</small>
+          </b>
+        </span>
+        <span>
           {c.speedup}
-          <b>{(4 / result.duration).toFixed(2)}×</b>
+          <b>{(result.work / result.duration).toFixed(2)}×</b>
         </span>
         <span>
           {c.bound}
-          <b>{(4 / result.span).toFixed(2)}×</b>
+          <b>{(result.work / result.span).toFixed(2)}×</b>
         </span>
       </div>
-      <p className="tec-reading">{structure === 0 ? c.chain : c.fork}</p>
+      <p className="tec-reading">{c.descriptions[structure]}</p>
       <button type="button" className="tec-replay" onClick={() => setReplay((x) => x + 1)}>
         {c.replay}
       </button>
-      <small className="tec-assumptions">
-        {c.work} {c.notCost} {c.static}
-      </small>
+      <small className="tec-assumptions">{c.assumptions}</small>
+    </>
+  );
+}
+
+function Implications({ copy }: { copy: Copy }) {
+  const [selected, setSelected] = useState(3);
+  const c = copy.implications;
+  const marker = useId().replaceAll(':', '');
+  const edges = [
+    [0, 3],
+    [1, 3],
+    [4, 2],
+    [2, 3],
+    [3, 5],
+  ];
+  const drawMap = (layout: 'wide' | 'narrow') => {
+    const points =
+      layout === 'wide'
+        ? [
+            [85, 45],
+            [305, 45],
+            [425, 175],
+            [195, 175],
+            [535, 45],
+            [195, 305],
+          ]
+        : [
+            [85, 45],
+            [275, 45],
+            [275, 300],
+            [180, 170],
+            [275, 430],
+            [85, 300],
+          ];
+    return (
+      <svg
+        className={`tec-premise-map tec-map-${layout}`}
+        viewBox={layout === 'wide' ? '0 0 620 360' : '0 0 360 485'}
+        role="img"
+        aria-label={c.arrow}
+      >
+        <defs>
+          <marker
+            id={`${marker}-${layout}`}
+            viewBox="0 0 10 10"
+            refX="9"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto"
+          >
+            <path d="M0 0L10 5L0 10Z" />
+          </marker>
+        </defs>
+        {edges.map(([a, b]) => {
+          const [x1, y1] = points[a];
+          const [x2, y2] = points[b];
+          const dx = x2 - x1,
+            dy = y2 - y1;
+          const fraction = Math.min(dx ? 77 / Math.abs(dx) : 1, dy ? 34 / Math.abs(dy) : 1);
+          return (
+            <line
+              key={`${a}-${b}`}
+              className={a === selected || b === selected ? 'is-linked' : ''}
+              x1={x1 + dx * fraction}
+              y1={y1 + dy * fraction}
+              x2={x2 - dx * fraction}
+              y2={y2 - dy * fraction}
+              markerEnd={`url(#${marker}-${layout})`}
+            />
+          );
+        })}
+        {points.map(([x, y], i) => (
+          <g key={c.tabs[i]} className={i === selected ? 'is-selected' : ''}>
+            <rect x={x - 74} y={y - 32} width="148" height="64" rx="8" />
+            <text x={x} y={y - 6} textAnchor="middle" className="tec-map-id">
+              {c.tabs[i]}
+            </text>
+            <text x={x} y={y + 17} textAnchor="middle">
+              {c.nodes[i]}
+            </text>
+          </g>
+        ))}
+      </svg>
+    );
+  };
+  return (
+    <>
+      <Choices labels={c.tabs} value={selected} onChange={setSelected} name={copy.controls} />
+      {drawMap('wide')}
+      {drawMap('narrow')}
+      <div className="tec-premise-details" aria-live="polite">
+        <p>
+          <b>{c.premise}</b>
+          {c.premises[selected]}
+        </p>
+        <p>
+          <b>{c.connection}</b>
+          {c.connections[selected]}
+        </p>
+      </div>
     </>
   );
 }
@@ -343,6 +455,7 @@ export default function TecExplorer({ mode, copy }: { mode: Mode; copy: Copy }) 
       {mode === 'operators' && <Operators copy={copy} />}
       {mode === 'topology' && <Topology copy={copy} />}
       {mode === 'parallel' && <Parallel copy={copy} />}
+      {mode === 'implications' && <Implications copy={copy} />}
     </figure>
   );
 }

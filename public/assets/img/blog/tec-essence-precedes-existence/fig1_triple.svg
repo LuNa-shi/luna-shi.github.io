@@ -1,75 +1,94 @@
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="960"
-  height="460"
-  viewBox="0 0 960 460"
-  font-family="Arial, sans-serif"
->
-  <rect width="960" height="460" fill="#fff" />
-  <text x="32" y="38" font-size="23" fill="#333">Three conditions configure a running agent</text>
-  <text x="32" y="68" font-size="15" fill="#333">
-    Example: prove that, for integer n, an even square n² implies an even n.
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="520" viewBox="0 0 960 520" role="img">
+  <title>Three conditions. One running agent.</title>
+  <desc>Builder contributes to the proof of infinitely many primes congruent to 3 modulo 4.</desc>
+  <rect width="960" height="520" fill="#fff" />
+  <style>
+    text {
+      font-family: Arial, sans-serif;
+      fill: #27312f;
+    }
+    .muted {
+      fill: #52645e;
+    }
+    .accent {
+      fill: #aa501e;
+    }
+  </style>
+  <defs>
+    <marker
+      id="arrow"
+      viewBox="0 0 10 10"
+      refX="9"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto"
+    >
+      <path d="M0 0L10 5L0 10Z" fill="#aa501e" />
+    </marker>
+  </defs>
+  <text x="32" y="42" font-size="25" class="">Three conditions. One running agent.</text>
+  <text x="32" y="73" font-size="16" class="muted">
+    Builder contributes to the proof of infinitely many primes congruent to 3 modulo 4.
   </text>
-  <rect
-    x="32.0"
-    y="95"
-    width="289.3333333333333"
-    height="104"
-    rx="8"
-    fill="#f3f6f7"
-    stroke="#aebdc3"
+  <rect x="32" y="105" width="286" height="116" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="48" y="133" font-size="19" class="">Task</text>
+  <text x="48" y="160" font-size="15" class="muted">Construct N with residue 3 mod 4</text>
+  <text x="48" y="183" font-size="15" class="muted">and no prime divisor in S.</text>
+  <rect x="337" y="105" width="286" height="116" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="353" y="133" font-size="19" class="">Environment</text>
+  <text x="353" y="160" font-size="15" class="muted">Library, assumptions and module;</text>
+  <text x="353" y="183" font-size="15" class="muted">search and check observations.</text>
+  <rect x="642" y="105" width="286" height="116" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="658" y="133" font-size="19" class="">Capacity</text>
+  <text x="658" y="160" font-size="15" class="muted">Select proof steps; search types,</text>
+  <text x="658" y="183" font-size="15" class="muted">write terms and request checks.</text>
+  <text x="32" y="270" font-size="20" class="">
+    Builder’s execution develops through interaction
+  </text>
+  <rect x="32" y="295" width="210" height="100" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="48" y="323" font-size="19" class="">Observe</text>
+  <text x="48" y="350" font-size="15" class="muted">Read S and the interface.</text>
+  <line
+    x1="245"
+    y1="340"
+    x2="256"
+    y2="340"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
   />
-  <text x="46.0" y="123" font-size="19" fill="#333">Task</text>
-  <text x="46.0" y="150" font-size="14" fill="#333">Outcome + scope</text>
-  <text x="46.0" y="172" font-size="14" fill="#333">Prove the implication for every integer</text>
-  <rect
-    x="333.3333333333333"
-    y="95"
-    width="289.3333333333333"
-    height="104"
-    rx="8"
-    fill="#f3f6f7"
-    stroke="#aebdc3"
+  <rect x="260" y="295" width="210" height="100" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="276" y="323" font-size="19" class="">Choose</text>
+  <text x="276" y="350" font-size="15" class="muted">Try N = 4P + 1.</text>
+  <line
+    x1="473"
+    y1="340"
+    x2="484"
+    y2="340"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
   />
-  <text x="347.3333333333333" y="123" font-size="19" fill="#333">Environment</text>
-  <text x="347.3333333333333" y="150" font-size="14" fill="#333">State + interaction access</text>
-  <text x="347.3333333333333" y="172" font-size="14" fill="#333">
-    Definitions, proof draft and review
-  </text>
-  <rect
-    x="634.6666666666666"
-    y="95"
-    width="289.3333333333333"
-    height="104"
-    rx="8"
-    fill="#f3f6f7"
-    stroke="#aebdc3"
+  <rect x="488" y="295" width="210" height="100" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="504" y="323" font-size="19" class="">Act</text>
+  <text x="504" y="350" font-size="15" class="muted">Submit the residue proof.</text>
+  <line
+    x1="701"
+    y1="340"
+    x2="712"
+    y2="340"
+    stroke="#aa501e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
   />
-  <text x="648.6666666666666" y="123" font-size="19" fill="#333">Capacity</text>
-  <text x="648.6666666666666" y="150" font-size="14" fill="#333">
-    Action selection + available actions
+  <rect x="716" y="295" width="210" height="100" rx="8" fill="#f4f7f5" stroke="#bdcbc3" />
+  <text x="732" y="323" font-size="19" class="">Feedback</text>
+  <text x="732" y="350" font-size="15" class="muted">Residue fails; try 4P − 1.</text>
+  <text x="32" y="443" font-size="17" class="">
+    A new observation changes the next action. The task, model and tools can stay fixed.
   </text>
-  <text x="648.6666666666666" y="172" font-size="14" fill="#333">
-    Reasoning; writing and review actions
-  </text>
-  <text x="32" y="238" font-size="19" fill="#333">Agent execution: repeated interaction</text>
-  <rect x="32" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="50" y="294" font-size="18" fill="#333">Observe</text>
-  <text x="241" y="293" font-size="20" fill="#333">→</text>
-  <rect x="260" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="278" y="294" font-size="18" fill="#333">Choose</text>
-  <text x="469" y="293" font-size="20" fill="#333">→</text>
-  <rect x="488" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="506" y="294" font-size="18" fill="#333">Act</text>
-  <text x="697" y="293" font-size="20" fill="#333">→</text>
-  <rect x="716" y="260" width="204" height="54" rx="8" fill="#fdf1e9" stroke="#b5541c" />
-  <text x="734" y="294" font-size="18" fill="#333">Feedback</text>
-  <path d="M 890 321 L 890 339 L 50 339 L 50 321" fill="none" stroke="#b5541c" stroke-width="2" />
-  <text x="405" y="363" font-size="14" fill="#b5541c">repeat as needed</text>
-  <text x="32" y="400" font-size="15" fill="#333">
-    A draft changes the workspace. Review identifies a gap and informs the next argument.
-  </text>
-  <text x="32" y="424" font-size="15" fill="#333">
-    The setup can remain fixed while the state, history and next action change.
+  <text x="32" y="479" font-size="17" class="accent">
+    The setup is specified before the run; the trajectory is produced during it.
   </text>
 </svg>
